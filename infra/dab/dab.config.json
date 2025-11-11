@@ -1,0 +1,20 @@
+{
+  "$schema": "https://github.com/Azure/data-api-builder/releases/download/v1.6.68/dab.draft.schema.json",
+  "data-source": {
+    "database-type": "mssql",
+    "connection-string": "@env('DB_CONN')",
+    "health": { "enabled": true }
+  },
+  "runtime": {
+    "rest": { "path": "/api" }
+  },
+  "entities": {
+    "test": {
+      "source": "ac.test",
+      "permissions": [
+        { "role": "authenticated", "actions": [ "read" ] },
+        { "role": "ac.dossiers.admin", "actions": [ "create", "update", "delete" ] }
+      ]
+    }
+  }
+}
