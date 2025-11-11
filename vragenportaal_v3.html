@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AC-Dossier • Vragenportaal (v3)</title>
+<style>
+:root{
+  --bg:#ffffff;
+  --primary:#ec641a;
+  --teal:#79c6c0;
+  --accent:#85cee4;
+  --slate:#686c7c;
+  --ink:#4c505a;
+  --steel:#69a1b1;
+  --surface:#f7f7f7;
+  --ring:1px solid #e5e7eb;
+  --radius:16px;
+  --shadow:0 10px 30px rgba(0,0,0,.08);
+  --shadow-lg:0 18px 45px rgba(0,0,0,.14);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--surface);color:#1f2937;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+a{color:var(--steel);text-decoration:none}
+a:hover{text-decoration:underline}
+
+header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid #e5e7eb}
+.topbar{display:flex;align-items:center;gap:16px;padding:12px 18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800}
+.brand-bullet{width:28px;height:28px;border-radius:7px;background:var(--primary);display:grid;place-items:center;color:#fff;font-weight:800}
+.brand small{font-weight:600;color:var(--slate)}
+.top-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:.55rem;padding:.6rem .9rem;border-radius:12px;border:1px solid #e5e7eb;background:#fff;color:#111;cursor:pointer}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.ghost{background:#fff;color:var(--primary);border-color:var(--primary)}
+.btn[disabled]{opacity:.6;cursor:not-allowed}
+
+.wrap{max-width:1160px;margin:18px auto;padding:0 16px}
+.layout{display:grid;grid-template-columns:300px 1fr;gap:16px}
+@media (max-width:980px){.layout{grid-template-columns:1fr}}
+
+aside.nav{background:#fff;border:var(--ring);border-radius:var(--radius);box-shadow:var(--shadow);padding:10px}
+.navtitle{font-weight:800;color:var(--ink);margin:6px 8px 10px}
+.navlist{display:flex;flex-direction:column;gap:6px;max-height:70vh;overflow:auto;padding-right:6px}
+.navlist a{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid #eef2f7;background:#fff;color:#111;
+  transition:background .15s ease, transform .06s ease;
+}
+.navlist a:hover{ background: rgba(236,100,26,.08); transform: translateY(-1px); }
+.navlist a.active{ background: var(--primary); color:#fff; border-color: var(--primary) }
+.navlist small{margin-left:auto;color:#6b7280}
+.navlist .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+
+main.area .card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:var(--ring);padding:16px}
+h1,h2,h3{color:var(--ink);margin:.2rem 0 .6rem}
+.muted{color:#6b7280}
+
+.form{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:600;color:var(--ink)}
+.field input[type="text"], .field input[type="number"], .field input[type="date"], .field select, .field textarea{
+  width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:12px;background:#fff
+}
+.field textarea{min-height:90px}
+fieldset.group{grid-column:span 12;border:1px dashed #e5e7eb;border-radius:12px;padding:10px 12px}
+legend{padding:0 8px;color:#6b7280}
+
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-top:12px}
+.actions .spacer{flex:1;min-width:10px}
+.flag{display:inline-flex;gap:8px;align-items:center;background:#ffebee;color:#c62828;border:1px solid #ffcdd2;padding:6px 10px;border-radius:999px;font-weight:700}
+.badge{display:inline-flex;gap:6px;align-items:center;padding:4px 8px;border-radius:999px;border:1px solid #e5e7eb;color:#374151}
+.note{background:#f7f7f7;border:1px solid #eee;padding:8px 10px;border-radius:10px}
+
+.footer{margin-top:10px;color:#9ca3af;font-size:12px}
+hr.sep{border:0;border-top:1px solid #e5e7eb;margin:14px 0}
+
+.pageinfo{color:#6b7280;margin-right:auto}
+</style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand" aria-label="AC-Dossier">
+      <span class="brand-bullet" aria-hidden>AC</span>
+      <span>AC-Dossier <small>vragenportaal</small></span>
+    </div>
+    <div class="top-actions">
+      <div class="field" style="display:flex;align-items:center;gap:8px;margin:0">
+        <label for="clientId" style="margin:0">Client ID</label>
+        <input id="clientId" placeholder="bijv. 2025-0001" style="min-width:160px">
+      </div>
+      <button class="btn ghost" id="openSuite">Open keuringen-suite</button>
+      <a class="btn" id="exportBtn" href="#" download>Exporteer dossier (JSON)</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+    <aside class="nav">
+      <div class="navtitle">Vragenlijsten</div>
+      <nav class="navlist" id="navList"></nav>
+      <div class="footer">Kies links een lijst. Velden en pagina’s verschijnen in het midden.</div>
+    </aside>
+
+    <main class="area">
+      <section class="card" id="panel">
+        <h2 id="surveyTitle">Kies een vragenlijst</h2>
+        <p class="muted" id="surveyDesc">Links vind je themaknoppen. De vragen worden in het middenkader weergegeven en kunnen direct ingevuld worden. Gebruik onderaan de knoppen om te navigeren, tussentijds te bewaren of definitief op te slaan.</p>
+        <hr class="sep">
+        <form id="surveyForm" class="form" aria-live="polite"></form>
+        <div class="actions">
+          <span class="pageinfo" id="pageInfo" style="display:none"></span>
+          <button class="btn" type="button" id="btnPrev">Vorige pagina</button>
+          <button class="btn" type="button" id="btnNext">Volgende pagina</button>
+          <span class="spacer"></span>
+          <span id="status" class="badge">Gereed.</span>
+          <button class="btn" type="button" id="btnReset">Wissen</button>
+          <button class="btn" type="button" id="btnDraft">Tussentijds opslaan</button>
+          <button class="btn primary" type="button" id="btnFinal">Definitief opslaan</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+// ======= Config & Data Contract =======
+// LocalStorage key pattern: 'ac_portal_surveys_v3:{clientId}'
+// Record: { clientId, updatedAt, surveys:[ {code,title,version,pages,totalPages,items:[{id,label,type,value,meta,page}], flags:[...], score, finalized:false, finalizedAt:null} ] }
+
+const THEMES = [
+  {code:'algemene_gegevens', title:'Algemene gegevens'},
+  {code:'algemene_gezondheid', title:'Algemene gezondheidsklachten'},
+  {code:'bewegingsapparaat', title:'Bewegingsapparaat'},
+  {code:'nek_armen', title:'Nek en armen'},
+  {code:'leefstijl', title:'Leefstijl'},
+  {code:'familie_erfelijkheid', title:'Familie & erfelijkheid'},
+  {code:'hart_vaten', title:'Hart en Vaten'},
+  {code:'huid', title:'Huid'},
+  {code:'luchtwegen', title:'Luchtwegen'},
+  {code:'ogen', title:'Ogen'},
+  // Voor toekomstige uitbreiding:
+  {code:'overige', title:'(Overige vragenlijsten – binnenkort)', disabled:true}
+];
+
+// ===== Definities vanuit brondocumenten =====
+const yesNo = ['nee','ja'];
+
+const SURVEYS_DEF = {
+  // 1 — Algemene gegevens (2 p)
+  algemene_gegevens: {
+    version:1,
+    desc:'Algemene persoonsgegevens en werksituatie.',
+    pages:2,
+    items:[
+      // Pagina 1
+      {id:'q0001_naam', label:'Naam en voorletters', type:'text', page:1},
+      {id:'q0001_telefoon', label:'Telefoon', type:'text', page:1},
+      {id:'q0001_adres', label:'Adres (straat/postcode/woonplaats)', type:'textarea', page:1},
+      {id:'q0002_geboortedatum', label:'Geboortedatum', type:'date', page:1},
+      {id:'q0003_geslacht', label:'Geslacht', type:'radio', options:['man','vrouw'], page:1},
+      {id:'q0004_werkervaring', label:'Hoeveel jaar werkervaring', type:'number', min:0, page:1},
+      {id:'q0006_uren_per_week', label:'Aantal uren per week', type:'number', min:0, page:1},
+      {id:'q0007_onderwijs', label:'Hoogste onderwijsniveau', type:'select', options:[
+        'lager onderwijs / Mavo / LBO',
+        'Havo / VWO / MBO',
+        'HBO / WO',
+        'anders, namelijk…'
+      ], page:1},
+      // Pagina 2
+      {id:'q0008_bedrijf', label:'Bedrijf', type:'text', page:2},
+      {id:'q0009_afdeling', label:'Afdeling', type:'text', page:2},
+      {id:'q0010_functie', label:'Functie', type:'text', page:2},
+      {id:'q0011_leidinggeven', label:'Geeft u leiding aan medewerkers?', type:'radio', options:yesNo, page:2},
+      {id:'q0099_bezwaren', label:'Bezwaren tegen onderdelen van het medisch onderzoek', type:'textarea', page:2}
+    ]
+  },
+
+  // 2 — Algemene gezondheidsklachten (2 p)
+  algemene_gezondheid: {
+    version:1,
+    desc:'Algemene gezondheidsklachten afgelopen 12 maanden.',
+    pages:2,
+    items:[
+      {id:'q1001', label:'Bent u vaak moe?', type:'radio', options:yesNo, page:1},
+      {id:'q1002', label:'Bent u vaak slaperig of suf?', type:'radio', options:yesNo, page:1},
+      {id:'q1003', label:'Slaapt u slecht?', type:'radio', options:yesNo, page:1},
+      {id:'q1004', label:'Heeft u vaak het gevoel dat u er niet tegenop kunt?', type:'radio', options:yesNo, page:1},
+      {id:'q1005', label:'Heeft u nerveuze klachten (last van “zenuwen”)?', type:'radio', options:yesNo, page:1},
+      {id:'q1006', label:'Regelmatig last van zeurende hoofdpijn?', type:'radio', options:yesNo, page:1},
+      {id:'q1007', label:'Ernstige hoofdpijn of migraine?', type:'radio', options:yesNo, page:1},
+      {id:'q1008', label:'Last van duizeligheid?', type:'radio', options:yesNo, page:1},
+      {id:'q1009', label:'Regelmatig moeite met concentreren?', type:'radio', options:yesNo, page:1},
+      {id:'q1010', label:'Regelmatig moeite met onthouden?', type:'radio', options:yesNo, page:1},
+      {id:'q1011', label:'Regelmatig last van de maag?', type:'radio', options:yesNo, page:1},
+      {id:'q1012', label:'Regelmatig klachten van de buik?', type:'radio', options:yesNo, page:1},
+      {id:'q1013', label:'Pijn/beklemd gevoel op de borst of in de hartstreek?', type:'radio', options:yesNo, page:1},
+      {id:'q1091', label:'Ziek gemeld voor één of meer klachten', type:'radio', options:yesNo, page:2},
+      {id:'q1092', label:'Medisch behandeld voor een van deze klachten', type:'radio', options:yesNo, page:2},
+      {id:'q1093', label:'Wordt één of meer van deze klachten volgens u veroorzaakt door uw werk?', type:'radio', options:yesNo, page:2, flagWhen:{op:'eq', value:'ja', reason:'Mogelijk werkgerelateerd'}},
+      {id:'q1094', label:'Verergeren de klachten door uw werk?', type:'radio', options:yesNo, page:2},
+      {id:'q1095', label:'Hinderen de klachten u in uw werk?', type:'radio', options:yesNo, page:2},
+      {id:'q1096', label:'Verminderen/verdwijnen de klachten op vrije dagen of in vakanties?', type:'radio', options:yesNo, page:2}
+    ]
+  },
+
+  // 3 — Bewegingsapparaat (2 p)
+  bewegingsapparaat: {
+    version:1,
+    desc:'Klachten over rug, nek, armen, benen afgelopen 12 maanden.',
+    pages:2,
+    items:[
+      {id:'q1101', label:'Regelmatig pijn/stijfheid boven of midden in de rug', type:'radio', options:yesNo, page:1},
+      {id:'q1102', label:'Regelmatig pijn/stijfheid onder in de rug', type:'radio', options:yesNo, page:1},
+      {id:'q1103', label:'Regelmatig pijn/stijfheid in heupen of bovenbenen', type:'radio', options:yesNo, page:1},
+      {id:'q1104', label:'Regelmatig pijn/stijfheid in de knie', type:'radio', options:yesNo, page:1},
+      {id:'q1105', label:'Regelmatig pijn/stijfheid in onderbenen/enkels/voeten', type:'radio', options:yesNo, page:1},
+      {id:'q1106', label:'Een doof gevoel in benen en voeten', type:'radio', options:yesNo, page:1},
+      {id:'q1107', label:'Krachtverlies in benen of voeten', type:'radio', options:yesNo, page:1},
+      {id:'q1108', label:'Regelmatig pijn/stijfheid in nek of schouders', type:'radio', options:yesNo, page:1},
+      {id:'q1109', label:'Regelmatig pijn/stijfheid in armen/ellebogen/polsen', type:'radio', options:yesNo, page:1},
+      {id:'q1110', label:'Regelmatig pijn/stijfheid in handen of vingers', type:'radio', options:yesNo, page:1},
+      {id:'q1111', label:'Tintelingen, zwellingen of doof gevoel in armen/handen/vingers', type:'radio', options:yesNo, page:1},
+      {id:'q1112', label:'Krachtsverlies in armen, handen of vingers', type:'radio', options:yesNo, page:1},
+      {id:'q1113', label:'Aanvallen van “witte vingers”', type:'radio', options:yesNo, page:1},
+      {id:'q1191', label:'Ziek gemeld voor één of meer klachten', type:'radio', options:yesNo, page:2},
+      {id:'q1192', label:'Medisch behandeld voor een van deze klachten', type:'radio', options:yesNo, page:2},
+      {id:'q1193', label:'Worden klachten volgens u veroorzaakt door uw werk?', type:'radio', options:yesNo, page:2, flagWhen:{op:'eq', value:'ja', reason:'Mogelijk werkgerelateerd'}},
+      {id:'q1194', label:'Verergeren de klachten door uw werk?', type:'radio', options:yesNo, page:2},
+      {id:'q1195', label:'Hinderen de klachten u in uw werk?', type:'radio', options:yesNo, page:2},
+      {id:'q1196', label:'Verminderen/verdwijnen de klachten op vrije dagen of vakanties?', type:'radio', options:yesNo, page:2}
+    ]
+  },
+
+  // 4 — Nek en armen (2 p, subset)
+  nek_armen: {
+    version:1,
+    desc:'Specifieke klachten nek, schouders, armen en handen.',
+    pages:2,
+    items:[
+      {id:'q1108', label:'Regelmatig pijn/stijfheid in nek of schouders', type:'radio', options:yesNo, page:1},
+      {id:'q1109', label:'Regelmatig pijn/stijfheid in armen/ellebogen/polsen', type:'radio', options:yesNo, page:1},
+      {id:'q1110', label:'Regelmatig pijn/stijfheid in handen of vingers', type:'radio', options:yesNo, page:1},
+      {id:'q1111', label:'Tintelingen, zwellingen of doof gevoel in armen, handen of vingers', type:'radio', options:yesNo, page:1},
+      {id:'q1112', label:'Krachtsverlies in armen, handen of vingers', type:'radio', options:yesNo, page:1},
+      {id:'q1113', label:'Aanvallen van “witte vingers”', type:'radio', options:yesNo, page:1},
+      {id:'q1191', label:'Ziek gemeld voor één of meer klachten', type:'radio', options:yesNo, page:2},
+      {id:'q1192', label:'Medisch behandeld voor een van deze klachten', type:'radio', options:yesNo, page:2},
+      {id:'q1193', label:'Worden klachten volgens u veroorzaakt door uw werk?', type:'radio', options:yesNo, page:2, flagWhen:{op:'eq', value:'ja', reason:'Mogelijk werkgerelateerd'}},
+      {id:'q1194', label:'Verergeren de klachten door uw werk?', type:'radio', options:yesNo, page:2},
+      {id:'q1195', label:'Hinderen de klachten u in uw werk?', type:'radio', options:yesNo, page:2},
+      {id:'q1196', label:'Verminderen/verdwijnen de klachten op vrije dagen of vakanties?', type:'radio', options:yesNo, page:2}
+    ]
+  },
+
+  // 5 — Leefstijl (4 p)
+  leefstijl: {
+    version:1,
+    desc:'Vragen over roken, alcohol, tijdsbesteding/sport en voeding/gewicht.',
+    pages:4,
+    items:[
+      // P1 — roken
+      {id:'q1901', label:'Rookt u?', type:'radio', options:yesNo, page:1},
+      {id:'q1902', label:'Rookt u >10 per dag?', type:'radio', options:yesNo, page:1},
+      {id:'q1903', label:'Rookt u >20 per dag?', type:'radio', options:yesNo, page:1, flagWhen:{op:'eq', value:'ja', reason:'>20/dag'}},
+      {id:'q1904', label:'Inhaleert u de rook (“over de longen”)?', type:'radio', options:yesNo, page:1},
+      {id:'q1905', label:'Bent u de laatste maanden meer gaan roken?', type:'radio', options:yesNo, page:1},
+      // P2 — alcohol
+      {id:'q1911', label:'Drinkt u alcoholische drank?', type:'radio', options:yesNo, page:2},
+      {id:'q1912', label:'Gebruikt u dagelijks alcohol?', type:'radio', options:yesNo, page:2},
+      {id:'q1913', label:'Drinkt u ’s ochtends wel eens een glaasje?', type:'radio', options:yesNo, page:2},
+      {id:'q1914', label:'>25 glazen alcohol per week?', type:'radio', options:yesNo, page:2, flagWhen:{op:'eq', value:'ja', reason:'Hoge alcoholconsumptie'}},
+      {id:'q1915', label:'Bent u de laatste maanden meer gaan drinken?', type:'radio', options:yesNo, page:2},
+      // P3 — tijdsbesteding/sport
+      {id:'q1921', label:'Heeft u privé doorgaans voldoende vrije tijd?', type:'radio', options:yesNo, page:3},
+      {id:'q1922', label:'Besteedt u naast uw werk dagelijks ≥3 uur aan andere taken?', type:'radio', options:yesNo, page:3},
+      {id:'q1923', label:'Komt u voldoende toe aan ontspannende hobby’s?', type:'radio', options:yesNo, page:3},
+      {id:'q1924', label:'Doet u minimaal wekelijks aan intensieve sport?', type:'radio', options:yesNo, page:3},
+      // P4 — voeding/gewicht
+      {id:'q1931', label:'Neemt u meestal de tijd om rustig te eten?', type:'radio', options:yesNo, page:4},
+      {id:'q1932', label:'Slaat u wel eens een maaltijd over of eet u vaak onregelmatig?', type:'radio', options:yesNo, page:4},
+      {id:'q1933', label:'Beperkt u bewust de hoeveelheid vet in uw voeding?', type:'radio', options:yesNo, page:4},
+      {id:'q1934', label:'Let u er meestal op dat u ook gezond eet?', type:'radio', options:yesNo, page:4},
+      {id:'q1935', label:'Bent u te zwaar?', type:'radio', options:yesNo, page:4},
+      {id:'q1936', label:'>10 kilo boven uw streefgewicht?', type:'radio', options:yesNo, page:4, flagWhen:{op:'eq', value:'ja', reason:'>10 kg boven streefgewicht'}},
+      {id:'q1941', label:'Vindt u dat u een gezond leven leidt?', type:'radio', options:yesNo, page:4}
+    ]
+  },
+
+  // === Bestaande lijsten uit v2 blijven beschikbaar ===
+  huid: {
+    version:2,
+    desc:'Dermatologische klachten afgelopen 12 maanden en werkrelatie.',
+    pages:2,
+    items:[
+      {id:'q1301', label:'Jeukende vingers, handen of armen met kloofjes/barstjes', type:'radio', options:yesNo, page:1, flagWhen:{op:'eq', value:'ja', reason:'Huidklacht aanwezig'}},
+      {id:'q1302', label:'Rode vingers, handen of armen met kloofjes/barstjes', type:'radio', options:yesNo, page:1, flagWhen:{op:'eq', value:'ja', reason:'Huidklacht aanwezig'}},
+      {id:'q1303', label:'Ruwe of schilferende vingers, handen of armen met kloofjes/barstjes', type:'radio', options:yesNo, page:1, flagWhen:{op:'eq', value:'ja', reason:'Huidklacht aanwezig'}},
+      {id:'q1304', label:'Blaasjes op vingers, handen of armen', type:'radio', options:yesNo, page:1, flagWhen:{op:'eq', value:'ja'}},
+      {id:'q1305', label:'Opgezwollen rode vingers, handen of armen', type:'radio', options:yesNo, page:1, flagWhen:{op:'eq', value:'ja'}},
+      {id:'q1306', label:'Rode vlekken in het gezicht', type:'radio', options:yesNo, page:1, flagWhen:{op:'eq', value:'ja'}},
+      {id:'q1307', label:'Opgezwollen oogleden of zwellingen in het gezicht', type:'radio', options:yesNo, page:1, flagWhen:{op:'eq', value:'ja'}},
+      {id:'q1308', label:'Schilferende of jeukende plekken in het gezicht', type:'radio', options:yesNo, page:1, flagWhen:{op:'eq', value:'ja'}},
+      {id:'q1309', label:'Blaasjes in het gezicht', type:'radio', options:yesNo, page:1, flagWhen:{op:'eq', value:'ja'}},
+      {id:'q1391', label:'Ziek gemeld voor één of meer van deze klachten', type:'radio', options:yesNo, page:2},
+      {id:'q1392', label:'Medisch behandeld voor een van deze klachten', type:'radio', options:yesNo, page:2},
+      {id:'q1393', label:'Worden klachten volgens u veroorzaakt door uw werk?', type:'radio', options:yesNo, page:2, flagWhen:{op:'eq', value:'ja', reason:'Mogelijk werkgerelateerd'}},
+      {id:'q1394', label:'Verergeren de klachten door uw werk?', type:'radio', options:yesNo, page:2, flagWhen:{op:'eq', value:'ja'}},
+      {id:'q1395', label:'Hinderen de klachten u in uw werk?', type:'radio', options:yesNo, page:2, flagWhen:{op:'eq', value:'ja'}},
+      {id:'q1396', label:'Verminderen/verdwijnen klachten op vrije dagen of in vakanties?', type:'radio', options:yesNo, page:2}
+    ]
+  },
+  luchtwegen: {
+    version:2,
+    desc:'Klachten van de luchtwegen en mogelijke werkrelatie.',
+    pages:2,
+    items:[
+      {id:'q1201', label:'≥2 weken achtereen verstopte neus, loopneus of niezen', type:'radio', options:yesNo, page:1},
+      {id:'q1202', label:'≥2 weken achtereen hees of stemverlies', type:'radio', options:yesNo, page:1},
+      {id:'q1203', label:'≥2 weken achtereen hoesten', type:'radio', options:yesNo, page:1},
+      {id:'q1204', label:'≥2 weken achtereen slijm ophoesten', type:'radio', options:yesNo, page:1},
+      {id:'q1205', label:'Piepen op de borst', type:'radio', options:yesNo, page:1, flagWhen:{op:'eq', value:'ja'}},
+      {id:'q1206', label:'Kortademigheid bij lopen in normaal tempo (vlak terrein)', type:'radio', options:yesNo, page:1},
+      {id:'q1207', label:'Kortademigheid in rust', type:'radio', options:yesNo, page:1, flagWhen:{op:'eq', value:'ja'}},
+      {id:'q1208', label:'Aanvallen van benauwdheid', type:'radio', options:yesNo, page:1, flagWhen:{op:'eq', value:'ja'}},
+      {id:'q1209', label:'Nachtelijke benauwdheid', type:'radio', options:yesNo, page:1},
+      {id:'q1291', label:'Ziek gemeld voor één of meer klachten', type:'radio', options:yesNo, page:2},
+      {id:'q1292', label:'Medisch behandeld voor een van deze klachten', type:'radio', options:yesNo, page:2},
+      {id:'q1293', label:'Worden klachten volgens u veroorzaakt door uw werk?', type:'radio', options:yesNo, page:2, flagWhen:{op:'eq', value:'ja', reason:'Mogelijk werkgerelateerd'}},
+      {id:'q1294', label:'Verergeren de klachten door uw werk?', type:'radio', options:yesNo, page:2},
+      {id:'q1295', label:'Hinderen de klachten u in uw werk?', type:'radio', options:yesNo, page:2},
+      {id:'q1296', label:'Verminderen/verdwijnen klachten op vrije dagen/vakanties?', type:'radio', options:yesNo, page:2}
+    ]
+  },
+  hart_vaten: {
+    version:2,
+    desc:'Klachten van hart en vaten afgelopen 12 maanden.',
+    pages:2,
+    items:[
+      {id:'q1501', label:'Pijn of zwaar drukkend gevoel op de borst', type:'radio', options:yesNo, page:1},
+      {id:'q1502', label:'Ontstaat dit bij inspanning (sporten, hardlopen, tegen de wind in fietsen)?', type:'radio', options:yesNo, page:1},
+      {id:'q1503', label:'Houdt de pijn of het drukkende gevoel langer dan een half uur aan?', type:'radio', options:yesNo, page:1},
+      {id:'q1504', label:'Last van hartkloppingen', type:'radio', options:yesNo, page:1},
+      {id:'q1505', label:'Opgezwollen enkels en voeten na enige tijd staan', type:'radio', options:yesNo, page:1},
+      {id:'q1506', label:'Pijn of kramp in één of beide benen tijdens het lopen', type:'radio', options:yesNo, page:1},
+      {id:'q1507', label:'Als u stilstaat, verdwijnt de pijn meestal binnen 10 minuten', type:'radio', options:yesNo, page:1},
+      {id:'q1591', label:'Ziek gemeld voor één of meer klachten', type:'radio', options:yesNo, page:2},
+      {id:'q1592', label:'Medisch behandeld voor een van deze klachten', type:'radio', options:yesNo, page:2},
+      {id:'q1593', label:'Worden klachten volgens u veroorzaakt door uw werk?', type:'radio', options:yesNo, page:2, flagWhen:{op:'eq', value:'ja', reason:'Mogelijk werkgerelateerd'}},
+      {id:'q1594', label:'Verergeren de klachten door uw werk?', type:'radio', options:yesNo, page:2},
+      {id:'q1595', label:'Hinderen de klachten u in uw werk?', type:'radio', options:yesNo, page:2},
+      {id:'q1596', label:'Verminderen of verdwijnen de klachten op vrije dagen of in vakanties?', type:'radio', options:yesNo, page:2}
+    ]
+  },
+  ogen: {
+    version:2,
+    desc:'Zien en oogklachten, inclusief belasting werk.',
+    pages:3,
+    items:[
+      {id:'q1401', label:'Moeite om in de verte alles scherp te zien (ook met bril/lenzen)', type:'radio', options:yesNo, page:1},
+      {id:'q1402', label:'Moeite met lezen op normale leesafstand (ook met bril/lenzen)', type:'radio', options:yesNo, page:1},
+      {id:'q1403', label:'Moeite om tekst op computerscherm te lezen (ook met bril/lenzen)', type:'radio', options:yesNo, page:1},
+      {id:'q1404', label:'Meer moeite om \'s avonds goed te zien', type:'radio', options:yesNo, page:1},
+      {id:'q1405', label:'Moeite om sommige kleuren te onderscheiden', type:'radio', options:yesNo, page:1},
+      {id:'q1406', label:'Vindt u dat het (weer) tijd is om uw ogen te laten controleren?', type:'radio', options:yesNo, page:1},
+      {id:'q1411', label:'Regelmatig last van vermoeide ogen', type:'radio', options:yesNo, page:2},
+      {id:'q1412', label:'Geïrriteerde of branderige ogen', type:'radio', options:yesNo, page:2},
+      {id:'q1413', label:'Doffe of stekende pijn achter de ogen', type:'radio', options:yesNo, page:2},
+      {id:'q1414', label:'Dubbel zien', type:'radio', options:yesNo, page:2},
+      {id:'q1491', label:'Ziek gemeld voor één of meer oogklachten', type:'radio', options:yesNo, page:3},
+      {id:'q1492', label:'Medisch behandeld voor één of meer oogklachten', type:'radio', options:yesNo, page:3},
+      {id:'q1493', label:'Worden klachten volgens u veroorzaakt door uw werk?', type:'radio', options:yesNo, page:3, flagWhen:{op:'eq', value:'ja', reason:'Mogelijk werkgerelateerd'}},
+      {id:'q1494', label:'Verergeren de klachten door uw werk?', type:'radio', options:yesNo, page:3},
+      {id:'q1495', label:'Hinderen de klachten u in uw werk?', type:'radio', options:yesNo, page:3},
+      {id:'q1496', label:'Verminderen/verdwijnen klachten op vrije dagen of in vakanties?', type:'radio', options:yesNo, page:3}
+    ]
+  },
+  familie_erfelijkheid: {
+    version:2,
+    desc:'Familiegegevens en erfelijkheid. Vul waar van toepassing.',
+    pages:6,
+    items:[
+      {id:'vader_leeftijd', label:'Vader — Leeftijd', type:'number', min:0, page:1},
+      {id:'vader_gezondheid', label:'Vader — Gezondheidstoestand', type:'text', page:1},
+      {id:'vader_leeftijd_overleden', label:'Vader — Leeftijd indien overleden', type:'number', min:0, page:1},
+      {id:'vader_doodsoorzaak', label:'Vader — Oorzaak overlijden', type:'text', page:1},
+      {id:'moeder_leeftijd', label:'Moeder — Leeftijd', type:'number', min:0, page:2},
+      {id:'moeder_gezondheid', label:'Moeder — Gezondheidstoestand', type:'text', page:2},
+      {id:'moeder_leeftijd_overleden', label:'Moeder — Leeftijd indien overleden', type:'number', min:0, page:2},
+      {id:'moeder_doodsoorzaak', label:'Moeder — Oorzaak overlijden', type:'text', page:2},
+      {id:'sib1_leeftijd', label:'Broer/zus I — Leeftijd', type:'number', min:0, page:3},
+      {id:'sib1_gezondheid', label:'Broer/zus I — Gezondheidstoestand', type:'text', page:3},
+      {id:'sib1_leeftijd_overleden', label:'Broer/zus I — Leeftijd indien overleden', type:'number', min:0, page:3},
+      {id:'sib1_doodsoorzaak', label:'Broer/zus I — Oorzaak overlijden', type:'text', page:3},
+      {id:'sib2_leeftijd', label:'Broer/zus II — Leeftijd', type:'number', min:0, page:3},
+      {id:'sib2_gezondheid', label:'Broer/zus II — Gezondheidstoestand', type:'text', page:3},
+      {id:'sib2_leeftijd_overleden', label:'Broer/zus II — Leeftijd indien overleden', type:'number', min:0, page:3},
+      {id:'sib2_doodsoorzaak', label:'Broer/zus II — Oorzaak overlijden', type:'text', page:3},
+      {id:'sib3_leeftijd', label:'Broer/zus III — Leeftijd', type:'number', min:0, page:4},
+      {id:'sib3_gezondheid', label:'Broer/zus III — Gezondheidstoestand', type:'text', page:4},
+      {id:'sib3_leeftijd_overleden', label:'Broer/zus III — Leeftijd indien overleden', type:'number', min:0, page:4},
+      {id:'sib3_doodsoorzaak', label:'Broer/zus III — Oorzaak overlijden', type:'text', page:4},
+      {id:'partner_leeftijd', label:'Partner — Leeftijd', type:'number', min:0, page:4},
+      {id:'partner_gezondheid', label:'Partner — Gezondheidstoestand', type:'text', page:4},
+      {id:'partner_leeftijd_overleden', label:'Partner — Leeftijd indien overleden', type:'number', min:0, page:4},
+      {id:'partner_doodsoorzaak', label:'Partner — Oorzaak overlijden', type:'text', page:4},
+      {id:'kind1_geslacht', label:'Kind I — Geslacht', type:'select', options:['Jongen','Meisje'], page:5},
+      {id:'kind1_leeftijd', label:'Kind I — Leeftijd', type:'number', min:0, page:5},
+      {id:'kind1_gezondheid', label:'Kind I — Gezondheidstoestand', type:'text', page:5},
+      {id:'kind1_leeftijd_overleden', label:'Kind I — Leeftijd indien overleden', type:'number', min:0, page:5},
+      {id:'kind1_doodsoorzaak', label:'Kind I — Oorzaak overlijden', type:'text', page:5},
+      {id:'kind2_geslacht', label:'Kind II — Geslacht', type:'select', options:['Jongen','Meisje'], page:5},
+      {id:'kind2_leeftijd', label:'Kind II — Leeftijd', type:'number', min:0, page:5},
+      {id:'kind2_gezondheid', label:'Kind II — Gezondheidstoestand', type:'text', page:5},
+      {id:'kind2_leeftijd_overleden', label:'Kind II — Leeftijd indien overleden', type:'number', min:0, page:5},
+      {id:'kind2_doodsoorzaak', label:'Kind II — Oorzaak overlijden', type:'text', page:5},
+      {id:'kind3_geslacht', label:'Kind III — Geslacht', type:'select', options:['Jongen','Meisje'], page:5},
+      {id:'kind3_leeftijd', label:'Kind III — Leeftijd', type:'number', min:0, page:5},
+      {id:'kind3_gezondheid', label:'Kind III — Gezondheidstoestand', type:'text', page:5},
+      {id:'kind3_leeftijd_overleden', label:'Kind III — Leeftijd indien overleden', type:'number', min:0, page:5},
+      {id:'kind3_doodsoorzaak', label:'Kind III — Oorzaak overlijden', type:'text', page:5},
+      {id:'opmerkingen', label:'Opmerkingen die voor het onderzoek van belang kunnen zijn', type:'textarea', page:6}
+    ]
+  }
+};
+
+// ======= State =======
+const state = {
+  clientId: '',
+  current: null, // code
+  page: 1,
+  data: null     // loaded store {clientId, updatedAt, surveys:[]}
+};
+
+// ======= Utilities =======
+function qs(p){return new URLSearchParams(location.search).get(p)||'';}
+function el(id){return document.getElementById(id)}
+function fmtDate(ts){ try{ return new Date(ts).toLocaleString('nl-NL'); } catch(e){ return '' } }
+function storageKey(clientId){ return 'ac_portal_surveys_v3:'+clientId; }
+function ensureStore(clientId){
+  const key = storageKey(clientId);
+  const raw = localStorage.getItem(key);
+  if(raw){ try{ return JSON.parse(raw); } catch(e){ /* ignore */ } }
+  const obj = {clientId, updatedAt: Date.now(), surveys: []};
+  localStorage.setItem(key, JSON.stringify(obj));
+  return obj;
+}
+function saveStore(){ if(!state.clientId) return; const key=storageKey(state.clientId); localStorage.setItem(key, JSON.stringify(state.data)); updateExportHref(); }
+
+function upsertSurvey(sv){
+  const i = state.data.surveys.findIndex(x=>x.code===sv.code);
+  if(i>=0) state.data.surveys[i]=sv; else state.data.surveys.push(sv);
+  state.data.updatedAt = Date.now();
+}
+
+function updateExportHref(){
+  const a = el('exportBtn');
+  if(!state.data){ a.setAttribute('disabled',''); a.href='#'; a.download=''; return; }
+  const blob = new Blob([JSON.stringify(state.data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  a.removeAttribute('disabled');
+  a.href = url;
+  a.download = 'ac-dossier_'+state.clientId+'.json';
+}
+
+// ======= Rendering =======
+function buildNav(){
+  const nav = el('navList');
+  nav.innerHTML = THEMES.map(t=>`<a href="#" data-code="${t.code}" class="${t.code===state.current?'active':''}" ${t.disabled?'aria-disabled="true"':''}>
+    <span class="dot" aria-hidden></span>${t.title}
+    ${t.disabled?'<small>binnenkort</small>':''}
+  </a>`).join('');
+  Array.from(nav.querySelectorAll('a')).forEach(a=>a.addEventListener('click', (e)=>{
+    e.preventDefault();
+    const code = a.getAttribute('data-code');
+    const def = SURVEYS_DEF[code];
+    if(!def){ alert('Deze lijst is nog niet beschikbaar.'); return; }
+    openSurvey(code, 1);
+  }));
+}
+
+function surveyTitleFor(code){
+  return THEMES.find(x=>x.code===code)?.title || 'Vragenlijst';
+}
+
+function openSurvey(code, page){
+  state.current = code;
+  const def = SURVEYS_DEF[code];
+  if(!def){ return; }
+  state.page = page || 1;
+  buildNav();
+  el('surveyTitle').textContent = surveyTitleFor(code);
+  el('surveyDesc').textContent = def?.desc || '';
+
+  const sv = (state.data.surveys.find(s=>s.code===code)) || { code, title: surveyTitleFor(code), version: def?.version || 1, items: [], score: null, flags: [], finalized:false, finalizedAt:null, pages: def.pages||1 };
+
+  renderPage(sv);
+  bindActions(sv);
+}
+
+function renderPage(sv){
+  const def = SURVEYS_DEF[state.current];
+  const totalPages = def.pages || 1;
+  const page = Math.max(1, Math.min(state.page, totalPages));
+  state.page = page;
+
+  const form = el('surveyForm');
+  form.innerHTML = '';
+
+  // Page info + buttons (bottom)
+  const pageInfoEl = el('pageInfo');
+  pageInfoEl.style.display = totalPages>1 ? '' : 'none';
+  pageInfoEl.textContent = `Pagina ${page} van ${totalPages}`;
+  el('btnPrev').disabled = page<=1;
+  el('btnNext').disabled = page>=totalPages;
+
+  // Build form for page
+  const existing = new Map((sv.items||[]).map(it=>[it.id, it]));
+  (def.items || []).filter(it=> (it.page||1) === page).forEach(item=>{
+    const wrap = document.createElement('div');
+    wrap.className = 'field';
+    wrap.style.gridColumn = 'span 12';
+    const label = document.createElement('label'); label.textContent = item.label + (item.required?' *':'');
+    wrap.appendChild(label);
+    const name = 'q_'+item.id;
+    const prev = existing.get(item.id)?.value;
+    let inputEl = null;
+    if(item.type==='text' || item.type==='number' || item.type==='date'){
+      inputEl = document.createElement('input');
+      inputEl.type = item.type;
+      if(item.type==='number'){ if(item.min!=null) inputEl.min=item.min; if(item.max!=null) inputEl.max=item.max; inputEl.step=item.step||'1'; }
+      inputEl.value = prev ?? '';
+    }else if(item.type==='textarea'){
+      inputEl = document.createElement('textarea'); inputEl.value = prev ?? '';
+    }else if(item.type==='radio'){
+      inputEl = document.createElement('div');
+      inputEl.setAttribute('role','group');
+      (item.options||[]).forEach(opt=>{
+        const id = name+'_'+opt;
+        const lbl = document.createElement('label'); lbl.style.display='inline-flex'; lbl.style.alignItems='center'; lbl.style.gap='8px'; lbl.style.marginRight='16px';
+        const r = document.createElement('input'); r.type='radio'; r.name=name; r.value=opt; r.checked = prev===opt;
+        lbl.appendChild(r); lbl.appendChild(document.createTextNode(opt));
+        inputEl.appendChild(lbl);
+      });
+    }else if(item.type==='select'){
+      const sel = document.createElement('select');
+      (item.options||[]).forEach(opt=>{ const o=document.createElement('option'); o.value=opt; o.textContent=opt; if(prev===opt) o.selected=true; sel.appendChild(o); });
+      inputEl = sel;
+    }else if(item.type==='checkbox'){
+      inputEl = document.createElement('input'); inputEl.type='checkbox'; inputEl.checked = !!prev;
+    }else{
+      inputEl = document.createElement('input'); inputEl.value = prev ?? '';
+    }
+    inputEl.id = name;
+    wrap.appendChild(inputEl);
+    form.appendChild(wrap);
+  });
+
+  // Status
+  el('status').textContent = sv.updatedAt
+    ? (sv.finalized ? ('Definitief opgeslagen: '+fmtDate(sv.finalizedAt)) : ('Laatst opgeslagen: '+fmtDate(sv.updatedAt)))
+    : 'Nog niet opgeslagen.';
+}
+
+function collectItemsFromPage(def, page){
+  const itemsOnPage = (def.items||[]).filter(it=>(it.page||1)===page);
+  const collected = itemsOnPage.map(item=>{
+    const name = 'q_'+item.id; let value=null;
+    if(item.type==='radio'){
+      const r = Array.from(document.getElementsByName(name)).find(x=>x.checked); value = r ? r.value : null;
+    }else if(item.type==='checkbox'){
+      const inp = el(name); value = inp ? !!inp.checked : null;
+    }else{
+      const inp = el(name); value = (inp && inp.value!=='' ? (item.type==='number'? Number(inp.value) : inp.value) : null);
+    }
+    return { id:item.id, label:item.label, type:item.type, value, meta:item, page:item.page||1 };
+  });
+  return collected;
+}
+
+function evaluateFlags(items){
+  const flags = [];
+  items.forEach(it=>{
+    const rule = it.meta.flagWhen; if(!rule) return;
+    const v = it.value;
+    if(rule.op==='eq') { if(v===rule.value) flags.push({id:it.id, label:it.label, reason: rule.reason || (it.label+': afwijkend')}); }
+    if(rule.op==='gt') { if(typeof v==='number' && v>rule.value) flags.push({id:it.id, label:it.label, reason: rule.reason || (it.label+'>'+rule.value)}); }
+    if(rule.op==='lt') { if(typeof v==='number' && v<rule.value) flags.push({id:it.id, label:it.label, reason: rule.reason || (it.label+'<'+rule.value)}); }
+    if(rule.op==='in') { if(Array.isArray(rule.value) && rule.value.includes(v)) flags.push({id:it.id, label:it.label, reason: rule.reason || (it.label+': afwijkend')}); }
+  });
+  return flags;
+}
+
+function bindActions(sv){
+  const def = SURVEYS_DEF[state.current];
+  const totalPages = def.pages||1;
+
+  el('btnPrev').onclick = () => {
+    // auto-save current page inputs (draft) before moving
+    draftSaveCurrentPage(sv);
+    state.page = Math.max(1, state.page-1);
+    renderPage(sv);
+  };
+  el('btnNext').onclick = () => {
+    draftSaveCurrentPage(sv);
+    state.page = Math.min(totalPages, state.page+1);
+    renderPage(sv);
+  };
+
+  el('btnDraft').onclick = () => {
+    draftSaveCurrentPage(sv);
+    el('status').textContent = 'Tussentijds opgeslagen: '+fmtDate(sv.updatedAt);
+  };
+
+  el('btnFinal').onclick = () => {
+    // collect current page as well
+    const items = collectItemsFromPage(def, state.page);
+    items.forEach(it=>{
+      const i = sv.items.findIndex(x=>x.id===it.id);
+      if(i>=0) sv.items[i] = it; else sv.items.push(it);
+    });
+    // evaluate flags over all items
+    sv.flags = evaluateFlags(sv.items);
+    sv.score = null;
+    sv.updatedAt = Date.now();
+    sv.finalized = true;
+    sv.finalizedAt = Date.now();
+    sv.pages = def.pages||1;
+    upsertSurvey(sv);
+    saveStore();
+    el('status').textContent = 'Definitief opgeslagen: '+fmtDate(sv.finalizedAt)+' • '+sv.flags.length+' vlaggen';
+  };
+
+  el('btnReset').onclick = () => {
+    if(!confirm('Weet u zeker dat u alle antwoorden voor deze vragenlijst wilt wissen?')) return;
+    const idx = state.data.surveys.findIndex(s=>s.code===sv.code);
+    if(idx>=0){ state.data.surveys.splice(idx,1); saveStore(); }
+    openSurvey(sv.code, 1);
+  };
+}
+
+function draftSaveCurrentPage(sv){
+  const def = SURVEYS_DEF[state.current];
+  const items = collectItemsFromPage(def, state.page);
+  items.forEach(it=>{
+    const i = sv.items.findIndex(x=>x.id===it.id);
+    if(i>=0) sv.items[i] = it; else sv.items.push(it);
+  });
+  // update status
+  sv.flags = evaluateFlags(sv.items);
+  sv.updatedAt = Date.now();
+  sv.finalized = false;
+  sv.finalizedAt = null;
+  sv.pages = def.pages||1;
+  upsertSurvey(sv);
+  saveStore();
+  el('status').textContent = 'Tussentijds opgeslagen: '+fmtDate(sv.updatedAt)+' • '+sv.flags.length+' vlaggen';
+}
+
+function onClientChange(){
+  const id = el('clientId').value.trim();
+  state.clientId = id;
+  state.data = id ? ensureStore(id) : null;
+  buildNav();
+  if(state.current && SURVEYS_DEF[state.current]) openSurvey(state.current, 1);
+  document.getElementById('openSuite').onclick = ()=>{
+    if(!state.clientId){ alert('Vul eerst een Client ID in.'); return; }
+    location.href = 'keuringen-suite-v2.html?clientId='+encodeURIComponent(state.clientId);
+  };
+  updateExportHref();
+}
+
+// ======= Init =======
+(function(){
+  const id = qs('clientId') || '';
+  el('clientId').value = id;
+  if(id){ state.clientId=id; state.data = ensureStore(id); }
+  buildNav();
+  el('clientId').addEventListener('change', onClientChange);
+  onClientChange();
+})();
+</script>
+</body>
+</html>

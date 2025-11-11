@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AC‑Dossier · AD‑module · Snelkoppelingen</title>
+<style>
+  /* ====================== THEMA (aansluitend op AC‑Dossier) ====================== */
+  :root{
+    --bg:#ffffff;
+    --surface:#f7f7f7;
+    --ring:#e5e7eb;
+    --shadow:0 6px 24px rgba(0,0,0,.08);
+    --radius:14px;
+
+    /* Kleuren gematcht op screenshot/AC‑Dossier */
+    --primary:#ec641a;     /* CTA / accent */
+    --ink:#4c505a;         /* koppen */
+    --slate:#686c7c;       /* secundair */
+    --info:#85cee4;        /* info tegels */
+    --ok:#79c6c0;          /* positieve status */
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--surface);color:#1f2a37;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial}
+  a{color:#69a1b1;text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ======= Topbar ======= */
+  header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--ring)}
+  .topbar{display:flex;align-items:center;gap:12px;padding:10px 16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+  .brand small{font-weight:600;color:var(--slate)}
+  .spacer{flex:1}
+  .btn{display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--ring);background:#fff;color:#111;
+       padding:.55rem .9rem;border-radius:12px;cursor:pointer}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn.small{padding:.35rem .6rem;border-radius:10px;font-size:.9rem}
+
+  /* ======= Shell ======= */
+  main{max-width:1200px;margin:18px auto;padding:0 16px 60px}
+  h1{margin:.2rem 0 1rem 0;color:var(--ink)}
+  .muted{color:#64748b}
+
+  /* ======= Tiles (snelkoppelingen) ======= */
+  .tiles{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+    perspective:1200px;transform-style:preserve-3d;
+  }
+  @media (max-width:980px){ .tiles{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:560px){ .tiles{grid-template-columns:1fr} }
+
+  .tile{
+    --s:1;--rx:0deg;--ry:0deg;--tz:0px;--ty:0px;
+    display:grid;grid-template-rows:auto 1fr;gap:10px;
+    padding:18px;border:1px solid #eef2f7;border-radius:var(--radius);background:#fff;
+    transform:translateZ(var(--tz)) translateY(var(--ty)) scale(var(--s)) rotateX(var(--rx)) rotateY(var(--ry));
+    transition:transform .16s cubic-bezier(.2,6,2,1),box-shadow .16s ease,border-color .16s ease;
+    box-shadow:var(--shadow);position:relative;text-decoration:none;color:inherit;will-change:transform;
+  }
+  .tile:hover,.tile:focus-visible{--s:1.06;--tz:22px;--ty:-4px;border-color:#e3e8ee;box-shadow:0 16px 40px rgba(0,0,0,.12);outline:none}
+  .tile .top{display:flex;align-items:center;gap:12px}
+  .tile .ico{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:#fff3eb;border:1px solid #ffd9c3}
+  .tile svg{width:26px;height:26px;fill:var(--primary)}
+  .tile strong{font-size:1.05rem}
+  .tile p{margin:0;color:#6b7280;font-size:.95rem}
+
+  /* ======= Pane footer: navigatie ======= */
+  .navbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:18px}
+  .pager{display:flex;gap:10px}
+  .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+       border:1px solid var(--ring);padding:.1rem .35rem;border-radius:6px;background:#fff}
+
+  /* ======= Mini “download as app” bar (optional) ======= */
+  .download-bar{margin-top:14px;padding:10px;border:1px dashed #cbd5e1;border-radius:12px;background:#fff}
+</style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <img src="https://www.arboconcern.nl/bestanden/arboconcern-logo.svg" alt="Arbo Concern" style="height:28px"/>
+        <span>AC‑Dossier <small>AD‑module</small></span>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn small" id="btnDashboard" title="Terug naar dashboard">Dashboard</button>
+      <button class="btn small" id="btnVorige" title="Vorige snelkoppeling">◀ Vorige</button>
+      <button class="btn small" id="btnVolgende" title="Volgende snelkoppeling">Volgende ▶</button>
+    </div>
+  </header>
+
+  <main>
+    <h1>Snelkoppelingen</h1>
+    <div class="muted" style="margin:-6px 0 14px 0">Kleurstelling en hover‑effect conform AC‑Dossier.</div>
+
+    <section class="tiles" id="tiles">
+      <!-- 1 -->
+      <a class="tile" href="functiemanagement.html" data-key="AD‑Taken WvP‑flow">
+        <div class="top">
+          <div class="ico" aria-hidden="true">
+            <!-- clipboard-check -->
+            <svg viewBox="0 0 24 24"><path d="M9 2h6a2 2 0 0 1 2 2h2a1 1 0 0 1 1 1v3h-2V6h-2v1a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6H5v2H3V5a1 1 0 0 1 1-1h2a2 2 0 0 1 2-2Zm0 4v1h6V6H9Zm2.5 15.5L7 18l1.2-1.6 2.5 2 5.2-6.1L17 13l-5.5 6.5Z"/></svg>
+          </div>
+          <strong>AD‑Taken WvP‑flow</strong>
+        </div>
+        <p>Termijnbewaking en takenlijn Wet verbetering Poortwachter binnen AD‑dossier.</p>
+      </a>
+
+      <!-- 2 -->
+      <a class="tile" href="ad-dossier-dashboard-beroepen-fixed-themed-jobs.html" data-key="AD‑onderzoek">
+        <div class="top"><div class="ico"><svg viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 1-4.9 11.9l-3.2 3.2-1.4-1.4 3.2-3.2A7 7 0 0 1 11 4Zm0 2a5 5 0 1 0 .001 10.001A5 5 0 0 0 11 6Z"/></svg></div><strong>AD‑onderzoek</strong></div>
+        <p>Start en beheer van AD‑onderzoeken, inclusief status en rapportage.</p>
+      </a>
+
+      <!-- 3 -->
+      <a class="tile" href="#/belastbaarheidsprofielen" data-key="Belastbaarheidsprofielen database">
+        <div class="top"><div class="ico"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.1 3.6-2 8-2s8 .9 8 2-3.6 2-8 2-8-.9-8-2Zm0 4c0 1.1 3.6 2 8 2s8-.9 8-2v6c0 1.1-3.6 2-8 2s-8-.9-8-2V10Z"/></svg></div><strong>Belastbaarheidsprofielen database</strong></div>
+        <p>Centraal overzicht van vastgestelde belastbaarheidsprofielen per functie/werknemer.</p>
+      </a>
+
+      <!-- 4 -->
+      <a class="tile" href="#/functieprofielen" data-key="Functie profielen database">
+        <div class="top"><div class="ico"><svg viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 0 1 2 2v14l-7-3-7 3V5a2 2 0 0 1 2-2Z"/></svg></div><strong>Functie profielen database</strong></div>
+        <p>Bibliotheek met functieprofielen inclusief taken, risico’s en vereisten.</p>
+      </a>
+
+      <!-- 5 -->
+      <a class="tile" href="#/skill-matrix" data-key="Skill matrix">
+        <div class="top"><div class="ico"><svg viewBox="0 0 24 24"><path d="M3 3h6v6H3V3Zm0 12h6v6H3v-6ZM15 3h6v6h-6V3Zm0 12h6v6h-6v-6Z"/></svg></div><strong>Skill matrix</strong></div>
+        <p>Matrix met aanwezige en benodigde skills, per functie/afdeling.</p>
+      </a>
+
+      <!-- 6 -->
+      <a class="tile" href="#/competentie-matrix" data-key="Competentie matrix">
+        <div class="top"><div class="ico"><svg viewBox="0 0 24 24"><path d="M4 4h16v2H4V4Zm0 6h10v2H4v-2Zm0 6h6v2H4v-2Zm12 0 2.5 2.5L21 18l-5-5-1.5 1.5L18 16Z"/></svg></div><strong>Competentie matrix</strong></div>
+        <p>Meet competenties, gap‑analyse en ontwikkeladviezen.</p>
+      </a>
+
+      <!-- 7 -->
+      <a class="tile" href="#/leeromgeving" data-key="Ontwikkel & leeromgeving cliënten">
+        <div class="top"><div class="ico"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H4V5Zm2 2v8h12V7H6Zm-2 12h16v2H4v-2Z"/></svg></div><strong>Ontwikkel en leeromgeving cliënten</strong></div>
+        <p>Toegang tot cursussen, e‑learning en begeleide trajecten.</p>
+      </a>
+    </section>
+
+    <div class="navbar">
+      <div class="muted">Tip: gebruik <span class="kbd">Tab</span> om door tegels te navigeren.</div>
+      <div class="pager">
+        <button class="btn" id="prev">◀ Vorige</button>
+        <button class="btn primary" id="next">Volgende ▶</button>
+      </div>
+    </div>
+
+    <div class="download-bar">
+      <strong>Deze pagina lokaal testen?</strong>
+      <div>Open dit bestand rechtstreeks in je browser of plaats het in jullie prototype‑omgeving.</div>
+    </div>
+  </main>
+
+<script>
+  // ====== Navigatieknoppen en kleine router‑stub ======
+  const tiles = Array.from(document.querySelectorAll('.tile'));
+  let idx = 0;
+
+  function focusTile(i){
+    idx = (i + tiles.length) % tiles.length;
+    tiles[idx].focus({preventScroll:false});
+    tiles[idx].scrollIntoView({behavior:'smooth', block:'center'});
+  }
+  document.getElementById('prev').addEventListener('click', ()=>focusTile(idx-1));
+  document.getElementById('next').addEventListener('click', ()=>focusTile(idx+1));
+
+  // Topbar knoppen
+  document.getElementById('btnVorige').addEventListener('click', ()=>focusTile(idx-1));
+  document.getElementById('btnVolgende').addEventListener('click', ()=>focusTile(idx+1));
+  document.getElementById('btnDashboard').addEventListener('click', ()=>{
+    // In integratie naar bestaand dashboard navigeren:
+    if (location.pathname.endsWith('.html')) {
+      alert('Navigeren naar Dashboard (placeholder). Koppel deze knop aan jullie router.');
+    } else {
+      location.hash = '#/';
+    }
+  });
+
+  // Visueel micro‑tilt effect obv muis
+  tiles.forEach(t => {
+    t.addEventListener('mousemove', (e)=>{
+      const r = t.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      const y = e.clientY - r.top;
+      const ry = ((x / r.width) - .5) * 6;  // max 6 deg
+      const rx = ((y / r.height) - .5) * -6;
+      t.style.setProperty('--rx', rx.toFixed(2)+'deg');
+      t.style.setProperty('--ry', ry.toFixed(2)+'deg');
+    });
+    t.addEventListener('mouseleave', ()=>{
+      t.style.setProperty('--rx','0deg');
+      t.style.setProperty('--ry','0deg');
+    });
+  });
+
+  // Minimalistische hash‑router demo
+  window.addEventListener('hashchange',()=>{
+    const h = location.hash;
+    const match = tiles.findIndex(a => a.getAttribute('href') === h);
+    if (match >= 0) {
+      focusTile(match);
+      const title = tiles[match].dataset.key || tiles[match].textContent.trim();
+      console.log('Open module:', title);
+      // Hier kan in productie naar de daadwerkelijke AD‑module subroute genavigeerd worden
+    }
+  });
+
+  // Startfocus op eerste tegel
+  if (tiles.length) tiles[0].focus();
+</script>
+</body>
+</html>

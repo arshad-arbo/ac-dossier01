@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TeamChat Noordwijk — Keuringen Suite (v2)</title>
+<style>
+:root {
+  --theme: #ffffff;
+  --kleur1: #ec641a;
+  --kleur2: #79c6c0;
+  --kleur3: #85cee4;
+  --kleur4: #686c7c;
+  --kleur5: #4c505a;
+  --kleur6: #69a1b1;
+  --kleur8: #f7f7f7;
+  --ok: #2e7d32;
+  --warn: #ed6c02;
+  --err: #c62828;
+  --ink: #1f2937;
+  --muted: #6b7280;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  margin: 0; background: var(--theme); color: var(--ink);
+}
+header.nav {
+  position: sticky; top: 0; z-index: 20;
+  display: grid; grid-template-columns: 280px 1fr auto;
+  gap: 16px; align-items: center;
+  padding: 12px 16px; border-bottom: 1px solid #e5e7eb; background: #fff;
+}
+.brand { display: flex; gap: 10px; align-items: center; font-weight: 700; color: var(--kleur1); }
+.brand svg { width: 28px; height:28px; }
+.searchbox input{ width:100%; max-width:460px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:12px; }
+.quick { display:flex; gap:8px; align-items:center; }
+.quick button { border: none; background: var(--kleur1); color: #fff; padding: 10px 12px; border-radius: 10px; cursor: pointer; }
+.quick .ghost { background: #fff; color: var(--kleur1); border: 1px solid var(--kleur1);}
+.quick a { text-decoration: none; }
+.quick .link { background:#fff; color: var(--kleur1); border:1px solid var(--kleur1); border-radius:10px; padding:10px 12px; }
+
+nav.tabs {
+  display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 16px; background: var(--kleur8);
+  border-bottom: 1px solid #e5e7eb;
+}
+nav.tabs button {
+  background: #fff; border: 1px solid #e5e7eb; color: var(--kleur5);
+  padding: 8px 12px; border-radius: 999px; cursor: pointer; font-weight: 600;
+}
+nav.tabs button.active { background: var(--kleur1); color: #fff; border-color: var(--kleur1);}
+
+main { padding: 16px; max-width: 1200px; margin: 0 auto 120px; }
+section.panel { display:none; background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:16px; }
+section.panel.active { display:block; }
+.grid { display:grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap:12px; }
+.card { background: #fff; border:1px solid #e5e7eb; border-radius:16px; padding:16px; }
+.card h3 { margin-top:0; }
+.field { display:flex; flex-direction:column; gap:6px; }
+.field label { font-weight:600; color:var(--kleur5);}
+.field input, .field select, .field textarea { padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px; width:100%; }
+.small { font-size: 12px; color: var(--muted);}
+
+.kpi { display:flex; gap:12px; flex-wrap:wrap; }
+.kpi .metric { padding:12px 14px; border-radius:12px; border:1px dashed #e5e7eb; }
+.kpi .metric strong { display:block; font-size: 20px; }
+.badge { display:inline-flex; gap:6px; align-items:center; padding: 2px 8px; border-radius:999px; font-size:12px; border:1px solid #e5e7eb; color:var(--kleur5);}
+
+.flag { display:inline-flex; gap:8px; align-items:center; background:#ffebee; color:var(--err); border:1px solid #ffcdd2; padding: 6px 10px; border-radius: 999px; font-weight:700; }
+.flag svg { width:16px; height:16px; }
+ul.flaglist { list-style:none; padding-left:0; }
+ul.flaglist li { margin: 8px 0; padding:8px; background:#fff1f2; border:1px solid #ffe4e6; border-radius:10px; }
+button.primary { background: var(--kleur1); color:#fff; border:none; border-radius:12px; padding:10px 14px; cursor:pointer; }
+button.secondary { background:#fff; color:var(--kleur1); border:1px solid var(--kleur1); border-radius:12px; padding:10px 14px; cursor:pointer; }
+button.linklike { background:transparent; color:var(--kleur1); border:none; cursor:pointer; text-decoration:underline; }
+hr.sep { border:0; border-top:1px solid #e5e7eb; margin:16px 0; }
+
+table.clean { width:100%; border-collapse:collapse; }
+table.clean th, table.clean td { padding:8px 10px; border-bottom:1px solid #f0f0f0; text-align:left; }
+table.clean th { color: var(--kleur4); font-weight:600; }
+table.striped tr:nth-child(odd) td { background:#fafafa; }
+
+footer.app { position:fixed; left:0; right:0; bottom:0; background:#fff; border-top:1px solid #e5e7eb; padding:10px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+footer.app .left, footer.app .right { display:flex; align-items:center; gap:8px; }
+footer.app .left .status { font-size:12px; color:var(--muted); }
+
+.icon { width:18px; height:18px; display:inline-block; vertical-align:middle; fill: currentColor; }
+
+.highlight { background: #fff7ed; border: 1px solid #ffedd5; padding:8px 12px; border-radius: 10px; }
+.alert { background:#fef3c7; border:1px solid #fde68a; padding:10px 12px; border-radius:10px; }
+.success { background:#ecfdf5; border:1px solid #d1fae5; padding:10px 12px; border-radius:10px; }
+.danger  { background:#fee2e2; border:1px solid #fecaca; padding:10px 12px; border-radius:10px; }
+
+blockquote.small { border-left:4px solid (--kleur3); margin:0; padding-left:10px; color:var(--muted); }
+
+.hide { display:none; }
+
+@media print {
+  header.nav, nav.tabs, footer.app { display:none !important; }
+  section.panel { display:block; border:none; }
+}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" class="icon"><circle cx="12" cy="12" r="10"/><path d="M6 13h12v2H6zM6 17h8v2H6zM6 9h12v2H6zM6 5h6v2H6z" fill="#fff"/></svg>
+    <span>Keuringen Suite</span>
+  </div>
+  <div class="searchbox">
+    <input id="searchClient" placeholder="Zoek of maak cliënt (BSN, naam, clientID)..." onkeydown="if(event.key==='Enter') app.loadClient(this.value.trim())" />
+  </div>
+  <div class="quick">
+    <button class="ghost" onclick="app.newClient()">Nieuwe cliënt</button>
+    <button onclick="app.exportClient()">Export JSON</button>
+    <a class="link" id="openPortal" href="vragenportaal.html" target="_blank">Open vragenportaal</a>
+    <a class="link" href="line-guide.html" target="_blank">Line guide</a>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs"></nav>
+<main id="content"></main>
+
+<footer class="app">
+  <div class="left">
+    <span class="status" id="status">Gereed.</span>
+  </div>
+  <div class="right">
+    <button class="secondary" onclick="app.toggleFast()">Versnelde weergave</button>
+    <button class="primary" id="opslaan" onclick="app.saveAndSync()">Opslaan</button>
+    <button class="secondary" onclick="app.generateIndividualReport()">Rapportage individu</button>
+    <button class="secondary" onclick="app.generateGroupReport()">Rapportage groep – werkgever</button>
+  </div>
+</footer>
+
+<script>
+const DAB_BASE = "https://db-conn.whitesea-7a0b039d.francecentral.azurecontainerapps.io";
+const DAB_ENTITY = "test";
+
+const icon = (name)=> {
+  const map = {
+    home:`<svg class="icon" viewBox='0 0 24 24'><path d='M12 3l9 8h-3v9h-4v-6H10v6H6v-9H3z'/></svg>`,
+    bio:`<svg class="icon" viewBox='0 0 24 24'><path d='M12 2a7 7 0 017 7v2h1a2 2 0 012 2v7h-2v-7h-1v7H5v-7H4v7H2v-7a2 2 0 012-2h1V9a7 7 0 017-7zm0 2a5 5 0 00-5 5v2h10V9a5 5 0 00-5-5z'/></svg>`,
+    eyes:`<svg class="icon" viewBox='0 0 24 24'><path d='M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7zm0 12a5 5 0 115-5 5 5 0 01-5 5zm0-8a3 3 0 103 3 3 3 0 00-3-3z'/></svg>`,
+    ear:`<svg class="icon" viewBox='0 0 24 24'><path d='M12 3a7 7 0 00-7 7c0 3.28 2.06 5.08 3.6 6.39 1.13.96 1.4 1.36 1.4 2.11a2 2 0 004 0c0-1.91-1-2.88-2.2-3.93C10.18 13.64 9 12.61 9 10a3 3 0 116 0h2a5 5 0 10-10 0c0 3 1.64 4.67 2.94 5.8 1.18 1 1.66 1.45 1.66 2.2a1 1 0 01-2 0c0-.54-.27-.94-1.4-1.9C6.59 14.83 5 13 5 10a7 7 0 0114 0z'/></svg>`,
+    lung:`<svg class="icon" viewBox='0 0 24 24'><path d='M10 2v9H7a5 5 0 00-5 5v6h2v-6a3 3 0 013-3h3v9h2V2h-2zm7 7h-3v2h3a3 3 0 013 3v6h2v-6a5 5 0 00-5-5z'/></svg>`,
+    ecg:`<svg class="icon" viewBox='0 0 24 24'><path d='M3 12h4l2-5 4 10 2-5h6v2h-4l-2 5-4-10-2 5H3z'/></svg>`,
+    bike:`<svg class="icon" viewBox='0 0 24 24'><path d='M5 16a4 4 0 118 0 4 4 0 01-8 0zm14 0a4 4 0 11-8 0 4 4 0 018 0zM9 16h2V7h2l2 3h3v2h-4l-2-3h-1v7z'/></svg>`,
+    urine:`<svg class="icon" viewBox='0 0 24 24'><path d='M6 3h12l2 4H4l2-4zm-2 6h16v10a2 2 0 01-2 2H6a2 2 0 01-2-2V9zm4 2v8h2v-8H8zm6 0v8h2v-8h-2z'/></svg>`,
+    blood:`<svg class="icon" viewBox='0 0 24 24'><path d='M12 2s7 7 7 12a7 7 0 11-14 0c0-5 7-12 7-12z'/></svg>`,
+    file:`<svg class="icon" viewBox='0 0 24 24'><path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6'/></svg>`,
+    report:`<svg class="icon" viewBox='0 0 24 24'><path d='M4 2h10l6 6v14a2 2 0 01-2 2H4a2 2 0 01-2-2V4a2 2 0 012-2zm10 1.5V8h4.5'/></svg>`,
+    group:`<svg class="icon" viewBox='0 0 24 24'><path d='M12 12a4 4 0 10-4-4 4 4 0 004 4zm-7 9a7 7 0 0114 0H5zM18 8a3 3 0 113-3 3 3 0 01-3 3zm3 13h3a6 6 0 00-6-6h-1a8 8 0 014 6zM3 8A3 3 0 116 5 3 3 0 013 8zm-3 13h3a6 6 0 016-6H8a8 8 0 00-5 6z'/></svg>`,
+    warn:`<svg class="icon" viewBox='0 0 24 24'><path d='M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z'/></svg>`,
+    check:`<svg class="icon" viewBox='0 0 24 24'><path d='M9 16.2l-3.5-3.5L4 14.2l5 5 12-12-1.5-1.5z'/></svg>`,
+    forms:`<svg class="icon" viewBox='0 0 24 24'><path d='M4 3h16v18H4zM7 7h10M7 11h10M7 15h6' /></svg>`
+  };
+  return map[name] || map['file'];
+};
+
+const app = {
+  fast:false,
+  currentTab:'dashboard',
+  schema: {
+    client: { clientId:'', bsn:'', naam:'', geboortedatum:'', functie:'', werkgever:'', project:'', modus:'PMO' },
+    biometrie: { lengte:null, gewicht:null, bmi:null, buikomtrek:null, rr_sys:null, rr_dia:null, pols:null, vetperc:null, visceraal_vet:null },
+    visus: { v5m_od:null, v5m_os:null, v5m_bin:null, v60_od:null, v60_os:null, v60_bin:null, v40_od:null, v40_os:null, v40_bin:null, priegel30_od:null, priegel30_os:null, priegel30_bin:null, ishihara_fouten:null, grijstinten_fouten:null, gezichtsveld_horiz:null, gezichtsveld_vert:null },
+    audiometrie: { od_500:null, od_1k:null, od_2k:null, od_3k:null, od_4k:null, os_500:null, os_1k:null, os_2k:null, os_3k:null, os_4k:null },
+    spirometrie: { fvc:null, fev1:null, tiff:null, kwaliteit:'', notitie:'' },
+    ecg: { ritme:'', freq:null, pq:null, qrs:null, qtc:null, as:'', st:'', conclusie:'', alerts:[] },
+    ergometrie: { toestel:'fiets', protocol:'standaard', srt:false, wsrt:null, duur_min:null, max_watt:null, wkg:null, vo2:null, hr_rust:null, hr_piek:null, rr_rust_sys:null, rr_rust_dia:null, rr_piek_sys:null, rr_piek_dia:null, stopreden:'', borg:null },
+    urine: { glucose:'neg', eiwit:'neg', bloed:'neg', nitriet:'neg', leuko:'neg', ph:null, sg:null, ketonen:'neg', urobilinogeen:'normaal', bilirubine:'neg', opmerking:'' },
+    bloed: { hb:null, glucose:null, hba1c:null, chol:null, hdl:null, ldl:null, trig:null, ggt:null, asat:null, alat:null, kreat:null, eGFR:null, crp:null },
+    vingerprik: { methode:'capillair', apparaat:'', lotnummer:'', opmerkingen:'' },
+    keuringen: { werken_op_hoogte:false, ademlucht:false, asbest:false, bodemsanering:false, offshore:false, chauffeurs:false, cbr:false, volandis_pago:false },
+    vragenlijsten: { items: [] },
+    notities: [],
+    flags: [],
+    geschiktheid: { type:'', conclusie:'', termijn_mnd:null, ingangsdatum:'', einddatum:'', voorwaarden:'', arts:'', handtekening:'' }
+  },
+  init() {
+    this.buildNav();
+    this.render('dashboard');
+    this.loadFromStorage();
+    // parse clientId from url and bind portal link
+    const cid = new URLSearchParams(location.search).get('clientId');
+    if(cid){ this.schema.client.clientId = cid; }
+    document.getElementById('openPortal').href = 'vragenportaal.html?clientId=' + encodeURIComponent(this.schema.client.clientId || '');
+    // Ingest portal surveys if available
+    this.ingestPortalSurveys();
+    this.save(); // persist
+  },
+  buildNav() {
+    const tabs = [
+      ['dashboard','Start','home'],
+      ['biometrie','Biometrie','bio'],
+      ['visus','Visus','eyes'],
+      ['audiometrie','Audiometrie','ear'],
+      ['spirometrie','Spirometrie','lung'],
+      ['ecg','ECG','ecg'],
+      ['ergometrie','Ergometrie','bike'],
+      ['urine','Urine','urine'],
+      ['bloed','Bloedonderzoek','blood'],
+      ['vingerprik','Vingerprik','blood'],
+      ['vragenlijsten','Vragenlijsten (10)','forms'],
+      ['keuringen','Keuringen (profielen)','file'],
+      ['rapport_individu','Rapportage individu','report'],
+      ['rapport_groep','Rapportage groep – werkgever','group'],
+      ['instellingen','Instellingen','file']
+    ];
+    const el = document.getElementById('tabs');
+    el.innerHTML = '';
+    for (const [id,title,ico] of tabs) {
+      const b = document.createElement('button');
+      b.innerHTML = icon(ico)+' <span>'+title+'</span>';
+      b.onclick = ()=>this.render(id);
+      b.id = 'tab-'+id;
+      el.appendChild(b);
+    }
+  },
+  render(id) {
+    this.currentTab = id;
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    const btn = document.getElementById('tab-'+id); if(btn) btn.classList.add('active');
+    const c = document.getElementById('content');
+    c.innerHTML = this['view_'+id] ? this['view_'+id]() : `<section class='panel active'><h2>${id}</h2><p>In aanbouw…</p></section>`;
+  },
+  val(id) { const el=document.getElementById(id); return el? (el.type==='number'? (el.value? parseFloat(el.value): null): el.value): null; },
+  set(id, v) { const el=document.getElementById(id); if(!el) return; if(el.type==='number') el.value = (v??''); else el.value = (v??''); },
+  save() {
+    const s = this.schema;
+    if(s.biometrie.lengte && s.biometrie.gewicht) {
+      s.biometrie.bmi = +(s.biometrie.gewicht / ((s.biometrie.lengte/100)**2)).toFixed(1);
+    }
+    if(s.ergometrie.max_watt && s.biometrie.gewicht) {
+      s.ergometrie.wkg = +(s.ergometrie.max_watt / s.biometrie.gewicht).toFixed(2);
+      s.ergometrie.vo2 = +(((s.ergometrie.max_watt*13.6)-350)/s.biometrie.gewicht).toFixed(1); // ml/min/kg
+    }
+    if(s.ergometrie.protocol==='srt' && s.ergometrie.wsrt && s.biometrie.gewicht) {
+      const vo2L = 0.0067 * s.ergometrie.wsrt + 0.358;
+      s.ergometrie.vo2 = +((vo2L*1000)/s.biometrie.gewicht).toFixed(1);
+    }
+    this.applyFlags();
+    localStorage.setItem('keuringen-suite', JSON.stringify(this.schema));
+    document.getElementById('status').textContent = 'Opgeslagen ' + new Date().toLocaleString();
+  },
+  async saveAndSync() {
+    try {
+      this.save();
+      const naam = (this?.schema?.client?.naam || '').trim();
+      if(!naam) {
+        alert('Naam is verplicht.');
+        return;
+      }
+      const response = await fetch(`${DAB_BASE}/api/${DAB_ENTITY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Naam: naam })
+      });
+      if(!response.ok) {
+        const message = (await response.text()) || `Sync mislukt: ${response.status}`;
+        throw new Error(message);
+      }
+      document.getElementById('status').textContent = 'Gesynchroniseerd ' + new Date().toLocaleString();
+      alert('Opgeslagen!');
+    } catch (error) {
+      alert(error?.message || error);
+    }
+  },
+  loadFromStorage() {
+    try { const raw = localStorage.getItem('keuringen-suite'); if(raw) this.schema = JSON.parse(raw); } catch(e){}
+  },
+  newClient() {
+    this.schema.client = { clientId: 'C-'+Math.random().toString(36).slice(2,8), bsn:'', naam:'', geboortedatum:'', functie:'', werkgever:'', project:'', modus:'PMO' };
+    this.schema.flags = []; this.schema.notities=[]; this.save(); this.render('dashboard');
+  },
+  loadClient(id) { this.schema.client.clientId = id || this.schema.client.clientId || 'C-'+Math.random().toString(36).slice(2,8); this.save(); this.render('dashboard'); },
+  exportClient() {
+    const blob = new Blob([JSON.stringify(this.schema,null,2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=`client-${this.schema.client.clientId||'export'}.json`; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  },
+  toggleFast() { this.fast = !this.fast; document.getElementById('status').textContent = this.fast? 'Versnelde weergave actief': 'Volledige weergave'; this.render(this.currentTab); },
+  toNumber(v) { const n = parseFloat(v); return isNaN(n)? null : n; },
+  addNotitie(t) { if(!t) return; this.schema.notities.push({ts:Date.now(), t}); this.save(); this.render(this.currentTab); },
+
+  // ----- ingest surveys from portal -----
+  ingestPortalSurveys(){
+    const id = this.schema.client.clientId; if(!id) return;
+    const key = 'ac_portal_surveys_v1:'+id;
+    const raw = localStorage.getItem(key);
+    if(!raw) return;
+    try{
+      const pack = JSON.parse(raw);
+      this.schema.vragenlijsten.items = pack.surveys || [];
+    }catch(e){}
+  },
+
+  // --- Flagging logic (existing + surveys) ---
+  applyFlags() {
+    const s = this.schema; const F=[]; const add=(k,txt)=>F.push({key:k, text:txt});
+
+    // Biometrie
+    if(s.biometrie.bmi && s.biometrie.bmi>35) add('bmi', 'BMI > 35 (vlag)');
+    if(s.biometrie.rr_sys && s.biometrie.rr_dia) {
+      if(s.biometrie.rr_sys>180 || s.biometrie.rr_dia>110) add('rr', 'Bloeddruk ernstig verhoogd (>180/>110)');
+      else if(s.biometrie.rr_sys>=140 || s.biometrie.rr_dia>=90) add('rr', 'Bloeddruk verhoogd (≥140/≥90)');
+    }
+    // Visus
+    const v = s.visus;
+    if(v.v5m_bin && v.v5m_bin<0.8) add('visus_5m_bin', 'Visus 5m binoculair < 0.8');
+    if(v.v5m_od && v.v5m_od<0.5) add('visus_5m_od', 'Visus 5m OD < 0.5');
+    if(v.v5m_os && v.v5m_os<0.5) add('visus_5m_os', 'Visus 5m OS < 0.5');
+    if(v.gezichtsveld_horiz && v.gezichtsveld_horiz<160) add('gezichtsveld_h', 'Gezichtsveld horizontaal < 160°');
+    if(v.gezichtsveld_vert && v.gezichtsveld_vert<140) add('gezichtsveld_v', 'Gezichtsveld verticaal < 140°');
+    if(v.ishihara_fouten && v.ishihara_fouten>3) add('ishihara', 'Ishihara > 3 fouten');
+    if(v.grijstinten_fouten && v.grijstinten_fouten>5) add('grijs', 'Grijstinten > 5 fouten');
+
+    // Audiometrie
+    const a = s.audiometrie;
+    const od = {'_500':a.od_500,'_1k':a.od_1k,'_2k':a.od_2k,'_3k':a.od_3k,'_4k':a.od_4k};
+    const os = {'_500':a.os_500,'_1k':a.os_1k,'_2k':a.os_2k,'_3k':a.os_3k,'_4k':a.os_4k};
+    const checkEar=(ear,label)=>{
+      if(ear['_500']>35 || ear['_1k']>35 || ear['_2k']>35 || ear['_3k']>35) add('audio_'+label,'Gehoorverlies >35 dB bij 0.5–3 kHz');
+      if(ear['_4k']>50) add('audio4k_'+label,'Gehoorverlies >50 dB bij 4 kHz');
+    };
+    if(Object.values(od).some(x=>x!=null)) checkEar(od,'od');
+    if(Object.values(os).some(x=>x!=null)) checkEar(os,'os');
+
+    // Spirometrie
+    const sp = s.spirometrie;
+    if(sp.fvc && sp.fvc<80) add('fvc','FVC < 80% voorspeld');
+    if(sp.fev1 && sp.fev1<80) add('fev1','FEV1 < 80% voorspeld');
+    if(sp.tiff && sp.tiff<70) add('tiff','Tiffeneau < 70%');
+    if(sp.kwaliteit && ['E','F'].includes(sp.kwaliteit)) add('sp_quality','Spirometrie kwaliteit onvoldoende');
+
+    // ECG alerts
+    const ecg = s.ecg;
+    if(ecg.st && /elev|depress/i.test(ecg.st)) add('ecg_st','ECG ST-afwijking');
+    if(ecg.freq && ecg.freq<40) add('ecg_brady','ECG bradycardie < 40/min');
+    if(ecg.qtc && ecg.qtc>470) add('ecg_qtc','ECG QTc verlengd');
+
+    // Ergometrie general
+    const er = s.ergometrie;
+    if(er.max_watt && er.max_watt<225 && (!er.wkg || er.wkg<2.5) && (!er.vo2 || er.vo2<28)) add('erg_below','Ergometrie onder norm (225W / 2.5 W/kg / VO2 28)');
+
+    // Urine
+    const u = s.urine;
+    if(u.nitriet==='pos' || u.leuko==='pos') add('urine_uwi','Urine: UWI-verdenking (nitriet/leukocyten)');
+    if(u.bloed==='pos') add('urine_bloed','Urine: haematurie');
+    if(u.glucose==='pos' || u.ketonen==='pos') add('urine_dm','Urine: glucose/ketonen');
+    if(u.ph && (u.ph<5 || u.ph>7)) add('urine_ph','Urine pH afwijkend');
+
+    // Function profiles
+    const prof = s.keuringen;
+    const needWatt225 = prof.werken_op_hoogte || prof.ademlucht || prof.asbest || prof.bodemsanering || prof.chauffeurs;
+    if(needWatt225) {
+      if(er.max_watt && er.max_watt<225 && (!er.wkg || er.wkg<2.5) && (!er.vo2 || er.vo2<28)) add('erg_func','Functie-eis niet gehaald (225W/2.5Wkg/VO2≥28)');
+      if(v.v5m_bin && v.v5m_bin<0.8) add('visus_func','Functie-eis visus binoculair < 0.8');
+      if(v.v5m_od && v.v5m_od<0.5) add('visus_func_od','Functie-eis slechtste oog < 0.5');
+      if(v.gezichtsveld_horiz && v.gezichtsveld_horiz<160) add('gv_func','Functie-eis gezichtsveld horizontaal < 160°');
+      if(v.gezichtsveld_vert && v.gezichtsveld_vert<140) add('gv_func_v','Functie-eis gezichtsveld verticaal < 140°');
+      if((od['_500']>35||od['_1k']>35||od['_2k']>35||od['_3k']>35) || (os['_500']>35||os['_1k']>35||os['_2k']>35||os['_3k']>35)) add('audio_func','Functie-eis gehoor spraakgebied overschreden');
+      if(od['_4k']>50 || os['_4k']>50) add('audio4k_func','Functie-eis gehoor 4kHz overschreden');
+      if(s.biometrie.bmi && s.biometrie.bmi>35) add('bmi_func','Functie-eis BMI > 35');
+    }
+    if(prof.offshore && (er.vo2 && er.vo2<35)) add('offshore_vo2','Offshore ERT: VO2 < 35 ml/kg/min');
+
+    // Survey flags (from portal)
+    (s.vragenlijsten.items || []).forEach(sv => {
+      (sv.flags||[]).forEach(fl => add('ql_'+sv.code, `Vragenlijst ${sv.title}: ${fl.reason}`));
+    });
+
+    this.schema.flags = F;
+  },
+
+  // Helpers for views
+  wrapPanel(id, inner) { return `<section class='panel active' id='panel-${id}'>${inner}</section>`; },
+  inputRow(id, label, type='text', opts='') { return `<div class='field'><label for='${id}'>${label}</label><input id='${id}' type='${type}' ${opts} onchange='app.syncField("${id}")' /></div>`; },
+  number(id,label,step='0.1',min='0') { return this.inputRow(id,label,'number',`step='${step}' min='${min}'`); },
+  select(id,label,options) { const opts = options.map(o=>`<option value='${o[0]}'>${o[1]}</option>`).join(''); return `<div class='field'><label for='${id}'>${label}</label><select id='${id}' onchange='app.syncField("${id}")'>${opts}</select></div>`; },
+  syncField(id) { const el = document.getElementById(id); if(!el) return; const v = el.type==='number'? this.toNumber(el.value) : el.value; const [group, key] = id.split('__'); if(this.schema[group]) this.schema[group][key]=v; this.save(); },
+
+  // Views (we keep the same as v1 for medical tabs; only vragenlijsten differs)
+  view_dashboard() {
+    const s = this.schema;
+    const flags = (s.flags||[]).map(f=>`<span class='flag'>${icon('warn')} ${f.text}</span>`).join(' ');
+    return this.wrapPanel('dashboard', `
+      <div class='grid'>
+        <div class='card' style='grid-column: span 6;'>
+          <h3>${icon('home')} Dashboard</h3>
+          <div class='kpi'>
+            <div class='metric'><strong>${s.client.naam||'—'}</strong>Klantnaam</div>
+            <div class='metric'><strong>${s.client.clientId||'—'}</strong>Client ID</div>
+            <div class='metric'><strong>${s.client.modus}</strong>Modus</div>
+          </div>
+          <hr class='sep'/>
+          <div class='grid'>
+            <div style='grid-column: span 6;' class='field'><label>Naam</label><input id='client__naam' value='${s.client.naam||''}' onchange='app.schema.client.naam=this.value; app.save()' /></div>
+            <div style='grid-column: span 6;' class='field'><label>BSN / ID</label><input id='client__bsn' value='${s.client.bsn||''}' onchange='app.schema.client.bsn=this.value; app.save()' /></div>
+            <div style='grid-column: span 4;' class='field'><label>Geboortedatum</label><input type='date' id='client__geboortedatum' value='${s.client.geboortedatum||''}' onchange='app.schema.client.geboortedatum=this.value; app.save()' /></div>
+            <div style='grid-column: span 4;' class='field'><label>Werkgever</label><input id='client__werkgever' value='${s.client.werkgever||''}' onchange='app.schema.client.werkgever=this.value; app.save()' /></div>
+            <div style='grid-column: span 4;' class='field'><label>Functie / Taak</label><input id='client__functie' value='${s.client.functie||''}' onchange='app.schema.client.functie=this.value; app.save()' /></div>
+            <div style='grid-column: span 6;' class='field'><label>Project</label><input id='client__project' value='${s.client.project||''}' onchange='app.schema.client.project=this.value; app.save()' /></div>
+            <div style='grid-column: span 6;' class='field'><label>Modus</label>
+              <select onchange='app.schema.client.modus=this.value; app.save()'>
+                <option ${"PMO"==s.client.modus?'selected':''}>PMO</option>
+                <option ${"Keuring"==s.client.modus?'selected':''}>Keuring</option>
+                <option ${"CBR"==s.client.modus?'selected':''}>CBR</option>
+              </select>
+            </div>
+          </div>
+          <div style='margin-top:12px;'>${flags||'Geen vlaggen.'}</div>
+        </div>
+        <div class='card' style='grid-column: span 6;'>
+          <h3>${icon('file')} Keuringsprofiel</h3>
+          <div class='grid'>
+            ${
+              ['werken_op_hoogte','ademlucht','asbest','bodemsanering','offshore','chauffeurs','cbr','volandis_pago'].map(k=>`<label style='grid-column: span 6; display:flex; gap:8px; align-items:center;'><input type='checkbox' ${this.schema.keuringen[k]?'checked':''} onchange='app.schema.keuringen["${k}"]=this.checked; app.save()'/> ${k.replaceAll('_',' ')}</label>`).join('')
+            }
+          </div>
+          <blockquote class='small'>Selecteer wat van toepassing is; rapportage en vlagging volgen automatisch de gekozen profielen.</blockquote>
+          <div class='highlight small'>Snel naar vragenportaal: <a href="#" id="quickPortal">open hier</a>.</div>
+        </div>
+      </div>
+    `);
+  },
+
+  view_biometrie() {
+    const s = this.schema.biometrie;
+    return this.wrapPanel('biometrie', `
+      <h3>${icon('bio')} Biometrie</h3>
+      <div class='grid'>
+        <div class='card' style='grid-column: span 6;'>
+          ${
+            this.number('biometrie__lengte','Lengte (cm)','0.1','0')+
+            this.number('biometrie__gewicht','Gewicht (kg)','0.1','0')+
+            this.number('biometrie__buikomtrek','Buikomtrek (cm)','1','0')+
+            this.number('biometrie__rr_sys','RR systolisch (mmHg)','1','0')+
+            this.number('biometrie__rr_dia','RR diastolisch (mmHg)','1','0')+
+            this.number('biometrie__pols','Pols (bpm)','1','0')+
+            this.number('biometrie__vetperc','Vet%','0.1','0')+
+            this.number('biometrie__visceraal_vet','Visceraal vet (score)','1','0')
+          }
+        </div>
+        <div class='card' style='grid-column: span 6;'>
+          <div class='kpi'>
+            <div class='metric'><strong id='calc-bmi'>${s.bmi??'—'}</strong>BMI</div>
+          </div>
+          <button class='secondary' onclick='app.save(); app.render("biometrie")'>Herbereken</button>
+          <p class='small'>BMI en bloeddruk vlaggen worden automatisch meegenomen.</p>
+        </div>
+      </div>
+    `);
+  },
+
+  view_visus() {
+    const f=(prefix)=>`
+      <div class='grid'>
+        ${ this.number('visus__'+prefix+'_od', 'OD', '0.01','0')+
+           this.number('visus__'+prefix+'_os', 'OS', '0.01','0')+
+           this.number('visus__'+prefix+'_bin','Binoculair', '0.01','0') }
+      </div>`;
+    return this.wrapPanel('visus', `
+      <h3>${icon('eyes')} Visus</h3>
+      <div class='card'>
+        <h4>5 meter</h4>${f('v5m')}
+        <h4>60 cm</h4>${f('v60')}
+        <h4>40 cm</h4>${f('v40')}
+        <h4>Priegel/Jaeger 30 cm</h4>${f('priegel30')}
+      </div>
+      <div class='grid'>
+        <div class='card' style='grid-column: span 6;'>
+          ${
+            this.number('visus__ishihara_fouten','Ishihara – aantal fouten','1','0')+
+            this.number('visus__grijstinten_fouten','Grijstinten – aantal fouten','1','0')+
+            this.number('visus__gezichtsveld_horiz','Gezichtsveld horizontaal (°)','1','0')+
+            this.number('visus__gezichtsveld_vert','Gezichtsveld verticaal (°)','1','0')
+          }
+        </div>
+        <div class='card' style='grid-column: span 6;'>
+          <p class='small'>Vlagcriteria: 5m binoculair &lt; 0.8 of slechtste oog &lt; 0.5; Ishihara &gt; 3; Gezichtsveld &lt;160°/&lt;140°.</p>
+        </div>
+      </div>
+    `);
+  },
+
+  view_audiometrie() {
+    const ear=(side)=>`
+      <table class='clean striped'>
+        <tr><th>Frequentie</th><th>500Hz</th><th>1k</th><th>2k</th><th>3k</th><th>4k</th></tr>
+        <tr>
+          <td>${side=='od'?'Rechts (OD)':'Links (OS)'} dB HL</td>
+          <td><input id='audiometrie__${side}_500' type='number' min='0' max='120' step='1' onchange='app.syncField("audiometrie__${side}_500")' /></td>
+          <td><input id='audiometrie__${side}_1k' type='number' min='0' max='120' step='1' onchange='app.syncField("audiometrie__${side}_1k")' /></td>
+          <td><input id='audiometrie__${side}_2k' type='number' min='0' max='120' step='1' onchange='app.syncField("audiometrie__${side}_2k")' /></td>
+          <td><input id='audiometrie__${side}_3k' type='number' min='0' max='120' step='1' onchange='app.syncField("audiometrie__${side}_3k")' /></td>
+          <td><input id='audiometrie__${side}_4k' type='number' min='0' max='120' step='1' onchange='app.syncField("audiometrie__${side}_4k")' /></td>
+        </tr>
+      </table>`;
+    return this.wrapPanel('audiometrie', `
+      <h3>${icon('ear')} Audiometrie</h3>
+      <div class='card'>${ear('od')}${ear('os')}</div>
+      <div class='alert small'>Vlag: &gt;35 dB bij 0.5–3 kHz of &gt;50 dB bij 4 kHz (per oor); functie-eisen volgen het profiel.</div>
+    `);
+  },
+
+  view_spirometrie() {
+    return this.wrapPanel('spirometrie', `
+      <h3>${icon('lung')} Spirometrie</h3>
+      <div class='grid'>
+        <div class='card' style='grid-column: span 6;'>
+          ${
+            this.number('spirometrie__fvc','FVC (% voorspeld)','0.1','0')+
+            this.number('spirometrie__fev1','FEV1 (% voorspeld)','0.1','0')+
+            this.number('spirometrie__tiff','Tiffeneau (%)','0.1','0')+
+            this.select('spirometrie__kwaliteit','Kwaliteit (ATS/ERS)',[['','—'],['A','A'],['B','B'],['C','C'],['D','D'],['E','E'],['F','F']])+
+            `<div class='field'><label>Notitie</label><textarea id='spirometrie__notitie' rows='4' onchange='app.syncField("spirometrie__notitie")'></textarea></div>`
+          }
+        </div>
+        <div class='card' style='grid-column: span 6;'>
+          <p class='small'>Vlag: FVC/FEV1 &lt;80% of Tiffeneau &lt;70%; kwaliteit E/F. LLN/GLI-advies volgt later (plaats­houder).</p>
+        </div>
+      </div>
+    `);
+  },
+
+  view_ecg() {
+    return this.wrapPanel('ecg', `
+      <h3>${icon('ecg')} ECG</h3>
+      <div class='grid'>
+        <div class='card' style='grid-column: span 8;'>
+          <div class='grid'>
+            ${
+              this.inputRow('ecg__ritme','Ritme')+
+              this.number('ecg__freq','Frequentie (bpm)','1','0')+
+              this.number('ecg__pq','PQ (ms)','1','0')+
+              this.number('ecg__qrs','QRS (ms)','1','0')+
+              this.number('ecg__qtc','QTc (ms)','1','0')+
+              this.inputRow('ecg__as','Hart-as')+
+              this.inputRow('ecg__st','ST morfologie/afwijkingen')+
+              this.inputRow('ecg__conclusie','Conclusie')
+            }
+          </div>
+          <div class='small'>Directe actie (vlag): ST-elevatie/depressie, brady &lt;40, QTc verlengd.</div>
+        </div>
+        <div class='card' style='grid-column: span 4;'>
+          <button class='secondary' onclick='app.openECGChecklist()'>7+2 Checklist</button>
+          <div id='ecgChecklist' class='hide small'>
+            <ol>
+              <li>Ritme</li><li>Frequentie</li><li>Geleidingen (PQ/QRS/QTc/ST)</li><li>As</li><li>P-top</li><li>QRS</li><li>ST/T</li><li>Vergelijking oud ECG</li><li>Conclusie</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    `);
+  },
+  openECGChecklist(){ document.getElementById('ecgChecklist').classList.toggle('hide'); },
+
+  view_ergometrie() {
+    const s = this.schema;
+    return this.wrapPanel('ergometrie', `
+      <h3>${icon('bike')} Ergometrie</h3>
+      <div class='grid'>
+        <div class='card' style='grid-column: span 8;'>
+          <div class='grid'>
+            ${
+              this.select('ergometrie__toestel','Toestel',[['fiets','Fiets'],['loopband','Loopband']])+
+              this.select('ergometrie__protocol','Protocol',[['standaard','Standaard'],['handmatig','Handmatig'],['srt','Steep-Ramp (SRT)']])+
+              this.number('ergometrie__wsrt','SRT WSRT (W)','1','0')+
+              this.number('ergometrie__max_watt','Max Watt (W)','1','0')+
+              this.number('ergometrie__duur_min','Duur inspanning (min)','0.1','0')+
+              this.number('ergometrie__hr_rust','HR rust (bpm)','1','0')+
+              this.number('ergometrie__hr_piek','HR piek (bpm)','1','0')+
+              this.number('ergometrie__rr_rust_sys','RR rust sys','1','0')+
+              this.number('ergometrie__rr_rust_dia','RR rust dia','1','0')+
+              this.number('ergometrie__rr_piek_sys','RR piek sys','1','0')+
+              this.number('ergometrie__rr_piek_dia','RR piek dia','1','0')+
+              this.inputRow('ergometrie__stopreden','Stopreden')+
+              this.number('ergometrie__borg','Borg-score','1','0')
+            }
+          </div>
+          <p class='small'>VO₂ wordt automatisch berekend uit max watt of WSRT (SRT).</p>
+        </div>
+        <div class='card' style='grid-column: span 4;'>
+          <div class='kpi'>
+            <div class='metric'><strong>${s.ergometrie.wkg ?? '—'}</strong>W/kg</div>
+            <div class='metric'><strong>${s.ergometrie.vo2 ?? '—'}</strong>VO₂ (ml/kg/min)</div>
+          </div>
+          <div class='alert small'>Normen: 225W óf 2.5 W/kg óf VO₂ ≥ 28 (hoogte/asbest/bodem/ademlucht/chauffeurs). Offshore: VO₂ ≥ 35.</div>
+        </div>
+      </div>
+      <div class='highlight small'>Submaximaal (step/WSRT) is ondersteund via WSRT → VO₂.</div>
+    `);
+  },
+
+  view_urine() {
+    const opt=[['neg','neg'],['pos','pos']];
+    return this.wrapPanel('urine', `
+      <h3>${icon('urine')} Urineonderzoek</h3>
+      <div class='grid'>
+        <div class='card' style='grid-column: span 6;'>
+          ${
+            this.select('urine__glucose','Glucose',opt)+
+            this.select('urine__eiwit','Eiwit',opt)+
+            this.select('urine__bloed','Bloed/Erytrocyten',opt)+
+            this.select('urine__nitriet','Nitriet',opt)+
+            this.select('urine__leuko','Leukocyten',opt)+
+            this.number('urine__ph','pH','0.1','0')+
+            this.number('urine__sg','Soortelijk gewicht','0.001','0')+
+            this.select('urine__ketonen','Ketonen',opt)+
+            this.select('urine__urobilinogeen','Urobilinogeen',[['normaal','normaal'],['hoog','hoog']])+
+            this.select('urine__bilirubine','Bilirubine',opt)+
+            `<div class='field'><label>Opmerking</label><textarea id='urine__opmerking' rows='3' onchange='app.syncField("urine__opmerking")'></textarea></div>`
+          }
+        </div>
+        <div class='card' style='grid-column: span 6;'>
+          <p class='small'>Vlag: nitriet/leukocyten positief, bloed positief, glucose/ketonen positief, pH ochtendurine &lt;5 of &gt;7.</p>
+        </div>
+      </div>
+    `);
+  },
+
+  view_bloed() {
+    const n=(k,l,step)=>this.number('bloed__'+k,l,step||'0.1','0');
+    return this.wrapPanel('bloed', `
+      <h3>${icon('blood')} Bloedonderzoek</h3>
+      <div class='grid'>
+        <div class='card' style='grid-column: span 6;'>
+          ${n('hb','Hb (mmol/L)')} ${n('glucose','Glucose nuchter (mmol/L)')} ${n('hba1c','HbA1c (mmol/mol)','1')}
+          ${n('chol','Totaal chol (mmol/L)')} ${n('hdl','HDL (mmol/L)')} ${n('ldl','LDL (mmol/L)')} ${n('trig','Triglyceriden (mmol/L)')}
+          ${n('ggt','GGT (U/L)','1')} ${n('asat','ASAT (U/L)','1')} ${n('alat','ALAT (U/L)','1')} ${n('kreat','Kreat (umol/L)','1')} ${n('eGFR','eGFR (ml/min/1.73m²)','1')} ${n('crp','CRP (mg/L)','0.1')}
+        </div>
+        <div class='card' style='grid-column: span 6;'>
+          <p class='small'>Waarden vrij invoerbaar; vlaggen komen via functie-eisen of aanvullende regels in Instellingen.</p>
+        </div>
+      </div>
+    `);
+  },
+
+  view_vingerprik() {
+    return this.wrapPanel('vingerprik',`
+      <h3>${icon('blood')} Vingerprik</h3>
+      <div class='grid'>
+        <div class='card' style='grid-column: span 6;'>
+          ${this.select('vingerprik__methode','Methode',[['capillair','Capillair'],['veneus','Veneus']])}
+          ${this.inputRow('vingerprik__apparaat','Apparaat/Type meter')}
+          ${this.inputRow('vingerprik__lotnummer','Lotnummer teststrips')}
+          <div class='field'><label>Opmerkingen</label><textarea id='vingerprik__opmerkingen' rows='3' onchange='app.syncField("vingerprik__opmerkingen")'></textarea></div>
+        </div>
+        <div class='card' style='grid-column: span 6;'>
+          <p class='small'>Traceerbaarheid: methode, apparaat en lotnr volgens werkinstructie.</p>
+        </div>
+      </div>
+    `);
+  },
+
+  view_vragenlijsten() {
+    // Pull latest portal data each time
+    this.ingestPortalSurveys();
+    const sv = this.schema.vragenlijsten.items || [];
+    const list = sv.map((s,i)=>`
+      <div class='card' style='margin-bottom:8px'>
+        <div style='display:flex;justify-content:space-between;align-items:center;gap:8px'>
+          <div><strong>${s.title}</strong> <span class='small'>v${s.version||1}</span></div>
+          <div class='small'>${s.updatedAt ? new Date(s.updatedAt).toLocaleString() : ''}</div>
+        </div>
+        <div class='small'>Score: <strong>${s.score ?? '—'}</strong> • Vlaggen: <strong>${(s.flags||[]).length}</strong></div>
+        ${(s.flags||[]).length ? `<ul class='flaglist'>${s.flags.map(f=>`<li>❗ ${f.label} — ${f.reason}</li>`).join('')}</ul>` : '<div class="small">Geen vlaggen.</div>'}
+        <details style='margin-top:8px'><summary>Antwoorden</summary>
+          <table class='clean striped'><thead><tr><th>Vraagnr</th><th>Vraag</th><th>Antwoord</th></tr></thead>
+          <tbody>${(s.items||[]).map((it,idx)=>`<tr><td>${idx+1}</td><td>${it.label}</td><td>${typeof it.value==='boolean'?(it.value?'ja':'nee'):(it.value??'')}</td></tr>`).join('')}</tbody></table>
+        </details>
+      </div>
+    `).join('');
+
+    const btn = `<div class='actions'><a class='secondary' target='_blank' href='vragenportaal_v3.html?clientId=${encodeURIComponent(this.schema.client.clientId||"")}'>Naar vragenportaal</a></div>`;
+
+    return this.wrapPanel('vragenlijsten', `
+      <h3>${icon('forms')} Vragenlijsten</h3>
+      <div class='alert small'>Antwoorden worden automatisch ingelezen uit het Vragenportaal (gekoppeld via <strong>Client ID</strong>).</div>
+      ${ list || '<div class="card small">Nog geen antwoorden in het vragenportaal.</div>' }
+      ${ btn }
+    `);
+  },
+
+  view_keuringen() {
+    const s=this.schema;
+    const row=(k,t)=>`<tr><td>${t}</td><td>${s.keuringen[k]?'Ja':'Nee'}</td></tr>`;
+    setTimeout(()=>{
+      const qp=document.getElementById('quickPortal'); 
+      if(qp) qp.href='vragenportaal.html?clientId='+(encodeURIComponent(this.schema.client.clientId||''));
+    },0);
+    return this.wrapPanel('keuringen', `
+      <h3>${icon('file')} Keuringsprofielen</h3>
+      <table class='clean striped'>
+        <tr><th>Profiel</th><th>Actief</th></tr>
+        ${row('werken_op_hoogte','Werken op hoogte (G41)')} 
+        ${row('ademlucht','Ademlucht')} 
+        ${row('asbest','Asbestsanering')}
+        ${row('bodemsanering','Bodemsanering')}
+        ${row('offshore','Offshore')}
+        ${row('chauffeurs','Chauffeurs')}
+        ${row('cbr','CBR keuring')}
+        ${row('volandis_pago','Bouw PAGO (Volandis)')}
+      </table>
+      <div class='alert small'>Door profielen te selecteren op het Dashboard worden de juiste normeringen en rapportageregels toegepast.</div>
+    `);
+  },
+
+  // Reports (same as earlier, trimmed)
+  generateIndividualReport() {
+  const s = this.schema;
+  this.save(); // zeker weten dat laatste edits zijn weggeschreven
+
+  // Bouw een absolute URL naast de suite-file (werkt ook in een iframe)
+  const base = (location.href || '').split('#')[0];
+  const u = new URL('individueel-pmo-rapport.html', base);
+
+  // (Optioneel) geef de clientId mee – handig voor koppeling/state
+  const cid = s?.client?.clientId || '';
+  if (cid) u.searchParams.set('clientId', cid);
+
+  // (Optioneel) cache-buster
+  u.searchParams.set('ts', Date.now().toString());
+
+  // Open in nieuw tabblad, veilig zonder opener
+  window.open(u.toString(), '_blank', 'noopener');
+}, // ← laat deze komma staan
+
+  generateGroupReport() {
+  this.save(); // persist current edits
+
+  // Build absolute URL to the AC-Dossier shell and jump straight to the Rapportage route
+  const base = (location.href || '').split('#')[0];
+  const u    = new URL('index.html', base);
+
+  // optional: pass clientId along for future use
+  const cid = this.schema?.client?.clientId || '';
+  if (cid) u.searchParams.set('clientId', cid);
+
+  u.hash = '#/keuringsdossiers/rapportage';
+
+  // Navigate this tab (Suite runs in its own tab)
+  location.href = u.toString();
+},
+
+
+  view_rapport_individu() { this.generateIndividualReport(); return this.wrapPanel('rapport_individu', `<p>Rapport geopend in nieuw venster.</p>`); },
+  view_rapport_groep() { this.generateGroupReport(); return ''; },
+
+  view_instellingen() {
+    return this.wrapPanel('instellingen', `
+      <h3>${icon('file')} Instellingen</h3>
+      <div class='small'>Vragenlijsten worden automatisch ingelezen vanuit het vragenportaal obv Client ID.</div>
+      <div class='grid'>
+        <div class='card' style='grid-column: span 6;'>
+          <h4>Geschiktheid</h4>
+          ${this.inputRow('geschiktheid__type','Type (bijv. G41, ademlucht)')}
+          ${this.inputRow('geschiktheid__conclusie','Conclusie (geschikt/beperkt/(tijdelijk) ongeschikt)')}
+          ${this.number('geschiktheid__termijn_mnd','Termijn (maanden)','1','0')}
+          ${this.inputRow('geschiktheid__ingangsdatum','Ingangsdatum (yyyy-mm-dd)')}
+          ${this.inputRow('geschiktheid__einddatum','Einddatum (yyyy-mm-dd)')}
+          ${this.inputRow('geschiktheid__voorwaarden','Voorwaarden/Beperkingen')}
+          ${this.inputRow('geschiktheid__arts','Naam arts')}
+        </div>
+        <div class='card' style='grid-column: span 6;'>
+          <p class='small'>Gebruik rapportage voor het genereren van documenten.</p>
+        </div>
+      </div>
+    `);
+  }
+};
+window.addEventListener('load', ()=>app.init());
+</script>
+</body>
+</html>

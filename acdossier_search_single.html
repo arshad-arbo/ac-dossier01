@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AC‑Dossier – Zoekscherm (Single HTML)</title>
+  <!--
+    AC‑Dossier – geïntegreerd zoekscherm (één HTML-bestand)
+    - Testbaar zonder server (in‑memory demo data)
+    - Klaar om te "patchen" op een API door ACDossier.apiBase te zetten
+  -->
+  <style>
+/* AC‑Dossier look & feel — palette based on supplied screenshot */
+:root{
+  --website_theme_color:#ffffff;
+  --website_kleur1:#ec641a; /* primaire accent - oranje */
+  --website_kleur2:#79c6c0; /* teal */
+  --website_kleur3:#85cee4; /* lichtblauw focus */
+  --website_kleur4:#686c7c; /* grijs */
+  --website_kleur5:#4c505a; /* donkergrijs tekst */
+  --website_kleur6:#69a1b1; /* blauwgrijs */
+  --website_kleur8:#f7f7f7; /* zeer licht grijs */
+  --radius:12px;
+  --shadow-sm:0 3px 10px rgba(0,0,0,.06);
+  --shadow-md:0 6px 18px rgba(0,0,0,.08);
+  --shadow-lg:0 12px 30px rgba(0,0,0,.12);
+  --ring:0 0 0 3px rgba(133,206,228,.45);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  color:var(--website_kleur5);
+  background:linear-gradient(180deg, var(--website_kleur8), #fff 45%);
+}
+
+/* Container */
+.acd-container{
+  max-width:1100px;
+  margin:32px auto;
+  padding:0 16px;
+}
+
+/* Card */
+.acd-card{
+  background:#fff;
+  border-radius:var(--radius);
+  box-shadow: var(--shadow-sm);
+  border:1px solid rgba(0,0,0,.06);
+  overflow:hidden;
+}
+.acd-card__header{
+  padding:18px 22px;
+  border-bottom:1px solid rgba(0,0,0,.06);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.acd-card__title{
+  font-size:18px; font-weight:650; color:var(--website_kleur5);
+}
+.acd-card__body{ padding:22px; }
+.acd-muted{ color:#6b7280; }
+
+/* Segmented tabs */
+.acd-segmented{
+  display:inline-flex; background:var(--website_kleur8); padding:4px;
+  border-radius:999px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
+}
+.acd-segmented button{
+  appearance:none; border:0; padding:10px 16px; margin:0; cursor:pointer;
+  font-weight:600; border-radius:999px; background:transparent; color:#4b5563;
+}
+.acd-segmented button[aria-selected="true"]{
+  background:#fff; color:#111827; box-shadow:var(--shadow-sm);
+}
+
+/* Forms */
+.acd-grid{ display:grid; gap:16px; grid-template-columns:repeat(12,1fr); }
+.acd-col-12{grid-column:span 12;}
+.acd-col-6{grid-column:span 6;}
+.acd-col-4{grid-column:span 4;}
+.acd-col-3{grid-column:span 3;}
+@media (max-width:800px){ .acd-col-6,.acd-col-4,.acd-col-3{grid-column:span 12;} }
+
+label.acd-label{
+  font-size:12px; font-weight:700; letter-spacing:.02em; text-transform:uppercase;
+  color:#6b7280; display:block; margin-bottom:6px;
+}
+
+.acd-input, .acd-select, .acd-date{
+  width:100%; background:#fff; border:1px solid #e5e7eb; color:#111827;
+  border-radius:10px; padding:12px 14px; line-height:1.25;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+  outline:none; transition:border .15s, box-shadow .15s;
+}
+.acd-input::placeholder{ color:#94a3b8; }
+.acd-input:focus, .acd-select:focus, .acd-date:focus{
+  border-color: var(--website_kleur3);
+  box-shadow: var(--ring);
+}
+
+/* Buttons */
+.acd-btn{
+  appearance:none; border:0; cursor:pointer; border-radius:10px; padding:12px 16px;
+  font-weight:700; line-height:1; display:inline-flex; align-items:center; gap:8px;
+}
+.acd-btn--primary{
+  background:var(--website_kleur1); color:#fff;
+  box-shadow:0 6px 16px rgba(236,100,26,.35);
+}
+.acd-btn--primary:hover{ filter:brightness(.95) }
+.acd-btn--ghost{
+  background:#fff; color:var(--website_kleur5); border:1px solid #e5e7eb;
+}
+.acd-actions{ display:flex; gap:12px; }
+
+/* Radio rows */
+.acd-radio-row{ display:flex; gap:12px; align-items:center; margin:6px 0 10px; }
+.acd-radio-row input[type="radio"]{ accent-color:var(--website_kleur1); }
+
+/* Pane visibility */
+[data-pane]{ display:none; }
+[data-pane].is-active{ display:block; }
+
+/* Results */
+#results{
+  margin-top:8px;
+}
+.acd-result{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:18px; padding:14px 16px; border:1px solid #edf1f4; border-radius:10px;
+  background:linear-gradient(180deg,#fff, #fdfdfd);
+  box-shadow: var(--shadow-sm);
+}
+.acd-result + .acd-result{ margin-top:10px; }
+.acd-result__title{ font-weight:700; color:#111827; }
+.acd-result__meta{ font-size:12px; color:#6b7280; }
+.acd-pill{
+  display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700;
+  background: #eaf6fb; color:#0b3a4a; border:1px solid #d3ecf7;
+}
+.acd-pill--group{ background:#fff3ed; color:#7a2e00; border-color:#ffe3d2; }
+.acd-pill--individual{ background:#eafaf7; color:#075e54; border-color:#c6efe5; }
+
+/* Toast and spinner */
+.acd-toast{
+  position:fixed; right:16px; bottom:16px; background:#111827; color:#fff;
+  padding:12px 14px; border-radius:10px; box-shadow:var(--shadow-lg); opacity:0; transform:translateY(10px);
+  transition:all .2s;
+}
+.acd-toast.is-shown{ opacity:1; transform:translateY(0); }
+.acd-spinner{
+  display:none; position:fixed; inset:0; background:rgba(255,255,255,.65);
+  align-items:center; justify-content:center; z-index:50;
+}
+.acd-spinner.is-shown{ display:flex; }
+.acd-spinner::after{
+  content:""; width:44px; height:44px; border-radius:999px; border:4px solid #eee;
+  border-top-color:var(--website_kleur1); animation:spin 1s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(360deg);} }
+
+/* Help text */
+.acd-help{ font-size:12px; color:#6b7280; margin-top:4px; }
+
+/* Header mimic */
+.acd-topbar{
+  display:flex; align-items:center; justify-content:space-between; padding:10px 0 22px;
+}
+.acd-topbar .acd-right-cta{ display:flex; gap:10px; }
+  </style>
+</head>
+<body>
+  <div class="acd-container">
+
+    <div class="acd-topbar">
+      <div>
+        <h1 style="margin:0; font-size:20px; color:#111827; font-weight:800;">AC‑Dossier</h1>
+        <div class="acd-muted" style="font-size:12px;">Zoek naar groeps- en individuele rapporten of werknemer‑dossiers</div>
+      </div>
+      <div class="acd-right-cta">
+        <button class="acd-btn acd-btn--ghost" id="btn-clear">Leeg velden</button>
+        <a class="acd-btn acd-btn--primary" href="#" id="btn-new-employer">Nieuwe werkgever</a>
+      </div>
+    </div>
+
+    <div class="acd-card">
+      <div class="acd-card__header">
+        <div class="acd-card__title">Zoekscherm</div>
+        <div class="acd-segmented" role="tablist" aria-label="Zoekscope">
+          <button role="tab" aria-selected="true" data-target="pane-rapport">Rapport</button>
+          <button role="tab" aria-selected="false" data-target="pane-werknemer">Werknemer</button>
+          <button role="tab" aria-selected="false" data-target="pane-code">Codes</button>
+        </div>
+      </div>
+      <div class="acd-card__body">
+        <!-- RAPPORT PANE -->
+        <section id="pane-rapport" data-pane class="is-active" aria-labelledby="tab-rapport">
+          <div class="acd-grid">
+            <div class="acd-col-12">
+              <div class="acd-radio-row" role="radiogroup" aria-label="Rapporttype">
+                <strong style="margin-right:8px;">Rapporttype:</strong>
+                <label><input type="radio" name="rapporttype" value="group" checked> Groepsrapport</label>
+                <label><input type="radio" name="rapporttype" value="individual"> Individueel rapport</label>
+              </div>
+            </div>
+
+            <div class="acd-col-12">
+              <div class="acd-radio-row" role="radiogroup" aria-label="Zoekmethode">
+                <strong style="margin-right:8px;">Zoek op:</strong>
+                <label><input type="radio" name="rapportmethod" value="employer_year" checked> Werkgever + jaartal</label>
+                <label><input type="radio" name="rapportmethod" value="group_code"> Groepsrapportcode</label>
+              </div>
+            </div>
+
+            <form id="form-rapport-ey" class="acd-grid acd-col-12">
+              <div class="acd-col-8">
+                <label class="acd-label" for="employer_name">Naam werkgever</label>
+                <input class="acd-input" id="employer_name" name="employer_name" placeholder="Zoek op bedrijfsnaam of afdeling…" autocomplete="off">
+                <div class="acd-help">Minimaal 2 tekens. Voorbeeld: <em>Arbo Concern BV</em></div>
+              </div>
+              <div class="acd-col-3">
+                <label class="acd-label" for="year">Jaartal</label>
+                <input class="acd-input" id="year" name="year" type="number" min="2000" max="2100" placeholder="2025">
+              </div>
+              <div class="acd-col-12">
+                <div class="acd-actions">
+                  <button type="submit" class="acd-btn acd-btn--primary" id="btn-search-rapport">Zoeken</button>
+                  <button type="button" class="acd-btn acd-btn--ghost" id="btn-reset-rapport">Reset</button>
+                </div>
+              </div>
+            </form>
+
+            <form id="form-rapport-code" class="acd-grid acd-col-12" style="display:none;">
+              <div class="acd-col-6">
+                <label class="acd-label" for="group_code">Groepsrapportcode</label>
+                <input class="acd-input" id="group_code" name="group_code" placeholder="Bijv. GRP‑2024‑VDL‑002" autocomplete="off">
+                <div class="acd-help">Exacte of gedeeltelijke match mogelijk.</div>
+              </div>
+              <div class="acd-col-12">
+                <div class="acd-actions">
+                  <button type="submit" class="acd-btn acd-btn--primary">Zoeken</button>
+                  <button type="button" class="acd-btn acd-btn--ghost" id="btn-reset-code">Reset</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- WERKNEMER PANE -->
+        <section id="pane-werknemer" data-pane aria-labelledby="tab-werknemer">
+          <div class="acd-grid">
+            <div class="acd-col-12">
+              <div class="acd-radio-row" role="radiogroup" aria-label="Zoekmethode werknemer">
+                <strong style="margin-right:8px;">Zoek op:</strong>
+                <label><input type="radio" name="werknemermethod" value="name_dob" checked> Naam + geboortedatum</label>
+                <label><input type="radio" name="werknemermethod" value="employee_code"> Dossiercode</label>
+              </div>
+            </div>
+
+            <form id="form-wn-name" class="acd-grid acd-col-12">
+              <div class="acd-col-6">
+                <label class="acd-label" for="employee_name">Naam werknemer</label>
+                <input class="acd-input" id="employee_name" name="employee_name" placeholder="Bijv. Jan Jansen">
+              </div>
+              <div class="acd-col-3">
+                <label class="acd-label" for="employee_dob">Geboortedatum</label>
+                <input class="acd-date" id="employee_dob" name="employee_dob" type="date" placeholder="">
+                <div class="acd-help">Of gebruik formaat <code>dd‑mm‑jjjj</code>.</div>
+              </div>
+              <div class="acd-col-12">
+                <div class="acd-actions">
+                  <button type="submit" class="acd-btn acd-btn--primary">Zoeken</button>
+                  <button type="button" class="acd-btn acd-btn--ghost" id="btn-reset-wn-name">Reset</button>
+                </div>
+              </div>
+            </form>
+
+            <form id="form-wn-code" class="acd-grid acd-col-12" style="display:none;">
+              <div class="acd-col-6">
+                <label class="acd-label" for="employee_code">Werknemer dossiercode</label>
+                <input class="acd-input" id="employee_code" name="employee_code" placeholder="Bijv. EMP‑VDL‑014">
+              </div>
+              <div class="acd-col-12">
+                <div class="acd-actions">
+                  <button type="submit" class="acd-btn acd-btn--primary">Zoeken</button>
+                  <button type="button" class="acd-btn acd-btn--ghost" id="btn-reset-wn-code">Reset</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- CODES PANE (snelle toegang) -->
+        <section id="pane-code" data-pane aria-labelledby="tab-code">
+          <div class="acd-grid">
+            <div class="acd-col-6">
+              <label class="acd-label" for="quick_any_code">Code invoeren</label>
+              <input class="acd-input" id="quick_any_code" placeholder="Groepsrapportcode of werknemer dossiercode">
+              <div class="acd-help">We herkennen automatisch het type code.</div>
+            </div>
+            <div class="acd-col-12">
+              <div class="acd-actions">
+                <button class="acd-btn acd-btn--primary" id="btn-quick-search" type="button">Zoeken</button>
+                <button type="button" class="acd-btn acd-btn--ghost" id="btn-reset-quick">Reset</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Results -->
+        <section aria-live="polite" aria-busy="false">
+          <div id="results"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="acd-spinner" id="spinner" aria-hidden="true"></div>
+  <div id="toast" class="acd-toast" role="alert" aria-live="polite"></div>
+
+  <script>
+  // ----------------------------------------------------------
+  // Config: laat leeg voor lokale demo, of vul met API-pad
+  // window.ACDossier = { apiBase: "/acdossier/api/search" };
+  window.ACDossier = window.ACDossier || { apiBase: "" };
+  // ----------------------------------------------------------
+
+  (function(){
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+    const toast = (msg, ms=2400) => {
+      const el = $("#toast"); if(!el) return;
+      el.textContent = msg; el.classList.add("is-shown");
+      setTimeout(()=>el.classList.remove("is-shown"), ms);
+    };
+    const spinner = {
+      show(){ $("#spinner").classList.add("is-shown"); },
+      hide(){ $("#spinner").classList.remove("is-shown"); }
+    };
+
+    // ---------------- Demo data (local mode) -----------------
+    const SEED = {
+      group_reports:[
+        {"group_code":"GRP-2023-ACB-001","employer_name":"Arbo Concern BV","year":2023,"status":"Afgerond"},
+        {"group_code":"GRP-2024-VDL-002","employer_name":"Van Dijk Logistics","year":2024,"status":"In bewerking"},
+        {"group_code":"GRP-2023-TN-010","employer_name":"TechNova","year":2023,"status":"Afgerond"},
+        {"group_code":"GRP-2025-GMN-005","employer_name":"Gemeente Noord","year":2025,"status":"Gepland"}
+      ],
+      individual_reports:[
+        {"report_id":"I-20001","employer_name":"Arbo Concern BV","year":2023,"employee_name":"Jan Jansen","employee_dob":"1984-04-12","employee_code":"EMP-AC-001","group_code":"GRP-2023-ACB-001"},
+        {"report_id":"I-20002","employer_name":"Arbo Concern BV","year":2023,"employee_name":"Sara de Vries","employee_dob":"1990-09-30","employee_code":"EMP-AC-002","group_code":"GRP-2023-ACB-001"},
+        {"report_id":"I-20003","employer_name":"Van Dijk Logistics","year":2024,"employee_name":"Peter van Dijk","employee_dob":"1978-01-04","employee_code":"EMP-VDL-014","group_code":"GRP-2024-VDL-002"},
+        {"report_id":"I-20004","employer_name":"TechNova","year":2023,"employee_name":"Fatima El Ouardi","employee_dob":"1986-07-19","employee_code":"EMP-TN-101","group_code":"GRP-2023-TN-010"},
+        {"report_id":"I-20005","employer_name":"Gemeente Noord","year":2025,"employee_name":"Youssef Bakker","employee_dob":"1992-11-02","employee_code":"EMP-GMN-055","group_code":"GRP-2025-GMN-005"}
+      ]
+    };
+
+    // ---------------- Helpers -----------------
+    const normalize = s => (s||"").toString().trim().toLowerCase().replace(/\s+/g," ");
+    const contains = (needle, hay) => normalize(hay).includes(normalize(needle));
+    function parseDateLike(input){
+      if(!input) return "";
+      if(/^\d{4}-\d{2}-\d{2}$/.test(input)) return input; // ISO
+      const m = input.match(/^(\\d{1,2})[\\/\\-](\\d{1,2})[\\/\\-](\\d{4})$/);
+      if(m){
+        const [_, d, mo, y] = m;
+        const dd = String(d).padStart(2,"0");
+        const mm = String(mo).padStart(2,"0");
+        return `${y}-${mm}-${dd}`;
+      }
+      return input;
+    }
+    const dutchDate = iso => {
+      if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(iso)) return iso;
+      const [y,m,d] = iso.split("-");
+      return `${d}-${m}-${y}`;
+    };
+
+    // ---------------- Local search engine (mirrors API) -----------------
+    async function localSearch(payload){
+      const mode = payload.mode;
+      const out = [];
+      if(mode === "report"){
+        const via = payload.via;
+        const rkind = payload.reportKind; // 'group' or 'individual'
+        if(via === "employer_year"){
+          const employer = payload.employerName || "";
+          const year = Number(payload.year || 0);
+          if(rkind === "group"){
+            for(const gr of SEED.group_reports){
+              if(contains(employer, gr.employer_name) && Number(gr.year) === year){
+                out.push({
+                  type:"group", type_label:"Groepsrapport",
+                  title:`${gr.employer_name} – ${gr.year}`,
+                  subtitle:`Code ${gr.group_code} • Status: ${gr.status}`,
+                  open_url:`#open/group/${gr.group_code}`
+                });
+              }
+            }
+          }else{
+            for(const ir of SEED.individual_reports){
+              if(contains(employer, ir.employer_name) && Number(ir.year) === year){
+                out.push({
+                  type:"individual", type_label:"Individueel rapport",
+                  title:`${ir.employee_name} (${dutchDate(ir.employee_dob)})`,
+                  subtitle:`${ir.employer_name} – ${ir.year} • Dossier ${ir.employee_code}`,
+                  open_url:`#open/individual/${ir.report_id}`
+                });
+              }
+            }
+          }
+        }else if(via === "group_code"){
+          const code = payload.groupCode || "";
+          if(rkind === "group"){
+            for(const gr of SEED.group_reports){
+              if(contains(code, gr.group_code)){
+                out.push({
+                  type:"group", type_label:"Groepsrapport",
+                  title:`${gr.employer_name} – ${gr.year}`,
+                  subtitle:`Code ${gr.group_code} • Status: ${gr.status}`,
+                  open_url:`#open/group/${gr.group_code}`
+                });
+              }
+            }
+          }else{
+            for(const ir of SEED.individual_reports){
+              if(contains(code, ir.group_code||"")){
+                out.push({
+                  type:"individual", type_label:"Individueel rapport",
+                  title:`${ir.employee_name} (${dutchDate(ir.employee_dob)})`,
+                  subtitle:`${ir.employer_name} – ${ir.year} • Dossier ${ir.employee_code}`,
+                  open_url:`#open/individual/${ir.report_id}`
+                });
+              }
+            }
+          }
+        }
+      }else if(mode === "employee"){
+        const via = payload.via;
+        if(via === "name_dob"){
+          const name = payload.employeeName || "";
+          const dob = payload.dob || "";
+          for(const ir of SEED.individual_reports){
+            if(contains(name, ir.employee_name) && dob === ir.employee_dob){
+              out.push({
+                type:"individual", type_label:"Werknemer",
+                title:`${ir.employee_name} (${dutchDate(ir.employee_dob)})`,
+                subtitle:`${ir.employer_name} – ${ir.year} • Dossier ${ir.employee_code}`,
+                open_url:`#open/individual/${ir.report_id}`
+              });
+            }
+          }
+        }else if(via === "employee_code"){
+          const code = payload.employeeCode || "";
+          for(const ir of SEED.individual_reports){
+            if(contains(code, ir.employee_code)){
+              out.push({
+                type:"individual", type_label:"Werknemer",
+                title:`${ir.employee_name} (${dutchDate(ir.employee_dob)})`,
+                subtitle:`${ir.employer_name} – ${ir.year} • Dossier ${ir.employee_code}`,
+                open_url:`#open/individual/${ir.report_id}`
+              });
+            }
+          }
+        }
+      }else if(mode === "quick_code"){
+        const code = payload.code || "";
+        if(/^GRP[\\-\\w]*/i.test(code)){
+          for(const gr of SEED.group_reports){
+            if(contains(code, gr.group_code)){
+              out.push({
+                type:"group", type_label:"Groepsrapport",
+                title:`${gr.employer_name} – ${gr.year}`,
+                subtitle:`Code ${gr.group_code} • Status: ${gr.status}`,
+                open_url:`#open/group/${gr.group_code}`
+              });
+            }
+          }
+        }else{
+          for(const ir of SEED.individual_reports){
+            if(contains(code, ir.employee_code)){
+              out.push({
+                type:"individual", type_label:"Werknemer",
+                title:`${ir.employee_name} (${dutchDate(ir.employee_dob)})`,
+                subtitle:`${ir.employer_name} – ${ir.year} • Dossier ${ir.employee_code}`,
+                open_url:`#open/individual/${ir.report_id}`
+              });
+            }
+          }
+        }
+      }
+      return { results: out };
+    }
+
+    // Choose backend: API or local
+    async function doSearch(payload){
+      if(window.ACDossier && window.ACDossier.apiBase){
+        const res = await fetch(window.ACDossier.apiBase, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify(payload)
+        });
+        return await res.json();
+      }
+      // fallback to local demo
+      return await localSearch(payload);
+    }
+
+    // ---------------- UI glue -----------------
+    // Tab switcher
+    $$(".acd-segmented [role='tab']").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        $$(".acd-segmented [role='tab']").forEach(b=>b.setAttribute("aria-selected","false"));
+        btn.setAttribute("aria-selected","true");
+        const target = btn.getAttribute("data-target");
+        $$("[data-pane]").forEach(p=>p.classList.remove("is-active"));
+        $("#"+target).classList.add("is-active");
+        $("#results").innerHTML = "";
+      });
+    });
+
+    // Toggle rapport method forms
+    $$("input[name='rapportmethod']").forEach(r=>{
+      r.addEventListener("change", ()=>{
+        const method = $("input[name='rapportmethod']:checked").value;
+        $("#form-rapport-ey").style.display = method==="employer_year" ? "" : "none";
+        $("#form-rapport-code").style.display = method==="group_code" ? "" : "none";
+      });
+    });
+    $$("input[name='werknemermethod']").forEach(r=>{
+      r.addEventListener("change", ()=>{
+        const method = $("input[name='werknemermethod']:checked").value;
+        $("#form-wn-name").style.display = method==="name_dob" ? "" : "none";
+        $("#form-wn-code").style.display = method==="employee_code" ? "" : "none";
+      });
+    });
+
+    function renderResults(list){
+      const wrap = $("#results");
+      wrap.innerHTML = "";
+      if(!list || !list.length){
+        wrap.innerHTML = `<div class="acd-muted">Geen resultaten gevonden.</div>`;
+        return;
+      }
+      list.forEach(item=>{
+        const pillClass = item.type==="group" ? "acd-pill acd-pill--group" :
+                          item.type==="individual" ? "acd-pill acd-pill--individual" : "acd-pill";
+        const el = document.createElement("div");
+        el.className = "acd-result";
+        el.innerHTML = `
+          <div>
+            <div class="acd-result__title">${item.title}</div>
+            <div class="acd-result__meta">${item.subtitle||""}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="${pillClass}">${item.type_label||item.type}</span>
+            <a class="acd-btn acd-btn--ghost" href="${item.open_url||'#'}">Open</a>
+          </div>
+        `;
+        wrap.appendChild(el);
+      });
+    }
+
+    // Submit handlers
+    $("#form-rapport-ey").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const employer = $("#employer_name").value.trim();
+      const year = $("#year").value.trim();
+      const rtype = $("input[name='rapporttype']:checked").value;
+      if(employer.length < 2){ toast("Voer minimaal 2 tekens in voor werkgever."); return; }
+      if(!/^\\d{4}$/.test(year)){ toast("Voer een geldig jaartal in (bijv. 2025)."); return; }
+      spinner.show();
+      try{
+        const data = await doSearch({ mode:"report", via:"employer_year", reportKind: rtype, employerName: employer, year: Number(year) });
+        renderResults(data.results);
+        toast(`${(data.results||[]).length||0} resultaat/resultaten`);
+      }catch(err){ console.error(err); toast("Er ging iets mis bij zoeken."); }
+      finally{ spinner.hide(); }
+    });
+
+    $("#form-rapport-code").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const code = $("#group_code").value.trim();
+      const rtype = $("input[name='rapporttype']:checked").value;
+      if(code.length < 3){ toast("Voer een (deel van) groepsrapportcode in."); return; }
+      spinner.show();
+      try{
+        const data = await doSearch({ mode:"report", via:"group_code", reportKind: rtype, groupCode: code });
+        renderResults(data.results);
+        toast(`${(data.results||[]).length||0} resultaat/resultaten`);
+      }catch(err){ console.error(err); toast("Er ging iets mis bij zoeken."); }
+      finally{ spinner.hide(); }
+    });
+
+    $("#form-wn-name").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const name = $("#employee_name").value.trim();
+      const dob = (function(input){
+        if(!input) return "";
+        if(/^\\d{4}-\\d{2}-\\d{2}$/.test(input)) return input;
+        const m = input.match(/^(\\d{1,2})[\\/\\-](\\d{1,2})[\\/\\-](\\d{4})$/);
+        if(m){ const [_, d, mo, y] = m; return `${y}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`; }
+        return input;
+      })($("#employee_dob").value.trim());
+      if(name.length < 2){ toast("Voer minimaal 2 tekens in voor naam."); return; }
+      if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(dob)){ toast("Geboortedatum mist of is ongeldig."); return; }
+      spinner.show();
+      try{
+        const data = await doSearch({ mode:"employee", via:"name_dob", employeeName: name, dob });
+        renderResults(data.results);
+        toast(`${(data.results||[]).length||0} resultaat/resultaten`);
+      }catch(err){ console.error(err); toast("Er ging iets mis bij zoeken."); }
+      finally{ spinner.hide(); }
+    });
+
+    $("#form-wn-code").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const code = $("#employee_code").value.trim();
+      if(code.length < 3){ toast("Voer een dossiercode in."); return; }
+      spinner.show();
+      try{
+        const data = await doSearch({ mode:"employee", via:"employee_code", employeeCode: code });
+        renderResults(data.results);
+        toast(`${(data.results||[]).length||0} resultaat/resultaten`);
+      }catch(err){ console.error(err); toast("Er ging iets mis bij zoeken."); }
+      finally{ spinner.hide(); }
+    });
+
+    $("#btn-quick-search").addEventListener("click", async ()=>{
+      const code = $("#quick_any_code").value.trim();
+      if(!code){ toast("Voer een code in."); return; }
+      spinner.show();
+      try{
+        const data = await doSearch({ mode:"quick_code", code });
+        renderResults(data.results);
+        toast(`${(data.results||[]).length||0} resultaat/resultaten`);
+      }catch(err){ console.error(err); toast("Er ging iets mis bij zoeken."); }
+      finally{ spinner.hide(); }
+    });
+
+    // Clear buttons
+    $("#btn-reset-rapport").addEventListener("click", ()=>{ $("#employer_name").value = ""; $("#year").value = ""; $("#results").innerHTML=""; });
+    $("#btn-reset-code").addEventListener("click", ()=>{ $("#group_code").value = ""; $("#results").innerHTML=""; });
+    $("#btn-reset-wn-name").addEventListener("click", ()=>{ $("#employee_name").value = ""; $("#employee_dob").value = ""; $("#results").innerHTML=""; });
+    $("#btn-reset-wn-code").addEventListener("click", ()=>{ $("#employee_code").value = ""; $("#results").innerHTML=""; });
+    $("#btn-reset-quick").addEventListener("click", ()=>{ $("#quick_any_code").value = ""; $("#results").innerHTML=""; });
+    $("#btn-clear").addEventListener("click", ()=>{
+      ["employer_name","year","group_code","employee_name","employee_dob","employee_code","quick_any_code"].forEach(id=>{ const el=$("#"+id); if(el) el.value=""; });
+      $("#results").innerHTML="";
+    });
+
+    // Fake "Nieuwe werkgever"
+    $("#btn-new-employer").addEventListener("click", (e)=>{
+      e.preventDefault();
+      toast("Nieuwe werkgever – actie kan worden gekoppeld.");
+    });
+
+  })();
+  </script>
+</body>
+</html>

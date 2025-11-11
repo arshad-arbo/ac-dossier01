@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AC‑Dossier • Werknemer | Mijn keuringen</title>
+  <style>
+    :root{--bg:#ffffff;--primary:#ec641a;--teal:#79c6c0;--accent:#85cee4;--slate:#686c7c;--ink:#4c505a;--steel:#69a1b1;--surface:#f7f7f7;--ring:1px solid #e5e7eb;--radius:16px;--shadow:0 10px 30px rgba(0,0,0,.08);--shadow-lg:0 18px 45px rgba(0,0,0,.14)}
+    *{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--surface);color:#1f2937;font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
+    header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid #e5e7eb}
+    .topbar{display:flex;align-items:center;gap:16px;padding:12px 18px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}.brand-dot{width:28px;height:28px;border-radius:7px;background:var(--primary)}
+    .container{max-width:1100px;margin:20px auto;padding:0 16px}
+    .card{background:#fff;border-radius:16px;box-shadow:var(--shadow);border:var(--ring);padding:16px}
+    h2{margin:.2rem 0 .6rem;color:var(--ink)}.muted{color:#6b7280}.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:12px;border:1px solid #e5e7eb;background:#fff;cursor:pointer}
+    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}.btn[disabled]{opacity:.55;cursor:not-allowed}
+    .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;perspective:1200px}@media(max-width:980px){.tiles{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.tiles{grid-template-columns:1fr}}
+    .tile{--s:1;--rx:0deg;--ry:0deg;--tz:0px;--ty:0px;display:grid;grid-template-rows:auto 1fr;gap:10px;padding:18px;border:1px solid #eef2f7;border-radius:14px;background:#fff;transform:translateZ(var(--tz)) translateY(var(--ty)) scale(var(--s)) rotateX(var(--rx)) rotateY(var(--ry));transition:transform .16s cubic-bezier(.2,.6,.2,1),box-shadow .16s ease,border-color .16s ease;box-shadow:var(--shadow);cursor:pointer}
+    .tile:hover{--s:1.08;--tz:26px;--ty:-6px;border-color:#e3e8ee;box-shadow:var(--shadow-lg)}.tile .ico{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:#fff3eb;border:1px solid #ffd9c3}
+    .tile svg{width:26px;height:26px;fill:var(--primary)}.tile strong{font-size:1.05rem}.tile p{margin:0;color:#6b7280;font-size:.95rem}
+    .consent{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+    .toast{position:fixed;right:16px;bottom:16px;background:#111;color:#fff;padding:10px 12px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);display:none;z-index:50}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:55}
+    .modal.active{display:flex}.modal .panel{background:#fff;max-width:720px;width:92%;border-radius:14px;border:var(--ring);box-shadow:var(--shadow-lg)}
+    .modal header{padding:12px 16px;border-bottom:1px solid #eef2f7}.modal .content{padding:14px 16px}.modal footer{padding:12px 16px;border-top:1px solid #eef2f7;display:flex;gap:8px;justify-content:flex-end}
+    .tip{position:relative}.tip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:0;background:#111;color:#fff;padding:6px 8px;border-radius:8px;white-space:nowrap;font-size:.88rem}
+  </style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <span class="brand"><span class="brand-dot"></span><span>AC‑Dossier <small style="color:#686c7c">werknemer</small></span></span>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn" onclick="location.href='#/home'">Home</button>
+      <button class="btn primary" onclick="location.href='#/mijn-keuringen'">Mijn keuringen</button>
+    </div>
+  </div>
+</header>
+<main class="container" id="app"></main>
+
+<div id="toast" class="toast"></div>
+<div class="modal" id="modal"><div class="panel"><header><strong id="modalTitle">Bevestiging</strong></header><div class="content" id="modalBody"></div><footer id="modalFoot"></footer></div></div>
+
+<script>
+// Iconen
+const I={
+  biometrie:'<svg viewBox="0 0 24 24"><path d="M7 20v-2a5 5 0 1 1 10 0v2" stroke="currentColor" fill="none"/><circle cx="12" cy="8" r="3"/></svg>',
+  anamnese:'<svg viewBox="0 0 24 24"><path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3V4Z"/><path d="M8 8h8M8 12h6M8 16h4" stroke="currentColor" fill="none"/></svg>',
+  ecg:'<svg viewBox="0 0 24 24"><path d="M3 9c0-3 2.5-5 5.2-5 3 0 4.8 2.8 4.8 2.8S14.8 4 17.8 4C20.5 4 23 6 23 9c0 7-10 11-10 11S3 16 3 9Z"/><path d="M3 12h4l2-3 3 6 2-3h7" stroke="currentColor" fill="none"/></svg>',
+  visus:'<svg viewBox="0 0 24 24"><path d="M1 12s4-6 11-6 11 6 11 6-4 6-11 6S1 12 1 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+  bloed:'<svg viewBox="0 0 24 24"><path d="M12 2s6 6.7 6 11a6 6 0 0 1-12 0c0-4.3 6-11 6-11Z"/></svg>',
+  urine:'<svg viewBox="0 0 24 24"><path d="M5 5h14M7 5l1 13a4 4 0 0 0 4 3 4 4 0 0 0 4-3l1-13H7Z"/><path d="M9 9h6" stroke="currentColor" fill="none"/></svg>',
+  spiro:'<svg viewBox="0 0 24 24"><path d="M12 2v20M12 7c-2 0-4 1-5 3l-2 5c-1 3 1 5 4 5h3V7Zm0 0c2 0 4 1 5 3l2 5c1 3-1 5-4 5h-3V7Z"/></svg>',
+  audiometrie:'<svg viewBox="0 0 24 24"><path d="M13 19c0 1.7-1.3 3-3 3s-3-1.3-3-3 1-2.5 2-3 2-1.3 2-3a4 4 0 1 0-8 0"/><path d="M14 12a6 6 0 1 0-12 0" stroke="currentColor" fill="none"/></svg>',
+  ergo:'<svg viewBox="0 0 24 24"><circle cx="17" cy="4" r="2"/><path d="M4 17l5-5 2 2 2-3 3 2-3 5-3 2-6-3Z"/></svg>',
+  narcotica:'<svg viewBox="0 0 24 24"><path d="M9 2h6v3l-1 1v2h-4V6L9 5V2Z"/><rect x="7" y="8" width="10" height="12" rx="2"/><path d="M9 13h6" stroke="currentColor" fill="none"/></svg>',
+  vragenlijst:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.1 2c-.7.5-1.1.9-1.1 1.7V14" stroke="currentColor" fill="none"/><circle cx="12" cy="17" r="1.2"/></svg>'
+};
+const LIB = {
+  biometrie:{title:'Biometrie',desc:'Lengte, gewicht, BMI en vitale parameters.',icon:'biometrie'},
+  anamnese:{title:'Anamnese',desc:'Medische voorgeschiedenis en huidige klachten.',icon:'anamnese'},
+  ecg:{title:'ECG',desc:'Rust-ECG.',icon:'ecg'},
+  visus:{title:'Visus',desc:'Zichtmeting en kleurenzien.',icon:'visus'},
+  bloed:{title:'Bloedonderzoek',desc:'Laboratoriumbepalingen.',icon:'bloed'},
+  urine:{title:'Urineonderzoek',desc:'Strooktest/lab.',icon:'urine'},
+  spiro:{title:'Spirometrie',desc:'Longfunctie (FEV1, FVC).',icon:'spiro'},
+  audiometrie:{title:'Audiometrie',desc:'Gehoortest.',icon:'audiometrie'},
+  ergo:{title:'Ergometrie',desc:'Fietstest/fitheid.',icon:'ergo'},
+  narcotica:{title:'Narcotica',desc:'Middelengebruik conform protocol.',icon:'narcotica'},
+  vragenlijst_algemeen:{title:'Vragenlijst Algemeen',desc:'Algemene gezondheid en leefstijl.',icon:'vragenlijst'},
+  vragenlijst_werkstress:{title:'Werkstress (PSA)',desc:'Werkdruk en herstel.',icon:'vragenlijst'},
+  vragenlijst_beeldscherm:{title:'Beeldschermwerk',desc:'Ogen/nek/schouders.',icon:'vragenlijst'}
+};
+function cap(s){return String(s||'').replace(/[_\-]+/g,' ').replace(/\b\w/g,m=>m.toUpperCase())}
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+
+// Inname: ?elements=ecg,visus,... of uit matrix snapshot
+const params=new URLSearchParams(location.search);
+let KEYS=params.get('elements')?params.get('elements').split(',').map(s=>s.trim().toLowerCase()):null;
+if(!KEYS){ try{ const vers=JSON.parse(localStorage.getItem('matrix_versions')||'[]'); if(vers.length){ const snap=JSON.parse(vers.at(-1).snapshot||'{}'); const fn=(snap.functions||[])[0]; if(fn){ const apply=(snap.cells||[]).filter(c=>c.function_id===fn.function_id && c.status!=='not_apply'); const measures=snap.measures||[]; KEYS=apply.map(c=>(measures.find(m=>m.measure_id===c.measure_id)||{}).name||'').filter(Boolean).map(n=>n.toLowerCase()); } } }catch(e){} }
+if(!Array.isArray(KEYS)||!KEYS.length){ KEYS=['biometrie','anamnese','ecg','visus','bloed','urine','vragenlijst_algemeen','vragenlijst_werkstress']; }
+
+function render(){
+  const root=document.getElementById('app'); const out=[];
+  out.push('<div class="card">');
+  out.push('<h2>Mijn keuringen</h2>');
+  out.push('<div class="muted" style="margin:.5rem 0 1rem">Op basis van het door u gekozen beroep op de vorige pagina en de beroepsgebonden risico\'s uit de Risico Inventarisatie en Evaluatie van uw werkgever zijn door de keurings en bedrijfsarts de volgende keuringselementen voor u klaargezet.<br/>Klikt u op de tegels om per element een korte beschrijving te lezen wat de keuring voor u inhoud.</div>');
+  out.push('<div class="tiles">');
+  const used=new Set();
+  KEYS.forEach(k=>{ const t=LIB[k]||{title:cap(k),desc:'Beschrijving volgt.',icon:'vragenlijst'}; if(used.has(k)) return; used.add(k); out.push(tileHtml(t)); });
+  out.push('</div>');
+  out.push('<div class="card" style="margin-top:16px;background:#f7f7f7">');
+  out.push('<h3 style="margin:.2rem 0 .6rem">Deelnameverklaring</h3>');
+  out.push('<div class="muted">Uw werkgever is wettelijk verplicht u deze keuring aan te bieden, maar u mag er gebruik van maken. Geeft u alstublieft hieronder uw keuze voor deelname aan.</div>');
+  out.push('<div class="consent"><button class="btn primary" id="yes">Ja ik doe mee aan het PAGO-Onderzoek</button><button class="btn" id="no">Nee ik zie voor nu af van deelname</button><span id="info" class="muted"></span></div>');
+  out.push('</div></div>');
+  root.innerHTML=out.join('');
+  bindTiles();
+  wireConsent();
+}
+function tileHtml(t){ return '<div class="tile" tabindex="0"><div class="top"><span class="ico">'+I[t.icon]+'</span><strong>'+escapeHtml(t.title)+'</strong></div><p>'+escapeHtml(t.desc)+'</p></div>'; }
+function bindTiles(){ document.querySelectorAll('.tile').forEach(el=>el.addEventListener('click',()=>openModal('Keuringselement',el.innerHTML,[{label:'Sluiten'}]))); }
+
+// Consent met 5 werkdagen
+const CK='pago_consent_v1';
+function workingDaysFrom(ts,days){ const d=new Date(ts); let add=0; while(add<days){ d.setDate(d.getDate()+1); const w=d.getDay(); if(w!==0&&w!==6) add++; } return d; }
+function readC(){ try{ return JSON.parse(localStorage.getItem(CK)||'null'); }catch(e){ return null; } }
+function saveC(v){ const now=Date.now(); const dl=workingDaysFrom(now,5).getTime(); const o={value:v,ts:now,deadline:dl}; localStorage.setItem(CK,JSON.stringify(o)); return o; }
+function wireConsent(){
+  const yes=document.getElementById('yes'), no=document.getElementById('no'), info=document.getElementById('info');
+  const state=readC(); update(state);
+  yes.onclick=()=>{ const st=saveC('yes'); openModal('Bevestiging','<p>Uw keuze <b>Ja, ik doe mee aan het PAGO‑Onderzoek</b> is geregistreerd.</p><p class="muted">U kunt deze keuze nog wijzigen binnen 5 werkdagen.</p>'); update(st); };
+  no.onclick =()=>{ const st=saveC('no'); openModal('Bevestiging','<p>Uw keuze <b>Nee, ik zie voor nu af van deelname</b> is geregistreerd.</p><p class="muted">U kunt deze keuze nog wijzigen binnen 5 werkdagen.</p>'); update(st); };
+  function update(st){
+    if(!st){ info.textContent=''; return; }
+    const dt=new Date(st.ts).toLocaleString('nl-NL'), dl=new Date(st.deadline).toLocaleDateString('nl-NL');
+    info.textContent='Geregistreerde keuze: ' + (st.value==='yes'?'Ja, ik doe mee':'Nee, ik doe niet mee') + ' • gemaakt op ' + dt + ' • herzien tot en met ' + dl;
+    let rev=document.getElementById('rev'); if(!rev){ rev=document.createElement('button'); rev.id='rev'; rev.className='btn'; rev.textContent='Keuze herzien'; info.insertAdjacentElement('afterend',rev); }
+    const locked=Date.now()>st.deadline; rev.disabled=locked; if(locked){ rev.classList.add('tip'); rev.setAttribute('data-tip','Herzieningstermijn verlopen'); } else { rev.classList.remove('tip'); rev.removeAttribute('data-tip'); }
+    rev.onclick=()=>openModal('Keuze herzien','<p>Wilt u uw eerdere keuze herzien?</p>',[{label:'Deelname',onClick:()=>{update(saveC('yes')); toast('Keuze bijgewerkt.')}},{label:'Afzien',onClick:()=>{update(saveC('no')); toast('Keuze bijgewerkt.')}},{label:'Sluiten'}]);
+  }
+}
+
+// Modal/Toast
+function openModal(title,html,buttons){ const m=document.getElementById('modal'); document.getElementById('modalTitle').textContent=title; document.getElementById('modalBody').innerHTML=html; const f=document.getElementById('modalFoot'); f.innerHTML=''; (buttons||[{label:'Sluiten'}]).forEach(b=>{ const btn=document.createElement('button'); btn.className='btn'; btn.textContent=b.label; btn.onclick=()=>{ if(b.onClick) b.onClick(); m.classList.remove('active'); }; f.appendChild(btn); }); m.classList.add('active'); m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('active'); },{once:true}); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2200); }
+
+render();
+</script>
+</body>
+</html>

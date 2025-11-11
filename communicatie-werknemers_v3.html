@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Communicatie werknemers – PAGO informatiebericht</title>
+  <style>
+    :root{
+      --kleur1:#ec641a; --kleur2:#79c6c0; --kleur3:#85cee4; --kleur4:#686c7c;
+      --kleur5:#4c505a; --kleur6:#69a1b1; --kleur8:#f7f7f7; --text:#2b2f36;
+      --ring:1px solid rgba(0,0,0,.12); --radius:12px; --shadow:0 6px 20px rgba(0,0,0,.10);
+    }
+    *{box-sizing:border-box} body{margin:0;font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text)}
+    header.top{position:sticky;top:0;background:#fff;border-bottom:var(--ring);z-index:5}
+    header.top .inner{max-width:1100px;margin:0 auto;padding:14px 18px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:10px}.brand .dot{width:12px;height:12px;border-radius:999px;background:var(--kleur1)}
+    .brand h1{font-size:18px;margin:0}
+    main{max-width:1100px;margin:0 auto;padding:18px}
+    .card{border:var(--ring);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;background:#fff}
+    .muted{color:#616875}.small{font-size:12px}.lead{font-size:15px}
+    .toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:var(--ring);border-radius:10px;background:var(--kleur8)}
+    .tool{appearance:none;border:1px solid #d7dbe3;background:#fff;padding:8px 10px;border-radius:10px;cursor:pointer}
+    .tool[disabled]{opacity:.4;cursor:not-allowed} select.tool{padding:7px 10px}
+    .editor-wrap{margin-top:10px;border:var(--ring);border-radius:12px;overflow:hidden}
+    .editor{min-height:360px;padding:18px;outline:none;background:#fff}
+    .editor[contenteditable="false"]{background:#fafafa}
+    .pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:6px 10px;border:1px solid #e1e5ea;background:#fff;font-weight:600}
+    .pill .led{width:8px;height:8px;border-radius:999px;background:#c2c7cf}
+    .pill.ok{background:#e9f8ef;border-color:#b3e2c0}.pill.ok .led{background:#19a04b}
+    .pill.warn{background:#fff4e9;border-color:#ffd0a8}.pill.warn .led{background:#ec641a}
+    .footerbar{position:sticky;bottom:0;background:#fff;border-top:var(--ring)}
+    .footerbar .inner{max-width:1100px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .btn{appearance:none;border:1px solid #d7dbe3;background:#fff;padding:10px 14px;border-radius:12px;cursor:pointer}
+    .btn.primary{background:var(--kleur1);color:#fff;border-color:#d85f1a}
+    .btn[disabled]{opacity:.55;cursor:not-allowed}
+    .stack{display:flex;gap:8px;flex-wrap:wrap}
+    @media (max-width:920px){ .row{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<header class="top">
+  <div class="inner">
+    <div class="brand"><div class="dot"></div><h1>Communicatie werknemers – PAGO informatiebericht</h1></div>
+    <span class="small muted">Stap: informeren medewerkers</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <label for="userName" class="small muted">Uw naam:</label>
+      <input id="userName" class="small" style="padding:6px 8px;border:1px solid #d7dbe3;border-radius:8px" placeholder="Naam voor logboek"/>
+    </div>
+  </div>
+</header>
+<main>
+  <section class="card">
+    <p class="lead"><strong>Instructie:</strong> Zet op dit scherm het informatiebericht voor uw collega's in het portaal klaar. Deze tekst is uw introductie tekst in het portaal. Uw tekst verwelkomt uw collega's in het proces, nadat ze een inlog en wachtwoord hebben aangemaakt.</p>
+    <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span id="statusPill" class="pill warn"><span class="led"></span><span id="statusText">Concept – nog niet verzendbaar</span></span>
+      <span class="small muted">Klik op <em>Tekst aanpassen</em> om te bewerken en op <em>Tekst finaliseren</em> om te vergrendelen.</span>
+    </div>
+    <div class="toolbar" id="toolbar" style="margin-top:12px">
+      <select class="tool" id="formatBlock">
+        <option value="p">Alinea</option><option value="h1">Kop 1</option><option value="h2">Kop 2</option><option value="h3">Kop 3</option>
+      </select>
+      <select class="tool" id="fontSize">
+        <option value="3">Normaal</option><option value="4">+</option><option value="5">++</option><option value="2">−</option>
+      </select>
+      <button class="tool" data-cmd="bold"><b>B</b></button>
+      <button class="tool" data-cmd="italic"><i>I</i></button>
+      <button class="tool" data-cmd="underline"><u>U</u></button>
+      <button class="tool" data-cmd="removeFormat">Opmaak wissen</button>
+      <button class="tool" data-cmd="insertUnorderedList">• lijst</button>
+      <button class="tool" data-cmd="insertOrderedList">1. lijst</button>
+      <button class="tool" data-cmd="outdent">←</button>
+      <button class="tool" data-cmd="indent">→</button>
+      <button class="tool" data-cmd="justifyLeft">Links</button>
+      <button class="tool" data-cmd="justifyCenter">Midden</button>
+      <button class="tool" data-cmd="justifyRight">Rechts</button>
+      <button class="tool" id="linkBtn">🔗 link</button>
+      <button class="tool" data-cmd="undo">↺</button>
+      <button class="tool" data-cmd="redo">↻</button>
+    </div>
+    <div class="editor-wrap">
+      <div id="editor" class="editor" contenteditable="false" spellcheck="true">
+        <h2>Welkom bij het PAGO</h2>
+        <p>Beste collega,</p>
+        <p>We nodigen je uit om mee te doen aan het <strong>PAGO: Periodiek Arbeidsgezondheidskundig Onderzoek</strong>. Dit onderzoek helpt ons om te bekijken of het werk ergens gezondheidsrisico’s oplevert en of onze maatregelen nog goed werken. Zo houden we het werk gezond en veilig, nu én in de toekomst.</p>
+        <h3>Waarom bieden wij dit aan?</h3>
+        <ul>
+          <li><strong>Goed werkgeverschap:</strong> we willen dat iedereen veilig en gezond kan werken.</li>
+          <li><strong>Zorg voor elkaar:</strong> met het PAGO sporen we klachten vroeg op en kunnen we snel verbeteren.</li>
+          <li><strong>Wettelijke verplichting:</strong> werkgevers moeten het PAGO aanbieden; deelname is vrijwillig.</li>
+        </ul>
+        <h3>Wat is een PAGO?</h3>
+        <p>Een PAGO richt zich op <em>risico’s in het werk</em>. De inhoud sluit aan op onze <strong>RI&amp;E</strong> en kan bestaan uit vragenlijsten en eenvoudige metingen die passen bij jouw werk. De bedrijfsarts bepaalt de inhoud en begeleiding.</p>
+        <h3>Wat gebeurt er met de uitkomsten?</h3>
+        <ul>
+          <li><strong>Privacy:</strong> je krijgt persoonlijk advies; medische informatie delen we niet met je leidinggevende.</li>
+          <li><strong>Groepsrapportage:</strong> we gebruiken geanonimiseerde uitkomsten om beleid en werkplek te verbeteren <em>(vanaf minimaal 20 deelnemers om de anonimiteit te borgen)</em>.</li>
+        </ul>
+        <h3>Vrijwillig meedoen</h3>
+        <p>Meedoen is vrijwillig. Hoe meer collega’s meedoen, hoe beter we kunnen verbeteren. Alvast bedankt voor je deelname!</p>
+        <p class="small muted"><em>Toelichting:</em> Een PMO (preventief medisch onderzoek) gaat over algemene gezondheid en inzetbaarheid; het PAGO kijkt specifiek naar gezondheid in relatie tot risico’s in het werk.</p>
+      </div>
+    </div>
+  
+<section class="card" style="max-width:1100px;margin:12px auto">
+  <details id="logWrap">
+    <summary style="cursor:pointer"><strong>Log register</strong> <span class="small muted">– wijzigingen bij finaliseren</span></summary>
+    <div id="logList" class="small" style="margin-top:10px">
+      <div class="muted">Nog geen wijzigingen gelogd.</div>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="exportLogBtn" type="button">Download log (JSON)</button>
+      <button class="btn" id="clearLogBtn" type="button">Leeg log</button>
+    </div>
+  </details>
+</section>
+</section>
+</main>
+<div class="footerbar">
+  <div class="inner">
+    <div class="stack">
+      <button class="btn primary" id="finalBtn">Tekst finaliseren</button>
+      <button class="btn" id="editBtn">Tekst aanpassen</button>
+      <button class="btn" id="ctrlBtn">Controleren namen deelnemers en zakelijke email adressen</button>
+    </div>
+    <div class="stack">
+      <a class="btn" id="downloadBtn" href="communicatie-werknemers_v2.html" download>Download deze pagina</a>
+      <button class="btn" id="homeBtn">HOME</button>
+      <button class="btn" id="krBtn">Klantreis</button>
+    </div>
+  </div>
+</div>
+<script>
+const toolbar=document.getElementById('toolbar'); const editor=document.getElementById('editor');
+const finalBtn=document.getElementById('finalBtn'); const editBtn=document.getElementById('editBtn');
+const statusPill=document.getElementById('statusPill'); const statusText=document.getElementById('statusText');
+const LS_DRAFT='comm_werknemers_draft', LS_FINAL='comm_werknemers_final', LS_IS_FINAL='comm_werknemers_is_final';
+function setToolbar(on){ toolbar.querySelectorAll('.tool,select').forEach(el=>el.disabled=!on); }
+function setEditable(on){ editor.setAttribute('contenteditable', on?'true':'false'); setToolbar(on); }
+function setFinalUI(isFinal){
+  if(isFinal){ statusPill.classList.add('ok'); statusPill.classList.remove('warn'); statusText.textContent='Gereed – verzendbaar'; editBtn.disabled=true; finalBtn.disabled=true; setEditable(false); }
+  else{ statusPill.classList.remove('ok'); statusPill.classList.add('warn'); statusText.textContent='Concept – nog niet verzendbaar'; editBtn.disabled=false; finalBtn.disabled=false; setEditable(false); }
+}
+(function(){ const f=localStorage.getItem(LS_FINAL), d=localStorage.getItem(LS_DRAFT), ok=localStorage.getItem(LS_IS_FINAL)==='1'; if(ok&&f){editor.innerHTML=f;} else if(d){editor.innerHTML=d;} setFinalUI(ok); })();
+toolbar.addEventListener('click',e=>{ const btn=e.target.closest('.tool'); if(!btn||btn.tagName==='SELECT')return; const cmd=btn.dataset.cmd; if(!cmd)return; if(cmd==='createLink'){ const url=prompt('Link-URL invoeren:'); if(url) document.execCommand('createLink', false, url); } else { document.execCommand(cmd,false,null); } });
+document.getElementById('linkBtn').addEventListener('click', ()=>{ const url=prompt('Link-URL invoeren:'); if(url) document.execCommand('createLink', false, url); });
+document.getElementById('formatBlock').addEventListener('change', e=>document.execCommand('formatBlock', false, e.target.value));
+document.getElementById('fontSize').addEventListener('change', e=>document.execCommand('fontSize', false, e.target.value));
+editBtn.addEventListener('click', ()=>{ if(editBtn.disabled) return; setEditable(true); editor.focus(); });
+finalBtn.addEventListener('click', ()=>{ localStorage.setItem(LS_FINAL, editor.innerHTML); localStorage.setItem(LS_IS_FINAL, '1'); setFinalUI(true); alert('Tekst is gefinaliseerd en klaar om te verzenden.'); });
+editor.addEventListener('input', ()=>{ localStorage.setItem(LS_DRAFT, editor.innerHTML); localStorage.setItem(LS_IS_FINAL, '0'); setFinalUI(false); });
+document.getElementById('ctrlBtn').addEventListener('click', ()=>location.href='controleren-deelnemers.html');
+document.getElementById('homeBtn').addEventListener('click', ()=>location.href='werkgever-landingsscherm.html');
+document.getElementById('krBtn').addEventListener('click', ()=>location.href='klantreis_volgende_stappen_v7.html');
+
+// ===== Logging setup =====
+const userNameEl = document.getElementById('userName');
+const LS_USER = 'comm_werknemers_user';
+const LS_LOG  = 'comm_werknemers_log'; // array of {tsISO, tsNL, user, oldHtml}
+
+function loadLog(){ try{ return JSON.parse(localStorage.getItem(LS_LOG)||'[]'); }catch(e){ return []; } }
+function saveLog(arr){ localStorage.setItem(LS_LOG, JSON.stringify(arr)); }
+
+function renderLog(){
+  const list = loadLog();
+  const wrap = document.getElementById('logList');
+  if(!wrap) return;
+  if(!list.length){
+    wrap.innerHTML = '<div class="muted">Nog geen wijzigingen gelogd.</div>';
+    return;
+  }
+  wrap.innerHTML = list.map((it, idx)=>{
+    const safeUser = it.user ? it.user.replace(/[<>&]/g, s=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[s])) : '—';
+    const snippet = (it.oldHtml||'').replace(/<[^>]+>/g,' ').slice(0,120).replace(/[ \n\r\t]+/g,' ').trim();
+    return `<div style="border:1px solid #e7ebf2;border-radius:8px;padding:8px 10px;margin:6px 0">
+      <div><strong>${safeUser}</strong> – <span class="muted">${it.tsNL}</span></div>
+      <div class="small muted">${snippet || '&nbsp;'}</div>
+      <div style="margin-top:6px">
+        <button class="btn" data-view-log="${idx}" type="button">Bekijken</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showLogEntry(idx){
+  const list = loadLog();
+  const it = list[idx];
+  if(!it){ alert('Logitem niet gevonden.'); return; }
+  const win = window.open('', '_blank', 'width=900,height=700');
+  const css = 'body{font:14px/1.5 system-ui,Segoe UI,Arial;padding:16px;color:#2b2f36} .muted{color:#697283} pre{white-space:pre-wrap;background:#f7f7f7;padding:10px;border-radius:8px}';
+  win.document.write(`<html><head><title>Logitem ${idx+1}</title><style>${css}</style></head><body>
+    <h2>Logboek – vorig bericht</h2>
+    <div><strong>Gebruiker:</strong> ${it.user||'—'}<br/><strong>Datum/tijd:</strong> ${it.tsNL}</div>
+    <h3>Gelogde tekst (oude versie)</h3>
+    <div>${it.oldHtml||'<em>leeg</em>'}</div>
+  </body></html>`);
+  win.document.close();
+}
+
+// Export/clear handlers
+document.getElementById('exportLogBtn')?.addEventListener('click', ()=>{
+  const blob = new Blob([ localStorage.getItem(LS_LOG)||'[]' ], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'comm-werknemers-log.json'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+});
+document.getElementById('clearLogBtn')?.addEventListener('click', ()=>{
+  if(confirm('Weet u zeker dat u het log wilt leegmaken?')){ localStorage.removeItem(LS_LOG); renderLog(); }
+});
+
+document.getElementById('logList')?.addEventListener('click', (e)=>{
+  const btn = e.target.closest('button[data-view-log]');
+  if(!btn) return;
+  showLogEntry(parseInt(btn.dataset.viewLog, 10));
+});
+
+// Persist user name
+(function initUser(){
+  const v = localStorage.getItem(LS_USER);
+  if(v && userNameEl) userNameEl.value = v;
+  userNameEl?.addEventListener('input', ()=> localStorage.setItem(LS_USER, userNameEl.value||''));
+})();
+
+// Override finalize to keep editing allowed, but log the *oude* tekst
+finalBtn.removeEventListener?.('click', ()=>{}); // no-op safeguard
+finalBtn.addEventListener('click', ()=>{
+  const user = (userNameEl?.value || '').trim() || 'Onbekende gebruiker';
+  const oldFinal = localStorage.getItem(LS_FINAL); // oude gefinaliseerde tekst (kan null zijn)
+  const oldDraft = localStorage.getItem(LS_DRAFT);
+  const oldHtml = (oldFinal!=null ? oldFinal : oldDraft) || '';
+  // Log het oude bericht
+  const now = new Date();
+  const entry = { tsISO: now.toISOString(), tsNL: now.toLocaleString('nl-NL'), user, oldHtml };
+  const log = loadLog(); log.unshift(entry); saveLog(log);
+  renderLog();
+
+  // Sla nieuwe final op
+  const html = editor.innerHTML;
+  localStorage.setItem(LS_FINAL, html);
+  localStorage.setItem(LS_IS_FINAL, '1');
+
+  // UI: verzendbaar, maar *blijft* aanpasbaar
+  statusPill.classList.add('ok'); statusPill.classList.remove('warn');
+  statusText.textContent = 'Gereed – verzendbaar';
+  editBtn.disabled = false;      // blijft beschikbaar
+  finalBtn.disabled = false;     // mag opnieuw finaliseren (logt oude tekst)
+
+  alert('Tekst is gefinaliseerd en klaar om te verzenden. Eerdere versie is gelogd.');
+});
+
+// Bij bewerken (concept) blijft status "concept"
+editor.addEventListener('input', ()=>{
+  localStorage.setItem(LS_DRAFT, editor.innerHTML);
+  localStorage.setItem(LS_IS_FINAL, '0');
+  statusPill.classList.remove('ok'); statusPill.classList.add('warn');
+  statusText.textContent = 'Concept – nog niet verzendbaar';
+});
+
+// Init log UI on load
+renderLog();
+
+// Allow editing via button
+editBtn.addEventListener('click', ()=>{ editor.setAttribute('contenteditable','true'); toolbar.querySelectorAll('.tool,select').forEach(el=>el.disabled=false); editor.focus(); });
+</script>
+</body></html>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AC-Dossier • Taken</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --primary:#ec641a;
+    --teal:#79c6c0;
+    --accent:#85cee4;
+    --slate:#686c7c;
+    --ink:#4c505a;
+    --steel:#69a1b1;
+    --surface:#f7f7f7;
+    --ring:1px solid #e5e7eb;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--surface);color:#1f2937;
+    font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial}
+  a{color:var(--steel);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid #e5e7eb}
+  .topbar{display:flex;align-items:center;gap:16px;padding:12px 18px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+  .brand-bullet{width:28px;height:28px;border-radius:7px;background:var(--primary);
+    display:grid;place-items:center;color:#fff;font-weight:800}
+  .brand small{font-weight:600;color:var(--slate)}
+  .container{max-width:1100px;margin:20px auto;padding:0 16px}
+  .card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:var(--ring);padding:16px}
+  .muted{color:#6b7280}
+  .btn{display:inline-flex;align-items:center;gap:.55rem;padding:.55rem .9rem;border-radius:12px;border:1px solid #e5e7eb;background:#fff;color:#111;cursor:pointer}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn.small{padding:.35rem .6rem;border-radius:10px;font-size:.9rem}
+  .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  h1,h2{color:var(--ink);margin:.2rem 0 .6rem}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap}
+  .tab{padding:.4rem .7rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;color:#374151;cursor:pointer}
+  .tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  table{width:100%;border-collapse:separate;border-spacing:0 10px}
+  th,td{padding:10px 12px;text-align:left}
+  tbody tr{background:#fff;border:1px solid #e5e7eb;box-shadow:var(--shadow);}
+  tbody tr td:first-child{border-radius:12px 0 0 12px}
+  tbody tr td:last-child{border-radius:0 12px 12px 0}
+  .status{display:inline-flex;align-items:center;gap:6px;padding:.2rem .5rem;border-radius:999px;border:1px solid #e5e7eb;background:#f8fafc;color:#334155;font-size:.85rem}
+  .status.open{background:#fff7ed;border-color:#fde1cc;color:#7a3b0c}
+  .status.doing{background:#ecfeff;border-color:#cffafe;color:#0e7490}
+  .status.done{background:#ecfdf5;border-color:#bbf7d0;color:#065f46}
+  .pill{padding:.2rem .6rem;border-radius:999px;background:#eef2ff;color:#1e3a8a}
+  .action-cell{display:flex;gap:8px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand"><span class="brand-bullet" aria-hidden>AC</span><span>AC-Dossier <small>prototype</small></span></div>
+      <div style="margin-left:auto" class="toolbar">
+        <a class="btn" href="takenmodule.html">Home</a>
+        <a class="btn" href="keuringsvoorstel_v2.html">Keuringsvoorstel</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <div class="toolbar" style="justify-content:space-between">
+        <h2 style="margin:0">Taken</h2>
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-filter="all">Alle</button>
+          <button class="tab" data-filter="open">Open</button>
+          <button class="tab" data-filter="today">Vandaag</button>
+          <button class="tab" data-filter="done">Afgerond</button>
+        </div>
+      </div>
+      <div class="muted">De taken hieronder zijn demo-items. “Samenstellen keuringsvoorstel” opent het nieuwe voorstel-scherm met de juiste werknemer.</div>
+      <div class="mt"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Taak</th>
+            <th>Werknemer</th>
+            <th>Werkgever</th>
+            <th>Vervaldatum</th>
+            <th>Status</th>
+            <th>Acties</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+
+<script>
+const TASKS = [
+  {id:'t1', type:'Samenstellen keuringsvoorstel', bsn:'123456782', werknemer:'A. Jansen', werkgever:'Tech BV', verval:'2025-09-21', status:'open'},
+  {id:'t2', type:'Dossiercontrole', bsn:null, werknemer:'—', werkgever:'Algemeen', verval:'2025-09-17', status:'open'},
+  {id:'t3', type:'Samenstellen keuringsvoorstel', bsn:'987654329', werknemer:'B. de Vries', werkgever:'Transport NL', verval:'2025-09-18', status:'doing'},
+  {id:'t4', type:'Rapportage accorderen', bsn:null, werknemer:'—', werkgever:'Algemeen', verval:'2025-09-10', status:'done'},
+  {id:'t5', type:'Samenstellen keuringsvoorstel', bsn:'111222333', werknemer:'C. Bakker', werkgever:'LabCo', verval:'2025-09-22', status:'open'},
+];
+
+const statusLabel = s => s==='open' ? 'Open' : s==='doing' ? 'Bezig' : 'Afgerond';
+
+function render(filter='all'){
+  const tb = document.getElementById('tbody'); tb.innerHTML='';
+  TASKS.filter(t => filter==='all' ? true : filter==='today' ? true : t.status===filter)
+    .forEach(t => {
+      const tr = document.createElement('tr');
+      const statusClass = 'status '+(t.status==='open'?'open':t.status==='doing'?'doing':'done');
+      tr.innerHTML = `
+        <td><span class="pill">${t.type}</span></td>
+        <td>${t.werknemer}</td>
+        <td>${t.werkgever}</td>
+        <td>${t.verval}</td>
+        <td><span class="${statusClass}">${statusLabel(t.status)}</span></td>
+        <td class="action-cell">
+          ${t.type==='Samenstellen keuringsvoorstel' ? `<a class="btn primary" href="keuringsvoorstel_v2.html?bsn=${t.bsn}&role=keuringsarts">Open voorstel</a>` : `<button class="btn" onclick="alert('Demo: open ${t.type}')">Open</button>`}
+          <button class="btn small" onclick="alert('Markeer als afgehandeld (demo)')">Markeer</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+}
+document.getElementById('tabs').addEventListener('click', (e)=>{
+  const tab = e.target.closest('.tab'); if(!tab) return;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  render(tab.dataset.filter);
+});
+render();
+</script>
+</body>
+</html>

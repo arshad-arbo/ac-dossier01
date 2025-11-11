@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AC‑Dossier • Werkgeversportaal – Definitief voorstel (v3)</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --primary:#ec641a; /* kleur1 */
+      --teal:#79c6c0;    /* kleur2 */
+      --accent:#85cee4;  /* kleur3 */
+      --slate:#686c7c;   /* kleur4 */
+      --ink:#4c505a;     /* kleur5 */
+      --steel:#69a1b1;   /* kleur6 */
+      --surface:#f7f7f7; /* kleur8 */
+      --ring:1px solid #e5e7eb;
+      --radius:16px;
+      --shadow:0 12px 34px rgba(0,0,0,.08);
+      --ok:#0a7f2e;
+      --warn:#b45309;
+      --bad:#a2001a;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--surface);color:#1f2937;font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
+    a{color:var(--steel)}
+    header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid #e5e7eb}
+    .topbar{display:flex;align-items:center;gap:16px;padding:12px 18px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .brand-dot{width:28px;height:28px;border-radius:7px;background:var(--primary)}
+    .top-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+    .container{max-width:1160px;margin:22px auto;padding:0 16px}
+    .card{background:#fff;border-radius:16px;box-shadow:var(--shadow);border:var(--ring);padding:14px}
+    .surface{background:var(--surface)}
+    h1,h2,h3{color:var(--ink);margin:.2rem 0 .6rem}
+    .muted{color:#6b7280}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:12px;border:1px solid #e5e7eb;background:#fff;color:#111;cursor:pointer}
+    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .btn.ghost{background:transparent}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+    .btn.sm{padding:6px 10px;font-size:.86rem;border-radius:8px}
+    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+    @media (max-width: 980px){.grid{grid-template-columns:1fr}}
+    table{width:100%;border-collapse:separate;border-spacing:0}
+    th,td{padding:10px 12px;border-bottom:1px solid #eef2f7;text-align:left}
+    thead th{position:sticky;top:0;background:#fff;color:#374151;border-bottom:2px solid #e5e7eb;z-index:1}
+    tbody tr:hover{background:#fffaf7}
+    .num{text-align:right;white-space:nowrap}
+    .pill{display:inline-block;padding:.1rem .5rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:.78rem}
+    .pill.primary{background:#fff1e9;border-color:#ffc7a3;color:#b45309}
+    .help{display:grid;gap:10px}
+    .note{padding:10px 12px;border-radius:12px;border:1px solid #eef2f7;background:#fff;display:flex;gap:8px;align-items:start}
+    .note .dot{width:10px;height:10px;border-radius:50%;margin-top:6px;background:var(--primary)}
+    .footerbar{position:sticky;bottom:0;z-index:10;margin-top:16px}
+    .footerbar .inner{display:flex;gap:10px;justify-content:space-between;align-items:center;background:#fff;border:var(--ring);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow)}
+    .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d1d5db;background:#fff}
+    .switch{display:inline-flex;gap:8px;align-items:center}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .row > *{flex:1}
+    .small{font-size:.88rem}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600}
+    .badge.ok{background:#d1f7d6;color:#055e12;border:1px solid #8bd49a}
+    .badge.no{background:#ffe3e3;color:#7a0612;border:1px solid #ffb3b3}
+    .badge.muted{background:#f1f1f1;color:#666;border:1px solid #ddd}
+    .dim{opacity:.55; filter:grayscale(.1)}
+    .kicker{font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#6b7280; font-size:.76rem}
+    .hr{height:1px;background:#eee;margin:10px 0}
+    .price-big{font-size:1.35rem;font-weight:800}
+    .sticky-side{position:sticky;top:74px}
+    .accent{color:var(--primary)}
+    /* UITLEG styling */
+    #uitleg{ font: 15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial; color: var(--ink); background:#fff; border: var(--ring); border-radius: var(--radius); box-shadow:none; }
+    #uitleg::placeholder{ color:#9aa1ad; }
+    #uitlegHelp{ color: var(--slate); font-size:.9rem; margin-top:6px }
+    /* modal */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9999}
+    .modal.active{display:flex}
+    .modal .panel{background:#fff;max-width:960px;width:94%;border-radius:12px;border:1px solid #ddd;box-shadow:0 10px 30px rgba(0,0,0,.25);overflow:hidden}
+    .modal header{padding:12px 16px;border-bottom:1px solid #eee;font-weight:700;background:#fafafa}
+    .modal .content{padding:12px 16px;max-height:75vh;overflow:auto}
+    .modal footer{padding:12px 16px;border-top:1px solid #eee;display:flex;gap:8px;justify-content:flex-end}
+    .modal .chip{display:inline-block;background:#f3f3f3;border:1px solid #e3e3e3;border-radius:8px;padding:2px 6px;margin:2px 4px;font-size:12px}
+    /* toast */
+    .toast{position:fixed;right:16px;bottom:16px;background:#111;color:#fff;border-radius:10px;padding:12px 14px;opacity:0;transform:translateY(10px);transition:.2s;z-index:99999}
+    .toast.show{opacity:1;transform:translateY(0)}
+    /* signing */
+    .signing-frame{width:100%;height:72vh;border:0;border-radius:12px;box-shadow:var(--shadow)}
+    .steps{counter-reset: s; list-style:none; padding:0; margin:.4rem 0 .8rem}
+    .steps li{counter-increment: s; margin:.2rem 0; padding-left:1.6rem; position:relative}
+    .steps li::before{content: counter(s) "."; position:absolute; left:.2rem; top:0; color:var(--primary); font-weight:700}
+    .risk{border:1px solid #fde68a;background:#fffbeb;color:#7c2d12;border-radius:12px;padding:10px}
+    .risk ul{margin:.3rem 0 .2rem 1.2rem}
+    .footer-spacer{height:58px}
+  </style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <span class="brand"><span class="brand-dot"></span><span>AC‑Dossier <small style="color:var(--slate)">werkgeversportaal</small></span></span>
+    <div class="top-actions">
+      <button class="btn" onclick="goHome()">Home</button>
+      <button class="btn" onclick="openPostvak()">Postvak</button>
+      <button class="btn ghost" onclick="openHelp()">DocuSign‑hulp</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="card surface" style="margin-bottom:14px">
+    <h2 style="margin:0 0 4px">Definitief voorstel</h2>
+    <div class="muted">Dit is het definitieve voorstel op basis van de door medewerkers opgegeven deelname. Alleen de <strong>groepsrapportage</strong> en de <strong>keuringslocatie</strong> zijn nog te kiezen. Onderteken daarna direct <strong>in dit scherm</strong>.</div>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT: inhoud en aantallen -->
+    <section class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:6px">
+        <h3 style="margin:0">Functiegroepen &amp; aantallen (definitief)</h3>
+        <div class="small muted">Tarieven per persoon (excl. BTW) – niet wijzigbaar</div>
+      </div>
+
+      <div class="card" style="margin-bottom:10px">
+        <div class="row small">
+          <span class="pill primary">PMO Basis: <span id="tariefPMO">€ 90,00</span></span>
+          <span class="pill primary">Werkdruk: <span id="tariefWD">€ 26,95</span></span>
+          <span class="pill primary">Beeldscherm: <span id="tariefBS">€ 47,95</span></span>
+          <span class="pill">Alle prijzen excl. BTW</span>
+        </div>
+      </div>
+
+      <div style="overflow:auto;max-height:480px;border:var(--ring);border-radius:12px">
+        <table aria-label="Aantal per functiegroep">
+          <thead>
+            <tr>
+              <th>Functiegroep</th>
+              <th class="num">Prijs p.p.</th>
+              <th class="num">Aantal</th>
+              <th class="num">Subtotaal</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+          <tfoot>
+            <tr>
+              <th colspan="2" class="num">Totaal deelnemers</th>
+              <th class="num"><span id="totaalDeelnemers">0</span></th>
+              <th class="num"><span id="variabeleKosten">€ 0,00</span></th>
+              <th></th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="card surface" style="margin-top:12px">
+        <label for="uitleg" style="font-weight:700;display:block;margin-bottom:6px;color:var(--slate)">Uitleg / toelichting</label>
+        <textarea id="uitleg" class="input" rows="3" placeholder="Voorbeeld: Definitieve aantallen per functiegroep zijn gevuld o.b.v. aanmeldingen."></textarea>
+        <div id="uitlegHelp">Deze toelichting wordt opgenomen in de opdrachtbevestiging.</div>
+      </div>
+    </section>
+
+    <!-- RIGHT: opties en totaal -->
+    <aside class="card sticky-side" id="totalsCard">
+      <h3 style="margin:0 0 8px">Uw keuzes &amp; totaal</h3>
+
+      <!-- locatie keuze -->
+      <div class="card surface" style="margin-bottom:10px">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <div class="kicker">Keuringslocatie</div>
+            <div class="row small" style="align-items:center">
+              <label class="switch">
+                <input type="checkbox" id="locSwitch" aria-label="Locatie wisselen"/>
+                <span>AC‑locatie</span>
+              </label>
+              <span class="muted">⇄</span>
+              <span><strong id="locLabel">AC‑locatie</strong></span>
+            </div>
+          </div>
+          <button class="btn sm" id="btnKamerEisen" type="button" style="display:none">Eisen keuringskamer</button>
+        </div>
+
+        <div id="werkgeverLocatieBox" style="display:none;margin-top:8px">
+          <div class="row">
+            <div>
+              <label class="small" for="postcode">Postcode</label>
+              <input id="postcode" class="input" placeholder="Bijv. 2201 CZ"/>
+            </div>
+            <div>
+              <label class="small" for="huisnr">Huisnr.</label>
+              <input id="huisnr" class="input" placeholder="Bijv. 11"/>
+            </div>
+            <div>
+              <label class="small" for="pros"># professionals (min. 2)</label>
+              <input id="pros" class="input" type="number" min="2" step="1" value="2"/>
+            </div>
+            <div>
+              <label class="small" for="days"># dagen</label>
+              <input id="days" class="input" type="number" min="1" step="1" value="1"/>
+            </div>
+          </div>
+
+          <div class="row" style="align-items:flex-end">
+            <div style="flex:2">
+              <label class="small">Afstand enkele reis (km)</label>
+              <div class="row">
+                <input id="kmEnkeleReis" class="input" type="number" min="0" step="0.1" placeholder="—" />
+                <button class="btn" type="button" onclick="berekenKm()">Bereken km & bedrag</button>
+              </div>
+              <div class="small muted" id="kmHint">Adres wordt automatisch opgehaald uit het DWH (indien aanwezig). Anders vragen we alleen <strong>postcode</strong> en <strong>huisnr.</strong></div>
+            </div>
+            <div>
+              <label class="small">Starttarief on‑site</label>
+              <div class="input" style="text-align:right" id="startTariefShow">€ 250,00</div>
+            </div>
+          </div>
+
+          <div class="note" style="margin-top:8px">
+            <span class="dot"></span>
+            <div class="small">
+              Reiskosten = <em>km enkele reis × 2</em> × € 0,39 × professionals × dagen. Worden doorberekend in het totaal. <br/>
+              <span class="muted">Afstand wordt berekend vanaf: Ambachtsweg 25 (Arbo Concern) → klantadres.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- groepsrapport -->
+      <div class="card surface" style="margin-bottom:10px">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <div>
+            <div class="kicker">Groepsrapportage</div>
+            <div class="small muted">Beschikbaar bij ≥ 20 deelnemers</div>
+          </div>
+          <label class="switch">
+            <input id="grpSwitch" type="checkbox" />
+            <span>Toevoegen</span>
+          </label>
+        </div>
+        <div class="row small" style="margin-top:6px">
+          <span class="badge muted" id="grpBadge">Niet beschikbaar (&lt; 20)</span>
+          <span class="muted">Tarief: <strong id="grpPrijs">€ 1.250,00</strong></span>
+        </div>
+      </div>
+
+      <!-- vaste kosten -->
+      <div class="help">
+        <div class="note"><span class="dot"></span><div>
+          <div><strong>Opstart / projectkosten per locatie</strong></div>
+          <div class="muted small">Eenmalig (vast)</div>
+          <div style="margin-top:6px"><strong id="opstartPrijs">€ 399,00</strong> <span class="muted">(excl. BTW)</span></div>
+        </div></div>
+        <div class="note" id="onSiteCosts" style="display:none"><span class="dot"></span><div>
+          <div><strong>On‑site kosten</strong></div>
+          <ul class="small" style="margin:.4rem 0 .2rem 1rem; padding:0">
+            <li>Starttarief on‑site: <strong>€ 250,00</strong></li>
+            <li>Kilometers (enkele reis): <strong id="kmOut">0,0 km</strong></li>
+            <li>Reiskosten (stelpost): <strong id="reiskostenOut">€ 0,00</strong></li>
+          </ul>
+        </div></div>
+      </div>
+
+      <div class="risk" id="riskBox" style="display:none">
+        <strong>Controle gewenst</strong>
+        <ul id="riskList"></ul>
+      </div>
+
+      <div class="hr"></div>
+
+      <!-- totaals -->
+      <div class="row small" style="justify-content:space-between">
+        <div>Variabele kosten</div>
+        <div class="num"><strong id="varKostenOut">€ 0,00</strong></div>
+      </div>
+      <div class="row small" style="justify-content:space-between">
+        <div>Vaste kosten</div>
+        <div class="num"><strong id="vasteKostenOut">€ 399,00</strong></div>
+      </div>
+      <div class="row small" style="justify-content:space-between">
+        <div>Subtotaal (excl. BTW)</div>
+        <div class="num"><strong id="subExclOut">€ 399,00</strong></div>
+      </div>
+      <div class="row small" style="justify-content:space-between">
+        <div>BTW (21%)</div>
+        <div class="num"><strong id="btwOut">€ 83,79</strong></div>
+      </div>
+      <div class="row" style="justify-content:space-between;align-items:center;margin-top:6px">
+        <div class="kicker">Totaal (incl. BTW)</div>
+        <div class="price-big" id="totaalInclOut">€ 482,79</div>
+      </div>
+      <div class="small muted">Na uw keuze(s) scrollen we automatisch hierheen en ziet u direct de definitieve prijs.</div>
+
+      <div class="hr"></div>
+
+      <div class="row">
+        <button class="btn primary" id="btnOnderteken" type="button" onclick="startEmbeddedSigning()">Definitief maken & digitaal ondertekenen</button>
+        <button class="btn" id="btnDownload" type="button" onclick="downloadDefinitief()" disabled>Download definitieve PDF</button>
+      </div>
+      <div class="small muted" id="signStatus" style="margin-top:6px">Status: Nog niet ondertekend.</div>
+    </aside>
+  </div>
+
+  <div class="footer-spacer"></div>
+  <div class="footerbar">
+    <div class="inner">
+      <div class="muted">Afronden of verder in de klantreis.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="goHome()">HOME</button>
+        <button class="btn" onclick="goKlantreis()">Naar klantreis</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- signing modal -->
+  <div class="modal" id="signingModal" aria-hidden="true" aria-labelledby="signingTitle">
+    <div class="panel">
+      <header id="signingTitle">Ondertekenen – DocuSign (in portaal)</header>
+      <div class="content">
+        <div class="small">
+          <p class="muted" style="margin:0 0 6px">Zo werkt het ondertekenen binnen dit portaal:</p>
+          <ol class="steps">
+            <li><strong>Open ondertekenen</strong>: we laden het document in dit scherm.</li>
+            <li><strong>Accepteer</strong> elektronisch ondertekenen en klik <em>Doorgaan</em>.</li>
+            <li><strong>Volg</strong> de gele <em>START</em>-tags; plaats handtekening, initialen en datum.</li>
+            <li><strong>Voltooien</strong>: klik <em>Voltooien</em>. U keert automatisch terug naar het voorstel.</li>
+          </ol>
+        </div>
+        <iframe id="signingFrame" class="signing-frame" title="DocuSign embedded signing" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+      </div>
+      <footer>
+        <button class="btn" type="button" onclick="closeSigning()">Annuleren</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- generic modal (kamer eisen / help / dank u wel / postvak) -->
+  <div class="modal" id="modal">
+    <div class="panel">
+      <header id="modalTitle">Info</header>
+      <div class="content" id="modalBody">—</div>
+      <footer>
+        <button class="btn" id="modalClose" type="button">Sluiten</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  // CONSTANTEN
+  const TARIEF = { PMO: 90.00, WD: 26.95, BS: 47.95, OPSTART: 399.00, START_ONSITE: 250.00, KM_RATE: 0.39, BTW: 0.21 };
+  const ONSITE_MIN_DAY_REVENUE = 775; // p.5 van offerte (min. waarde per dag) – sanity check
+  const PRICE_FLOOR_PP = 50, PRICE_CEIL_PP = 300; // bandbreedte per persoon (sanity)
+
+  // STATE
+  let ENVELOPE_ID = null;
+  let SIGNING_URL = null;
+  let SIGNED = false;
+  let MODEL = {
+    klantId: window.KLANT_ID || 'demo',
+    postcode: '',
+    huisnr: '',
+    locatieType: 'AC',
+    kmEnkeleReis: 0,
+    pros: 2,
+    days: 1,
+    groepRapport: false,
+    rows: [],
+    deelnemersTotaal: 0
+  };
+
+  // ELEMENTS
+  const rowsEl = document.getElementById('rows');
+  const varKostenOut = document.getElementById('varKostenOut');
+  const vasteKostenOut = document.getElementById('vasteKostenOut');
+  const subExclOut = document.getElementById('subExclOut');
+  const btwOut = document.getElementById('btwOut');
+  const totaalInclOut = document.getElementById('totaalInclOut');
+  const grpSwitch = document.getElementById('grpSwitch');
+  const grpBadge = document.getElementById('grpBadge');
+  const reiskostenOut = document.getElementById('reiskostenOut');
+  const onSiteCosts = document.getElementById('onSiteCosts');
+  const locSwitch = document.getElementById('locSwitch');
+  const locLabel = document.getElementById('locLabel');
+  const werkgeverLocatieBox = document.getElementById('werkgeverLocatieBox');
+  const kmHint = document.getElementById('kmHint');
+  const riskBox = document.getElementById('riskBox');
+  const riskList = document.getElementById('riskList');
+  const kmOut = document.getElementById('kmOut');
+
+  // HELPERS
+  const euro = (n)=> n.toLocaleString('nl-NL',{style:'currency',currency:'EUR'});
+  const clamp=(n,min,max)=> Math.max(min, Math.min(max,n));
+  const parseEuro = (txt)=> { if(!txt) return 0; const n=parseFloat(String(txt).replace(/[€\s\.]/g,'').replace(',','.')); return isNaN(n)?0:n; };
+  const showToast=(msg)=>{ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2200); };
+  const scrollTotals=()=> document.getElementById('totalsCard')?.scrollIntoView({behavior:'smooth', block:'start'});
+
+  // RENDER ROWS
+  function renderRows(){
+    rowsEl.innerHTML='';
+    let varTotal = 0;
+    MODEL.deelnemersTotaal = 0;
+    MODEL.rows.forEach((r)=>{
+      const sub = (r.prijs_pp||0) * (r.aantal||0);
+      varTotal += sub;
+      MODEL.deelnemersTotaal += (r.aantal||0);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input class="input" value="${r.naam||''}" disabled/></td>
+        <td class="num">${euro(r.prijs_pp||0)}</td>
+        <td class="num"><input class="input" value="${r.aantal||0}" disabled style="text-align:right"/></td>
+        <td class="num">${euro(sub)}</td>
+        <td class="num"><button class="btn sm inhoud-btn" type="button" data-fg="${r.naam}">Inhoud keuring</button></td>
+      `;
+      rowsEl.appendChild(tr);
+    });
+    document.getElementById('totaalDeelnemers').textContent = String(MODEL.deelnemersTotaal);
+    document.getElementById('variabeleKosten').textContent = euro(varTotal);
+    varKostenOut.textContent = euro(varTotal);
+    updateGrpAvailability();
+    renderTotals();
+  }
+
+  function updateGrpAvailability(){
+    const ok = MODEL.deelnemersTotaal >= 20;
+    grpBadge.classList.remove('ok','no','muted');
+    grpBadge.classList.add(ok ? 'ok' : 'no');
+    grpBadge.textContent = ok ? 'Beschikbaar' : 'Niet beschikbaar (< 20)';
+    if(!ok){ grpSwitch.checked = false; MODEL.groepRapport = false; }
+  }
+
+  function computeFixedCosts(){
+    let fixed = 0;
+    fixed += TARIEF.OPSTART;
+    if(MODEL.groepRapport && MODEL.deelnemersTotaal >= 20) fixed += 1250.00;
+    if(MODEL.locatieType === 'WERKGEVER'){
+      const km = clamp(Number(MODEL.kmEnkeleReis)||0, 0, 2000);
+      const pros = clamp(Number(MODEL.pros)||2, 2, 99);
+      const days = clamp(Number(MODEL.days)||1, 1, 99);
+      const travel = (km*2) * TARIEF.KM_RATE * pros * days;
+      fixed += TARIEF.START_ONSITE + travel;
+      reiskostenOut.textContent = euro(travel);
+      kmOut.textContent = `${km.toFixed(1)} km`;
+    }else{
+      reiskostenOut.textContent = euro(0);
+      kmOut.textContent = '0,0 km';
+    }
+    return fixed;
+  }
+
+  function renderTotals(){
+    const varTotal = parseEuro(document.getElementById('variabeleKosten').textContent);
+    const fixed = computeFixedCosts();
+    const sub = varTotal + fixed;
+    const btw = sub * TARIEF.BTW;
+    const incl = sub + btw;
+    vasteKostenOut.textContent = euro(fixed);
+    subExclOut.textContent = euro(sub);
+    btwOut.textContent = euro(btw);
+    totaalInclOut.textContent = euro(incl);
+    runSanityChecks(); // update risks
+  }
+
+  // SANITY CHECKS (client-side)
+  function runSanityChecks(){
+    const warnings = [];
+    const ppPrices = MODEL.rows.map(r => +r.prijs_pp || 0);
+    if(ppPrices.length){
+      const avg = ppPrices.reduce((a,b)=>a+b,0) / ppPrices.length;
+      if(avg < PRICE_FLOOR_PP || avg > PRICE_CEIL_PP){
+        warnings.push(`Gemiddelde prijs p.p. (${avg.toFixed(2)}) buiten bandbreedte €${PRICE_FLOOR_PP}–€${PRICE_CEIL_PP}.`);
+      }
+    }
+    const sub = parseEuro(subExclOut.textContent);
+    if(sub < TARIEF.OPSTART){
+      warnings.push('Subtotaal lager dan opstartkosten. Controleer invoer.');
+    }
+    if(MODEL.locatieType === 'WERKGEVER'){
+      const days = Math.max(1, +MODEL.days||1);
+      const dailyVar = MODEL.deelnemersTotaal>0 ? (parseEuro(varKostenOut.textContent)/days) : 0;
+      if(dailyVar < ONSITE_MIN_DAY_REVENUE){
+        warnings.push(`Variabele omzet/dag lijkt lager dan ondergrens (€ ${ONSITE_MIN_DAY_REVENUE}). Controleer aantallen per dag.`);
+      }
+    }
+    // render
+    riskList.innerHTML = warnings.map(w => `<li>${w}</li>`).join('');
+    riskBox.style.display = warnings.length ? 'block' : 'none';
+    return warnings;
+  }
+
+  // INIT FROM BACKEND
+  async function fetchDefinitiefVoorstel(ctx={}){
+    try{
+      const res = await fetch(`/api/ac-dossier/definitief-voorstel?klantId=${encodeURIComponent(ctx.klantId||'demo')}`, {headers:{'Accept':'application/json'}});
+      if(res.ok) return await res.json();
+    }catch(e){}
+    // fallback demo
+    return {
+      tarieven: { pmo_basis: TARIEF.PMO, werkdruk: TARIEF.WD, beeldscherm: TARIEF.BS },
+      functiegroepen: [
+        { naam:"Kantoor (beeldscherm)", prijs_pp: TARIEF.PMO+TARIEF.BS, aantal: 14 },
+        { naam:"Backoffice (werkdruk)", prijs_pp: TARIEF.PMO+TARIEF.WD, aantal: 11 },
+        { naam:"Magazijn (werkdruk)", prijs_pp: TARIEF.PMO+TARIEF.WD, aantal: 7 },
+        { naam:"Productie (werkdruk)", prijs_pp: TARIEF.PMO+TARIEF.WD, aantal: 9 },
+        { naam:"ICT (beeldscherm)", prijs_pp: TARIEF.PMO+TARIEF.BS, aantal: 6 }
+      ]
+    };
+  }
+  function renderFromBackend(data){
+    if(data?.tarieven){
+      document.getElementById('tariefPMO').textContent = euro(+data.tarieven.pmo_basis || TARIEF.PMO);
+      document.getElementById('tariefWD').textContent  = euro(+data.tarieven.werkdruk || TARIEF.WD);
+      document.getElementById('tariefBS').textContent  = euro(+data.tarieven.beeldscherm || TARIEF.BS);
+    }
+    MODEL.rows = Array.isArray(data?.functiegroepen) ? data.functiegroepen.map(fg => ({ naam: fg.naam||'', prijs_pp:+fg.prijs_pp||0, aantal:+fg.aantal||0 })) : [];
+    renderRows();
+  }
+
+  // LOCATION SWITCH
+  locSwitch.addEventListener('change', async ()=>{
+    const checked = locSwitch.checked;
+    MODEL.locatieType = checked ? 'WERKGEVER' : 'AC';
+    locLabel.textContent = checked ? 'Kantoor werkgever' : 'AC‑locatie';
+    werkgeverLocatieBox.style.display = checked ? 'block' : 'none';
+    document.getElementById('btnKamerEisen').style.display = checked ? 'inline-flex' : 'none';
+    onSiteCosts.style.display = checked ? 'flex' : 'none';
+    if(checked){ await tryPrefillPostcodeHuisnrFromDWH(); }
+    renderTotals();
+    scrollTotals();
+  });
+  grpSwitch.addEventListener('change', ()=>{ MODEL.groepRapport = !!grpSwitch.checked; renderTotals(); scrollTotals(); });
+
+  // DWH ADDRESS
+  async function tryPrefillPostcodeHuisnrFromDWH(){
+    try{
+      const res = await fetch(`/api/dwh/customer-address?klantId=${encodeURIComponent(MODEL.klantId)}`, {headers:{'Accept':'application/json'}});
+      if(res.ok){
+        const data = await res.json();
+        const pc = (data?.postcode||'').toUpperCase().trim();
+        const hn = (data?.huisnummer||data?.huisnr||'').toString().trim();
+        if(pc && hn){
+          document.getElementById('postcode').value = pc;
+          document.getElementById('huisnr').value = hn;
+          MODEL.postcode = pc; MODEL.huisnr = hn;
+          await berekenKm(true);
+          return;
+        }
+      }
+    }catch(e){}
+    showToast('Vul s.v.p. alleen postcode en huisnummer in.');
+  }
+
+  // ROUTE CALC
+  window.berekenKm = async function(auto=false){
+    const pc = (document.getElementById('postcode').value||'').toUpperCase().trim();
+    const hn = (document.getElementById('huisnr').value||'').trim();
+    if(!pc || !hn){ showToast('Vul postcode en huisnummer in.'); return; }
+    MODEL.postcode = pc; MODEL.huisnr = hn;
+    kmHint.textContent = 'Bezig met berekenen…';
+    try{
+      const r = await fetch(`/api/route/distance-km?from=${encodeURIComponent('Ambachtsweg 25 Noordwijk')}&to=${encodeURIComponent(pc+' '+hn+', NL')}`);
+      if(r.ok){
+        const j = await r.json();
+        const km = Number(j?.km_enkele_reis || j?.km || 0);
+        if(km>0){
+          document.getElementById('kmEnkeleReis').value = km.toFixed(1);
+          MODEL.kmEnkeleReis = km;
+          kmHint.textContent = 'Afstand via route‑API berekend (enkele reis).';
+          renderTotals();
+          scrollTotals();
+          return;
+        }
+      }
+      throw new Error('Geen route');
+    }catch(e){
+      kmHint.textContent = 'Kon geen route berekenen. Voer handmatig de afstand (km, enkele reis) in.';
+    }
+  };
+
+  ['kmEnkeleReis','pros','days','postcode','huisnr'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.addEventListener('input', ()=>{
+      if(id==='kmEnkeleReis'){ MODEL.kmEnkeleReis = Number(el.value||0); }
+      if(id==='pros'){ MODEL.pros = Math.max(2, Number(el.value||2)); el.value = MODEL.pros; }
+      if(id==='days'){ MODEL.days = Number(el.value||1); }
+      if(id==='postcode'){ MODEL.postcode = String(el.value||'').toUpperCase(); }
+      if(id==='huisnr'){ MODEL.huisnr = String(el.value||''); }
+      renderTotals();
+    }, {passive:true});
+  });
+
+  // KEURING INHOUD
+  document.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('.inhoud-btn'); if(!btn) return;
+    const fgNaam = btn.dataset.fg || 'Functie';
+    openModal('Inhoud keuring – ' + fgNaam, '<div class="muted">Laden…</div>');
+    const html = await fetchKeuringInhoud(fgNaam);
+    openModal('Inhoud keuring – ' + fgNaam, html);
+  });
+  async function fetchKeuringInhoud(fgNaam){
+    try{
+      const res = await fetch(`/api/ac-dossier/keuring/inhoud?functie=${encodeURIComponent(fgNaam)}`);
+      if(res.ok){
+        const data = await res.json();
+        if(Array.isArray(data?.inhoud) && data.inhoud.length){
+          const list = data.inhoud.map(item => {
+            const tag = item.type ? `<span class="chip">${item.type}</span>` : '';
+            const freq = item.frequentie ? ` <span class="muted">(${item.frequentie})</span>` : '';
+            return `<li>${tag} ${item.naam || ''}${freq}</li>`;
+          }).join('');
+          return `<ul style="margin:0 0 0 1.1rem">${list}</ul>`;
+        }
+      }
+    }catch(e){}
+    return `<div class="muted">Geen inhoud beschikbaar (koppeling AC‑Dossier nog te activeren).</div>`;
+  }
+
+  // DOCUSIGN
+  window.startEmbeddedSigning = async function(){
+    const warnings = runSanityChecks();
+    if(warnings.length){
+      if(!confirm('Er zijn aandachtspunten in de berekening. Toch doorgaan met ondertekenen?')) return;
+    }
+    const payload = buildFinalProposalPayload();
+    try{
+      const res = await fetch('/api/docusign/create-envelope-embedded', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok){
+        const j = await res.json().catch(()=>({}));
+        const w = (j && j.warnings) ? ('\\n- '+j.warnings.join('\\n- ')) : '';
+        alert('Kon ondertekenen niet starten. '+(j?.error || '')+w);
+        return;
+      }
+      const data = await res.json();
+      SIGNING_URL = data?.recipientViewUrl || data?.signingUrl;
+      ENVELOPE_ID = data?.envelopeId || null;
+    }catch(err){
+      SIGNING_URL = 'about:blank'; ENVELOPE_ID = 'demo-envelope';
+    }
+    openSigning();
+    pollSigningStatus();
+  };
+  function buildFinalProposalPayload(){
+    return {
+      klantId: MODEL.klantId,
+      locatieType: MODEL.locatieType,
+      postcode: MODEL.postcode, huisnr: MODEL.huisnr,
+      kmEnkeleReis: MODEL.kmEnkeleReis,
+      pros: MODEL.pros, days: MODEL.days,
+      groepRapport: MODEL.groepRapport,
+      rows: MODEL.rows,
+      totaal: {
+        variabel: parseEuro(varKostenOut.textContent),
+        vast: parseEuro(vasteKostenOut.textContent),
+        subExcl: parseEuro(subExclOut.textContent),
+        btw: parseEuro(btwOut.textContent),
+        incl: parseEuro(totaalInclOut.textContent)
+      },
+      toelichting: document.getElementById('uitleg').value||''
+    };
+  }
+  function openSigning(){ const m=document.getElementById('signingModal'); const f=document.getElementById('signingFrame'); m.classList.add('active'); m.setAttribute('aria-hidden','false'); f.src = SIGNING_URL || 'about:blank'; }
+  window.closeSigning = function(){ const m=document.getElementById('signingModal'); const f=document.getElementById('signingFrame'); m.classList.remove('active'); m.setAttribute('aria-hidden','true'); f.src='about:blank'; };
+
+  async function pollSigningStatus(){
+    if(!ENVELOPE_ID) return;
+    const start = Date.now();
+    while(Date.now() - start < 60000){
+      await new Promise(r=>setTimeout(r, 2500));
+      try{
+        const res = await fetch(`/api/docusign/envelope-status?envelopeId=${encodeURIComponent(ENVELOPE_ID)}`);
+        if(res.ok){
+          const data = await res.json();
+          const status = (data?.status||'').toLowerCase();
+          if(status === 'completed' || status === 'signed'){ onSigned(); break; }
+        }
+      }catch(e){}
+    }
+  }
+
+  async function onSigned(){
+    SIGNED = true;
+    closeSigning();
+    document.getElementById('signStatus').textContent = 'Status: Ondertekend.';
+    document.getElementById('btnDownload').disabled = false;
+    openModal('Bedankt', '<p>Vriendelijk bedankt voor uw opdracht, wij gaan nu het project verder inplannen en uitrollen.</p>');
+    // Archive + backoffice + journey
+    const payload = buildFinalProposalPayload(); payload.envelopeId = ENVELOPE_ID;
+    try{ await fetch('/api/dwh/archive', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}); }catch(e){}
+    try{ await fetch('/api/backoffice/put', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ envelopeId: ENVELOPE_ID, klantId: MODEL.klantId })}); }catch(e){}
+    try{ await fetch('/api/journey/advance', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
+      klantId: MODEL.klantId, completedStep: 'definitieve_offerte', lane: 'left', unlockNext: true
+    })}); }catch(e){}
+    try{
+      const res = await fetch(`/api/journey/next-step-info?klantId=${encodeURIComponent(MODEL.klantId)}`);
+      if(res.ok){
+        const info = await res.json();
+        if(info?.audience === 'employee'){
+          try{ await fetch('/api/journey/set-tile', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ klantId: MODEL.klantId, stepId: info.stepId, audience:'employer', state:'disabled' })}); }catch(e){}
+          try{ await fetch('/api/journey/unlock', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ klantId: MODEL.klantId, audience:'employee', features:['planning','vragenlijst'] })}); }catch(e){}
+        }
+      }
+    }catch(e){}
+    // Refresh Postvak
+    try{ await loadPostvak(); }catch(e){}
+  }
+
+  // DOWNLOAD PDF
+  window.downloadDefinitief = async function(){
+    if(!ENVELOPE_ID){ showToast('Nog geen ondertekende offerte.'); return; }
+    try{
+      const res = await fetch(`/api/docusign/envelope-pdf?envelopeId=${encodeURIComponent(ENVELOPE_ID)}`);
+      if(res.ok){
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'Arbo_Concern_definitieve_offerte.pdf';
+        a.click();
+        return;
+      }
+    }catch(e){}
+    showToast('Kon PDF niet ophalen.');
+  };
+
+  // MODAL helpers
+  const modal = document.getElementById('modal'); const modalBody = document.getElementById('modalBody'); const modalTitle = document.getElementById('modalTitle');
+  document.getElementById('modalClose')?.addEventListener('click', ()=> modal.classList.remove('active'));
+  modal?.addEventListener('click', (e)=>{ if(e.target===modal) modal.classList.remove('active'); });
+  function openModal(title, html){ modalTitle.textContent=title||'Info'; modalBody.innerHTML=html||''; modal.classList.add('active'); }
+
+  // POPUPS
+  document.getElementById('btnKamerEisen').addEventListener('click', ()=>{
+    openModal('Vereisten keuringskamer', `
+      <ul>
+        <li>Bureau en netwerkaansluiting e.d.</li>
+        <li>Wasbakje / stromend water / afvoer (in directe nabijheid)</li>
+        <li>Voldoende ruimte voor een onderzoekbank</li>
+        <li>Lengte van de kamer minimaal 5 meter (i.v.m. visus-onderzoek)</li>
+        <li>Ruimte goed af te schermen (i.v.m. privacy)</li>
+      </ul>
+      <p class="muted small">Bij keuze voor kantoorlocatie worden on‑site starttarief en reiskosten doorberekend in de totaalprijs.</p>
+    `);
+  });
+  window.openHelp = function(){
+    openModal('Ondertekenen met DocuSign (in portaal)', `
+      <ol class="steps">
+        <li><strong>Start envelop</strong> (dit doen wij voor u in de achtergrond).</li>
+        <li><strong>Open ondertekenen</strong> via de knop <em>Definitief maken & digitaal ondertekenen</em>.</li>
+        <li><strong>Accepteer</strong> elektronisch ondertekenen en <em>Doorgaan</em>.</li>
+        <li><strong>Volg</strong> de gele START‑tags (handtekening, initialen, datum).</li>
+        <li><strong>Voltooien</strong>. U blijft in het portaal; geen e‑mail nodig.</li>
+      </ol>
+    `);
+  };
+
+  // POSTVAK (Mijn contracten)
+  async function loadPostvak(){
+    const klantId = MODEL.klantId || 'demo';
+    // try new endpoint
+    try{
+      const r = await fetch(`/api/postvak/mijn-contracten?klantId=${encodeURIComponent(klantId)}`);
+      if(r.ok){
+        const j = await r.json();
+        const items = j.files || [];
+        renderPostvak(items.map(f=>({ name: f.name, href: f.href || f.url || `/postvak/${encodeURIComponent(klantId)}/mijn-contracten/${encodeURIComponent(f.name)}`, size:f.size, modified:f.modified })));
+        return;
+      }
+    }catch(e){}
+    // fallback
+    try{
+      const r = await fetch(`/api/portal/mailbox/list?folder=Mijn%20contracten`);
+      if(r.ok){
+        const j = await r.json();
+        const items = j.items || [];
+        renderPostvak(items.map(f=>({ name:f.name, href:`/api/portal/mailbox/file?folder=Mijn%20contracten&name=${encodeURIComponent(f.name)}`, size:f.size })));
+        return;
+      }
+    }catch(e){}
+    renderPostvak([]);
+  }
+  function renderPostvak(items){
+    const rows = items.map(it=> `<tr>
+      <td>${it.name}</td>
+      <td class="num">${it.size ? (Math.round(it.size/1024))+' kB' : ''}</td>
+      <td class="num">${it.modified ? new Date(it.modified).toLocaleString('nl-NL') : ''}</td>
+      <td class="num"><a class="btn sm" href="${it.href}" target="_blank">Download</a></td>
+    </tr>`).join('');
+    openModal('Postvak – Mijn contracten', `
+      <div class="muted small">Hier vindt u alle ondertekende contracten (PDF) die via het portaal zijn afgerond.</div>
+      <div style="max-height:55vh;overflow:auto;border:${'var(--ring)'};border-radius:12px;margin-top:6px">
+        <table style="width:100%;border-collapse:separate;border-spacing:0">
+          <thead><tr><th>Bestandsnaam</th><th class="num">Grootte</th><th class="num">Datum</th><th class="num">Actie</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="4" class="muted">Nog geen contracten gevonden.</td></tr>'}</tbody>
+        </table>
+      </div>
+    `);
+  }
+  window.openPostvak = async function(){ await loadPostvak(); };
+
+  // NAVIGATION
+  window.goHome = ()=>{ showToast('Naar home'); };
+  window.goKlantreis = ()=>{ showToast('Naar klantreis'); };
+
+  // INIT
+  (async function init(){
+    document.getElementById('grpPrijs').textContent = euro(1250);
+    document.getElementById('opstartPrijs').textContent = euro(TARIEF.OPSTART);
+    const data = await fetchDefinitiefVoorstel({ klantId: MODEL.klantId });
+    renderFromBackend(data);
+    updateGrpAvailability();
+    renderTotals();
+  })();
+
+})();</script>
+
+</body>
+</html>

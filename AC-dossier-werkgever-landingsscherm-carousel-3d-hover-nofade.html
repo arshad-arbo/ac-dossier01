@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AC‑Dossier • Werkgever | Landingsscherm (carousel 3D hover, no fade)</title>
+  <link rel="canonical" href="https://www.AC-dossier.nl/"/>
+  <style>
+    :root{
+      --bg: #ffffff;
+      --primary: #ec641a;
+      --teal: #79c6c0;
+      --accent: #85cee4;
+      --slate: #686c7c;
+      --ink: #4c505a;
+      --steel: #69a1b1;
+      --surface: #f7f7f7;
+      --ring: 1px solid #e5e7eb;
+      --radius: 16px;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --shadow-lg: 0 18px 45px rgba(0,0,0,.14);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--surface);color:#1f2937;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+    a{color:var(--steel);text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid #e5e7eb}
+    .topbar{display:flex;align-items:center;gap:16px;padding:12px 18px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .brand-bullet{width:28px;height:28px;border-radius:7px;background:var(--primary);display:grid;place-items:center;color:#fff;font-weight:800}
+    .brand small{font-weight:600;color:var(--slate)}
+    .top-actions{margin-left:auto;display:flex;gap:8px}
+
+    .container{max-width:1100px;margin:20px auto;padding:0 16px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .col-8{
+      grid-column:span 8;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;   /* clip animaties zodat ze niet over het aside vallen */
+      isolation: isolate; /* eigen stacking context */
+      contain: paint layout;
+    }
+    .col-4{grid-column:span 4; position: relative; z-index: 2;}
+    @media (max-width: 980px){.col-8,.col-4{grid-column:span 12; overflow:visible; z-index:auto}}
+
+    .card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:var(--ring);padding:16px}
+    .surface{background:var(--surface)}
+    h1,h2,h3{color:var(--ink);margin:.2rem 0 .6rem}
+    .muted{color:#6b7280}
+    .btn{display:inline-flex;align-items:center;gap:.55rem;padding:.6rem .9rem;border-radius:12px;border:1px solid #e5e7eb;background:#fff;color:#111;cursor:pointer}
+    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+
+    /* ===== Carousel ===== */
+    .carousel{ position: relative }
+    .track{
+      display:flex; gap:14px; align-items:stretch;
+      overflow-x:auto; overflow-y:visible;
+      scroll-snap-type:x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding: 6px 6px 12px;
+      perspective: 1000px;
+      transform-style: preserve-3d;
+      /* Removed masks so items do NOT fade at edges */
+    }
+    .tile{
+      --s:1; --rx:0deg; --ry:0deg; --tz:0px; --ty:0px;
+      min-width: 260px; max-width: 280px; flex: 0 0 auto;
+      border:1px solid #eef2f7; border-radius:14px; background:#fff;
+      display:flex; align-items:center; gap:12px; padding:16px;
+      scroll-snap-align:center;
+      transform:
+        translateZ(var(--tz))
+        translateY(var(--ty))
+        scale(var(--s))
+        rotateX(var(--rx))
+        rotateY(var(--ry));
+      transition: transform .16s cubic-bezier(.2,.6,.2,1), box-shadow .16s ease, border-color .16s ease;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+    .tile:focus-visible{ outline:2px solid var(--primary); outline-offset:2px }
+    .tile:hover, .tile:focus-visible{
+      --s:1.08; --tz:26px; --ty:-6px;
+      border-color:#e3e8ee; box-shadow: var(--shadow-lg);
+      text-decoration: none;
+    }
+    .tile .ico{ width:48px; height:48px; border-radius:12px; display:grid; place-items:center }
+    .ico.taken{background:var(--accent)}
+    .ico.post{background:var(--teal)}
+    .ico.kd{background:#e9eef2}
+    .ico.mgmt{background:#ffe3d1}
+
+    .tile::after{
+      content:""; position:absolute; inset:0; border-radius:14px; pointer-events:none;
+      background: linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0));
+      opacity:0; transition:opacity .16s ease;
+    }
+    .tile:hover::after, .tile:focus-visible::after{ opacity:.8 }
+
+    /* Respecteer minder-animatie */
+    @media (prefers-reduced-motion: reduce){
+      .tile{transition:none; transform:none !important}
+      .tile::after{display:none}
+    }
+
+    .text-field input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #d1d5db;background:#fff}
+    .board{display:flex;flex-direction:column;gap:10px}
+    .note{padding:10px 12px;border-radius:12px;border:1px solid #eef2f7;background:#fff;display:flex;gap:8px;align-items:start}
+    .note .dot{width:10px;height:10px;border-radius:50%;margin-top:6px;background:var(--primary)}
+    .note .meta{margin-left:auto;color:#9ca3af}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand" aria-label="AC‑Dossier">
+        <span class="brand-bullet" aria-hidden>AC</span>
+        <span>AC‑Dossier <small>werkgever</small></span>
+      </div>
+      <div class="top-actions">
+        <button class="btn" onclick="location.href='https://www.AC-dossier.nl'">Naar hoofdsite</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <section class="col-8">
+        <div class="card surface carousel">
+          <h2 style="margin:0 0 8px">Snel naar</h2>
+          <p class="muted" style="margin-top:0">Horizontale carousel met 3D-vooruit effect bij hover — zonder edge fade.</p>
+
+          <div class="track" id="carouselTrack" role="listbox" aria-label="Snelkoppelingen carousel">
+            <a class="tile" href="/taken" aria-label="Taken" role="option">
+              <span class="ico taken" aria-hidden>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="#083d56"><path d="M9 11l3 3L22 4l2 2-12 12-5-5z"/><path d="M2 12l5 5 1.5-1.5L5 11l-3 3z"/></svg>
+              </span>
+              <div>
+                <strong>Taken</strong>
+                <div class="muted">Mijn openstaande acties en termijnen</div>
+              </div>
+            </a>
+
+            <a class="tile" href="/postvak" aria-label="Postvak" role="option">
+              <span class="ico post" aria-hidden>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="#063a35"><path d="M2 6h20v12H2z" fill="none" stroke="#063a35" stroke-width="2"/><path d="M2 6l10 7L22 6"/></svg>
+              </span>
+              <div>
+                <strong>Postvak</strong>
+                <div class="muted">Berichten en bijlagen versturen/ontvangen</div>
+              </div>
+            </a>
+
+            <a class="tile" href="werkgever_keuringsdossiers_journey_v2.html" aria-label="Keuringsdossiers" role="option">
+              <span class="ico kd" aria-hidden>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="#4b5563"><path d="M3 6h6l2 2h10v10H3z"/></svg>
+              </span>
+              <div>
+                <strong>Keuringsdossiers</strong>
+                <div class="muted">Afspraken, status en onderdelen</div>
+              </div>
+            </a>
+
+            <a class="tile" href="/management" aria-label="Management informatie" role="option">
+              <span class="ico mgmt" aria-hidden>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="#7a3b0c"><path d="M4 4h2v14H4zM11 10h2v8h-2zM18 7h2v11h-2z"/></svg>
+              </span>
+              <div>
+                <strong>Management informatie</strong>
+                <div class="muted">Kerngetallen en verzuimoverzichten</div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <div class="card text-field" style="margin-top:16px">
+          <h3 style="margin:0 0 8px">Tekstveld</h3>
+          <input id="losTekstveld" placeholder="Vrij tekstveld voor interne notitie of zoekterm…" aria-label="Tekstveld">
+        </div>
+      </section>
+
+      <aside class="col-4">
+        <div class="card">
+          <h3 style="margin:0 0 8px">Mededelingen</h3>
+          <div class="muted" style="margin:0 0 10px">Korte berichten voor alle werkgever‑gebruikers.</div>
+          <div id="board" class="board" aria-live="polite"></div>
+          <form id="addNote" class="card surface" style="margin-top:12px">
+            <label class="sr-only" for="noteTxt">Nieuwe mededeling</label>
+            <input id="noteTxt" placeholder="Nieuwe mededeling" autocomplete="off"/>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn primary" type="submit">Plaatsen</button>
+              <button class="btn" type="button" id="clearNotes">Wissen</button>
+            </div>
+          </form>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="container" style="margin-bottom:40px">
+    <div class="card surface" style="display:flex;gap:10px;justify-content:space-between;align-items:center">
+      <div class="muted">© <span id="year"></span> Arbo Concern • AC‑Dossier</div>
+      <div class="muted">Ontwerp volgens 12‑koloms raster en kaartindeling; kleuren conform huisstijl.</div>
+    </div>
+  </footer>
+
+  <script>
+    // ====== Mededelingen demo ======
+    const KEY = 'ac_mededelingen_v1';
+    const DEFAULTS = [
+      {txt:'Welkom bij AC‑Dossier voor werkgevers!', ts:Date.now()-86400000},
+      {txt:'Nieuwe keuringsdossiers module live per 1/9.', ts:Date.now()-3600*1000}
+    ];
+    function loadNotes(){ try{ return JSON.parse(localStorage.getItem(KEY)||'null') || DEFAULTS; } catch(e){ return DEFAULTS; } }
+    function saveNotes(list){ localStorage.setItem(KEY, JSON.stringify(list)); }
+    function renderBoard(){
+      const wrap = document.getElementById('board');
+      const notes = loadNotes().sort((a,b)=>b.ts-a.ts).slice(0,8);
+      wrap.innerHTML = notes.map(n => `
+        <div class="note" role="note">
+          <span class="dot" aria-hidden></span>
+          <div>${escapeHtml(n.txt)}</div>
+          <span class="meta">${new Date(n.ts).toLocaleDateString('nl-NL')}</span>
+        </div>`).join('');
+    }
+    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m])); }
+    document.getElementById('addNote').addEventListener('submit', e=>{
+      e.preventDefault();
+      const inp = document.getElementById('noteTxt');
+      const val = inp.value.trim();
+      if(!val) return;
+      const list = loadNotes();
+      list.push({txt:val, ts: Date.now()});
+      saveNotes(list);
+      inp.value='';
+      renderBoard();
+    });
+    document.getElementById('clearNotes').addEventListener('click', ()=>{
+      if(confirm('Alle mededelingen wissen?')){ localStorage.removeItem(KEY); renderBoard(); }
+    });
+    document.getElementById('year').textContent = new Date().getFullYear();
+    renderBoard();
+
+    // ====== 3D hover richting muis (alleen op de tegel zelf) ======
+    (function(){
+      const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(prefersReduced) return;
+      const tiles = document.querySelectorAll('.tile');
+      const maxTiltX = 3, maxTiltY = 3; // graden
+
+      tiles.forEach(tile => {
+        tile.addEventListener('mousemove', (e) => {
+          const rect = tile.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width;  // 0..1
+          const y = (e.clientY - rect.top) / rect.height;  // 0..1
+          const ry = (x - 0.5) * (maxTiltY * 2);           // -max..max
+          const rx = -(y - 0.5) * (maxTiltX * 2);
+          tile.style.setProperty('--rx', rx.toFixed(2) + 'deg');
+          tile.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+        }, {passive:true});
+
+        tile.addEventListener('mouseleave', () => {
+          tile.style.removeProperty('--rx');
+          tile.style.removeProperty('--ry');
+          tile.style.removeProperty('--tz');
+          tile.style.removeProperty('--s');
+          tile.style.removeProperty('--ty');
+        }, {passive:true});
+      });
+    })();
+  </script>
+</body>
+</html>

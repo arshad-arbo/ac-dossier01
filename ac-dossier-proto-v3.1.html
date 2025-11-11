@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AC‑Dossier • Hoofdscherm + Keuringen (v3.1)</title>
+  <link rel="canonical" href="https://www.AC-dossier.nl/"/>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --primary:#ec641a;
+      --teal:#79c6c0;
+      --accent:#85cee4;
+      --slate:#686c7c;
+      --ink:#4c505a;
+      --steel:#69a1b1;
+      --surface:#f7f7f7;
+      --ring:1px solid #e5e7eb;
+      --radius:14px;
+      --shadow:0 10px 30px rgba(0,0,0,.08);
+      --shadow-lg:0 18px 45px rgba(0,0,0,.14);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--surface);color:#1f2937;
+      font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial}
+    a{color:var(--steel);text-decoration:none}
+    a:hover{text-decoration:underline}
+    header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid #e5e7eb}
+    .topbar{display:flex;align-items:center;gap:16px;padding:12px 18px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .brand-bullet{width:28px;height:28px;border-radius:7px;background:var(--primary);
+      display:grid;place-items:center;color:#fff;font-weight:800}
+    .brand small{font-weight:600;color:var(--slate)}
+    .container{max-width:1080px;margin:20px auto;padding:0 16px}
+    .card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:var(--ring);padding:16px}
+    h1,h2,h3{color:var(--ink);margin:.2rem 0 .6rem}
+    .muted{color:#6b7280}
+    .mt{margin-top:.6rem}
+    .surface{background:#fafbfc}
+    .btn{display:inline-flex;align-items:center;gap:.55rem;padding:.55rem .9rem;border-radius:12px;border:1px solid #e5e7eb;background:#fff;color:#111;cursor:pointer}
+    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .btn.small{padding:.35rem .6rem;border-radius:10px;font-size:.9rem}
+    .chip{display:inline-flex;align-items:center;gap:.4rem;padding:.2rem .6rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff}
+    .crumbs{font-size:.92rem;color:#64748b;margin-bottom:10px}
+    /* tiles */
+    .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+      perspective:1200px;transform-style:preserve-3d}
+    @media (max-width:980px){.tiles{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:520px){.tiles{grid-template-columns:1fr}}
+    .tile{--s:1;--rx:0deg;--ry:0deg;--tz:0px;--ty:0px;
+      display:grid;grid-template-rows:auto 1fr;gap:10px;
+      padding:18px;border:1px solid #eef2f7;border-radius:14px;background:#fff;
+      transform:translateZ(var(--tz)) translateY(var(--ty)) scale(var(--s)) rotateX(var(--rx)) rotateY(var(--ry));
+      transition:transform .16s cubic-bezier(.2,.6,.2,1),box-shadow .16s ease,border-color .16s ease;
+      box-shadow:var(--shadow);position:relative;text-decoration:none;color:inherit;will-change:transform}
+    .tile:hover,.tile:focus-visible{--s:1.08;--tz:26px;--ty:-6px;border-color:#e3e8ee;box-shadow:var(--shadow-lg);outline:none}
+    .tile .top{display:flex;align-items:center;gap:12px}
+    .tile .ico{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:#fff3eb;border:1px solid #ffd9c3}
+    .tile svg{width:26px;height:26px;fill:var(--primary)}
+    .tile strong{font-size:1.05rem}
+    .tile p{margin:0;color:#6b7280;font-size:.95rem}
+    .tile::after{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;
+      background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0));opacity:0;transition:opacity .16s ease}
+    .tile:hover::after,.tile:focus-visible::after{opacity:.8}
+    .intro{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .intro small{color:#64748b}
+    @media (prefers-reduced-motion:reduce){.tile{transition:none;transform:none!important}.tile::after{display:none}}
+    #app{min-height:60vh}
+    /* TESTEN / KEURINGEN icon grid */
+    .test-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+    @media(max-width:980px){.test-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.test-grid{grid-template-columns:1fr}}
+    .test-card{--s:1;--rx:0deg;--ry:0deg;--tz:0px;--ty:0px;
+      text-align:center;background:#fff;border:1px solid #eef2f7;border-radius:16px;padding:18px;
+      transform:translateZ(var(--tz)) translateY(var(--ty)) scale(var(--s)) rotateX(var(--rx)) rotateY(var(--ry));
+      transition:transform .16s cubic-bezier(.2,.6,.2,1),box-shadow .16s ease,border-color .16s ease;
+      box-shadow:var(--shadow);color:inherit;cursor:pointer}
+    .test-card:hover,.test-card:focus-visible{--s:1.06;--tz:22px;--ty:-6px;border-color:#e3e8ee;box-shadow:var(--shadow-lg);outline:none}
+    .test-ring{width:160px;height:160px;border:6px solid var(--accent);border-radius:50%;margin:0 auto 12px;display:grid;place-items:center}
+    .test-ico{width:96px;height:96px}
+    .test-ico svg{width:96px;height:96px;stroke:var(--ink);stroke-width:2.1;fill:none}
+    .test-ico .acc{stroke:var(--primary)}
+    .test-title{font-weight:700;color:#2f3a4a}
+    .test-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    .test-docs{margin-top:8px;padding:10px;border-top:1px dashed #e5e7eb;width:100%}
+    .hidden{display:none}
+    /* Dossier layout (simple) */
+    .kd-shell{display:grid;grid-template-columns:260px 1fr;gap:16px}
+    @media(max-width:980px){.kd-shell{grid-template-columns:1fr}}
+    .kd-nav{background:#fff;border:var(--ring);border-radius:14px;overflow:hidden}
+    .kd-nav header{padding:12px 14px;border-bottom:1px solid #eef2f7;background:#fff}
+    .kd-steps{list-style:none;margin:0;padding:0;max-height:60vh;overflow:auto}
+    .kd-steps li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid #f3f4f6}
+    .kd-steps li.active{background:#fff4ed}
+    .badge{display:inline-block;border-radius:999px;padding:.15rem .5rem;font-size:.8rem}
+    .b-ok{background:var(--teal);color:#063a35}
+    .b-miss{background:#fef3c7;color:#7a3b0c;border:1px solid #fde68a}
+    .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+    .tabs button{border:1px solid #e5e7eb;background:#fff;border-radius:10px;padding:.45rem .75rem;cursor:pointer}
+    .tabs button.active{background:var(--primary);border-color:var(--primary);color:#fff}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:780px){.grid-2{grid-template-columns:1fr}}
+    input{width:100%;padding:.55rem .7rem;border:1px solid #e5e7eb;border-radius:10px}
+    /* Dev error banner */
+    #err{position:fixed;bottom:12px;right:12px;max-width:60ch;font-size:.9rem;background:#111;color:#fff;padding:10px 12px;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.2);display:none;z-index:50}
+    #err b{color:#ffb4a3}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand"><span class="brand-bullet" aria-hidden>AC</span><span>AC‑Dossier <small>prototype</small></span></div>
+      <div style="margin-left:auto" class="intro">
+        <button class="btn" onclick="location.href='#/'">Home</button>
+        <button class="btn" onclick="location.href='#/keuringsdossiers'">Keuringsdossiers</button>
+        <button class="btn primary" onclick="location.href='#/testen'">Testen</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="app"></div>
+  </main>
+  <div id="err"></div>
+
+  <script>
+    // ==== Error banner so blank screens are debuggable ====
+    (function(){
+      window.addEventListener('error', function(e){
+        var el=document.getElementById('err');
+        el.innerHTML = '<b>JS-fout:</b> '+ (e.message||e.error);
+        el.style.display='block';
+      });
+    })();
+
+    // ===== Tilt util =====
+    (function(){var prefersReduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;if(prefersReduced)return;
+      function bindTilt(sel,maxX, maxY){maxX=maxX||3; maxY=maxY||3;
+        document.querySelectorAll(sel).forEach(function(el){
+          el.addEventListener('mousemove',function(e){var r=el.getBoundingClientRect();var x=(e.clientX-r.left)/r.width;var y=(e.clientY-r.top)/r.height;
+            var ry=(x-.5)*(maxY*2);var rx=-(y-.5)*(maxX*2);
+            el.style.setProperty('--rx',rx.toFixed(2)+'deg');el.style.setProperty('--ry',ry.toFixed(2)+'deg');},{passive:true});
+          el.addEventListener('mouseleave',function(){el.style.removeProperty('--rx');el.style.removeProperty('--ry');el.style.removeProperty('--tz');el.style.removeProperty('--s');el.style.removeProperty('--ty');},{passive:true});
+        });
+      }
+      window._bindTilt = bindTilt;
+    })();
+
+    // ===== Router =====
+    function render(){
+      try{
+        var root=document.getElementById('app');
+        var h=location.hash||'#/';
+        if(h.indexOf('#/keuringenmodule')===0) return renderKeuringsDossier(root);
+        if(h.indexOf('#/keuringsdossiers')===0) return renderKdLanding(root);
+        if(h.indexOf('#/testen')===0) return renderTesten(root);
+        return renderHome(root);
+      }catch(err){
+        var el=document.getElementById('err'); el.innerHTML='<b>Render-fout:</b> '+err; el.style.display='block';
+      }
+    }
+    window.addEventListener('hashchange', render);
+    window.addEventListener('DOMContentLoaded', render);
+
+    // ===== Home (tiles) =====
+    function renderHome(root){
+      var html='';
+      html += '<div class="card">';
+      html +=   '<div class="intro">';
+      html +=     '<h2 style="margin:0">Snelkoppelingen</h2>';
+      html +=     '<small>Kleurstelling en hover‑effect volgens AC‑Dossier. “Configuratie” is weggelaten.</small>';
+      html +=   '</div>';
+      html +=   '<div class="tiles">';
+      html +=     tile('Clienten','#/clienten', iconPeople(), 'Overzicht en beheer van cliënten.');
+      html +=     tile('Klanten','#/klanten', iconCheckUser(), 'Relaties en contractgegevens.');
+      html +=     tile('Afdelingen','#/afdelingen', iconGrid4(), 'Structuur binnen organisaties.');
+      html +=     tile('Keuringsdossiers','#/keuringsdossiers', iconClipboard(), 'Dossiers, afspraken en rapportages.');
+      html +=     tile('Locaties','#/locaties', iconPin(), 'Vestigingen en adressen.');
+      html +=     tile('Rollen','#/rollen', iconShield(), 'Autorisaties en toegangsbeheer.');
+      html +=     tile('Projecten','#/projecten', iconDoc(), 'Planning, taken en voortgang.');
+      html +=     tile('Testen','#/testen', iconFlask(), 'Keuringsonderdelen & werkinstructies.');
+      html +=   '</div>';
+      html += '</div>';
+      root.innerHTML = html;
+      _bindTilt('.tile');
+    }
+    function tile(label,href,svg,desc){
+      return '<a class="tile" href="'+href+'" aria-label="'+label+'">'+
+        '<div class="top"><span class="ico" aria-hidden>'+svg+'</span><strong>'+label+'</strong></div>'+
+        '<p>'+desc+'</p></a>';
+    }
+
+    // ===== Keuringsdossiers landing =====
+    function renderKdLanding(root){
+      var html='';
+      html += '<div class="crumbs">Home / Keuringsdossiers</div>';
+      html += '<div class="card"><h2>Keuringsdossiers</h2><div class="test-grid">';
+      html += kdTile('Keuringsmodule',"#/keuringenmodule", '<path d="M4 7h16M4 12h16M4 17h16"/><path class="acc" d="M8 7v10"/>');
+      html += kdTile('Testen',"#/testen", '<circle cx="12" cy="12" r="8" class="acc"/><path d="M9 12l2 2 4-4"/>');
+      html += kdTile('Agenda',null, '<rect x="3" y="5" width="18" height="16" rx="2"/><path class="acc" d="M3 9h18"/>');
+      html += kdTile('Overzichten',null, '<path d="M4 18h4V6H4zM10 18h4V10h-4zM16 18h4V4h-4z"/><path class="acc" d="M3 20h18"/>');
+      html += '</div></div>';
+      root.innerHTML = html;
+      _bindTilt('.test-card');
+      root.querySelectorAll('.test-card[data-href]').forEach(function(el){
+        el.addEventListener('click', function(){ location.hash = el.getAttribute('data-href'); });
+      });
+    }
+    function kdTile(title,href,svgPath){
+      var h = '<div class="test-card"'+(href?' data-href="'+href+'"':'')+'>';
+      h += '<div class="test-ring"><div class="test-ico"><svg viewBox="0 0 24 24">'+svgPath+'</svg></div></div>';
+      h += '<div class="test-title">'+title+'</div></div>';
+      return h;
+    }
+
+    // ===== Testen (icon grid) =====
+    var KEURINGEN = [
+      {key:'audiometrie',  label:'Audiometrie',  icon:iconEar},
+      {key:'bloed',        label:'Bloed',        icon:iconDrop},
+      {key:'ecg',          label:'ECG',          icon:iconHeartECG},
+      {key:'spiro',        label:'Spirometrie',  icon:iconLungs},
+      {key:'urine',        label:'Urine',        icon:iconCup},
+      {key:'visus',        label:'Visus',        icon:iconEye},
+      {key:'ergo',         label:'Ergometrie',   icon:iconRun},
+      {key:'narcotica',    label:'Narcotica',    icon:iconBottle}
+    ];
+    function renderTesten(root){
+      var html='';
+      html += '<div class="crumbs">Home / Testen</div>';
+      html += '<div class="card"><h2>Testen</h2>';
+      html += '<p class="muted">Kies een keuring. Onder elke tegel vind je de <em>werkinstructies</em> uit de documentenbibliotheek.</p>';
+      html += '<div class="test-grid">';
+      KEURINGEN.forEach(function(k){ html += testCard(k); });
+      html += '</div></div>';
+      root.innerHTML = html;
+      _bindTilt('.test-card');
+      root.querySelectorAll('.test-card[data-key]').forEach(function(el){
+        el.addEventListener('click', function(){ location.hash = '#/keuringenmodule'; });
+      });
+      root.querySelectorAll('.btn[data-doc]').forEach(function(btn){
+        btn.addEventListener('click', function(ev){
+          ev.stopPropagation();
+          openWerkinstructies(ev, btn.getAttribute('data-doc'), btn.getAttribute('data-title'));
+        });
+      });
+    }
+    function testCard(k){
+      var h='';
+      h += '<div class="test-card" data-key="'+k.key+'">';
+      h += '  <div class="test-ring"><div class="test-ico">'+k.icon()+'</div></div>';
+      h += '  <div class="test-title">'+k.label+'</div>';
+      h += '  <div class="test-actions">';
+      h += '    <button class="btn small" data-doc="'+k.key+'" data-title="'+k.label+'">Werkinstructies</button>';
+      h += '  </div>';
+      h += '  <div class="test-docs hidden" id="docs-'+k.key+'"></div>';
+      h += '</div>';
+      return h;
+    }
+
+    // Documents library helpers
+    function docsFromLibrary(key){
+      try{
+        var store = JSON.parse(localStorage.getItem('downloads')||'[]');
+        var m = store.filter(function(d){ return (d||'').toLowerCase().indexOf(key) !== -1; });
+        if(m.length) return m.map(function(name){ return {title:name, url:'#'}; });
+      }catch(_){}
+      return [
+        {title:'Werkinstructie '+ key.charAt(0).toUpperCase()+key.slice(1)+' (PDF)', url:'#'},
+        {title:'Checklist '+key, url:'#'}
+      ];
+    }
+    function openWerkinstructies(ev, key, title){
+      var host=document.getElementById('docs-'+key);
+      var list = docsFromLibrary(key);
+      var h='<strong class="muted">Werkinstructies</strong><div class="mt"></div>';
+      list.forEach(function(d){ h += '<a href="'+d.url+'" class="chip" target="_blank" rel="noopener">📄 '+d.title+'</a> '; });
+      host.innerHTML = h;
+      host.classList.toggle('hidden');
+    }
+
+    // ===== Keuringsdossier (mock) =====
+    function renderKeuringsDossier(root){
+      var steps = [
+        {name:'Basisgegevens', done:true,  total:2},
+        {name:'Hart',         done:true,  total:2},
+        {name:'Longen',       done:false, total:3},
+        {name:'Gehoor',       done:false, total:2},
+        {name:'Bloed',        done:true,  total:1},
+        {name:'Urine',        done:false, total:1},
+        {name:'Visus',        done:false, total:1},
+        {name:'Narcotica',    done:false, total:1},
+        {name:'Fittest',      done:false, total:1},
+        {name:'Keuring afronden', done:false, total:2}
+      ];
+      function badge(s){ return s.done ? '<span class="badge b-ok">'+s.total+'/'+s.total+'</span>' : '<span class="badge b-miss">0/'+s.total+'</span>'; }
+      var html='';
+      html += '<div class="crumbs">Home / Keuringsdossiers / Dossier</div>';
+      html += '<div class="kd-shell">';
+      html += '  <aside class="kd-nav"><header><strong>Onderdelen</strong></header><ul class="kd-steps" id="stepList">';
+      steps.forEach(function(s,i){ html += '<li class="'+(i===0?'active':'')+'"><span>'+s.name+'</span>'+badge(s)+'</li>'; });
+      html += '  </ul></aside>';
+      html += '  <section class="card">';
+      html += '    <div class="tabs" id="tabHead"><button class="active" data-tab="wg">Werkgeversuitslag</button><button data-tab="cr">Cliëntrapport</button></div>';
+      html += '    <div id="dossierPane">'+paneWerkgever()+'</div>';
+      html += '  </section>';
+      html += '</div>';
+      root.innerHTML = html;
+
+      document.querySelectorAll('#tabHead button').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('#tabHead button').forEach(function(b){ b.classList.remove('active'); });
+          btn.classList.add('active');
+          document.getElementById('dossierPane').innerHTML = btn.dataset.tab==='wg' ? paneWerkgever() : paneClient();
+        });
+      });
+      document.querySelectorAll('#stepList li').forEach(function(li){
+        li.addEventListener('click', function(){
+          document.querySelectorAll('#stepList li').forEach(function(x){ x.classList.remove('active'); });
+          li.classList.add('active');
+        });
+      });
+    }
+    function paneWerkgever(){
+      var html='';
+      html += '<h3 style="margin-top:0">Werkgeversuitslag</h3>';
+      html += '<div class="grid-2">';
+      html += '  <div class="card surface"><h4>Resultaat</h4><div class="muted">Werkgever</div>';
+      html += '    <div class="mt"><button class="btn primary">DOWNLOAD</button> <button class="btn" disabled>ANNULEREN</button></div>';
+      html += '  </div>';
+      html += '  <div class="card surface"><h4>Rapportage</h4>';
+      html += '    <label>E-mailadres cliënt</label><input placeholder="client@example.nl"/>';
+      html += '    <label class="mt">Beveiligingscode rapportage</label><input value="12345"/>';
+      html += '  </div>';
+      html += '</div>';
+      return html;
+    }
+    function paneClient(){
+      var html='';
+      html += '<h3 style="margin-top:0">Cliëntrapport</h3>';
+      html += '<div class="grid-2">';
+      html += '  <div class="card surface"><h4>Uitslag</h4><p>Samenvatting per onderdeel.</p>';
+      html += '    <ul class="muted"><li>Meetwaarden en beoordelingen</li><li>Advies en vervolgstappen</li></ul>';
+      html += '  </div>';
+      html += '  <div class="card surface"><h4>Acties</h4>';
+      html += '    <button class="btn primary">DOWNLOAD</button> <button class="btn">Verstuur via e‑mail</button>';
+      html += '  </div>';
+      html += '</div>';
+      return html;
+    }
+
+    // ===== Icon set (inline SVG, AC‑Dossier stijl) =====
+    function iconPeople(){return '<svg viewBox="0 0 24 24"><path d="M7 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm10-1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM2.5 21a5.5 5.5 0 0 1 11 0v1h-11v-1Zm12.2-7.2 1.6 1.6 3.2-3.2 1.4 1.4-4.6 4.6-3-3 1.4-1.4Z"/></svg>'}
+    function iconCheckUser(){return '<svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm-9 9a9 9 0 0 1 18 0v1H3Zm14.3-8.3 1.4 1.4 3-3-1.4-1.4-1.6 1.6-1.2-1.2-1.4 1.4 1.2 1.2Z"/></svg>'}
+    function iconGrid4(){return '<svg viewBox="0 0 24 24"><path d="M4 4h6v6H4V4Zm0 10h6v6H4v-6Zm10-10h6v6h-6V4Zm0 10h6v6h-6v-6Z"/></svg>'}
+    function iconClipboard(){return '<svg viewBox="0 0 24 24"><path d="M7 4h10a2 2 0 0 1 2 2v14l-5-3-5 3V6a2 2 0 0 0-2-2Z"/><path d="M8 8h8v2H8zm0 4h6v2H8z"/></svg>'}
+    function iconPin(){return '<svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 14.5 9 2.5 2.5 0 0 1 12 11.5Z"/></svg>'}
+    function iconShield(){return '<svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5 3.8 9.7 9 10 5.2-.3 9-5 9-10V6l-9-4Zm0 4.2 5 2.2v3.6c0 3.7-2.6 7.2-5 7.4-2.4-.2-5-3.7-5-7.4V8.4l5-2.2Zm0 3.3a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></svg>'}
+    function iconDoc(){return '<svg viewBox="0 0 24 24"><path d="M4 4h16v4H4V4Zm0 6h16v10H4V10Zm4 2v6h8v-6H8Z"/></svg>'}
+    function iconFlask(){return '<svg viewBox="0 0 24 24"><path d="M9 3h6v2h-1v5.6l3.9 6.7A2 2 0 0 1 16.3 20H7.7a2 2 0 0 1-1.6-3.1L10 10.6V5H9V3Z"/></svg>'}
+    function iconEar(){return '<svg viewBox="0 0 24 24"><path d="M13 19c0 1.7-1.3 3-3 3s-3-1.3-3-3 1-2.5 2-3 2-1.3 2-3a4 4 0 1 0-8 0"/><path class="acc" d="M14 12a6 6 0 1 0-12 0"/></svg>'}
+    function iconDrop(){return '<svg viewBox="0 0 24 24"><path d="M12 2s6 6.7 6 11a6 6 0 0 1-12 0c0-4.3 6-11 6-11Z"/><path class="acc" d="M9 14a3 3 0 0 0 6 0"/></svg>'}
+    function iconHeartECG(){return '<svg viewBox="0 0 24 24"><path d="M3 9c0-3 2.5-5 5.2-5 3 0 4.8 2.8 4.8 2.8S14.8 4 17.8 4C20.5 4 23 6 23 9c0 7-10 11-10 11S3 16 3 9Z"/><path class="acc" d="M3 12h4l2-3 3 6 2-3h7"/></svg>'}
+    function iconLungs(){return '<svg viewBox="0 0 24 24"><path d="M12 2v20M12 7c-2 0-4 1-5 3l-2 5c-1 3 1 5 4 5h3V7Zm0 0c2 0 4 1 5 3l2 5c1 3-1 5-4 5h-3V7Z"/></svg>'}
+    function iconCup(){return '<svg viewBox="0 0 24 24"><path d="M5 5h14M7 5l1 13a4 4 0 0 0 4 3 4 4 0 0 0 4-3l1-13H7Z"/><path class="acc" d="M9 9h6"/></svg>'}
+    function iconEye(){return '<svg viewBox="0 0 24 24"><path d="M1 12s4-6 11-6 11 6 11 6-4 6-11 6S1 12 1 12Z"/><circle class="acc" cx="12" cy="12" r="3"/></svg>'}
+    function iconRun(){return '<svg viewBox="0 0 24 24"><circle cx="17" cy="4" r="2"/><path class="acc" d="M4 17l5-5 2 2 2-3 3 2-3 5-3 2-6-3Z"/></svg>'}
+    function iconBottle(){return '<svg viewBox="0 0 24 24"><path d="M9 2h6v3l-1 1v2h-4V6L9 5V2Z"/><rect x="7" y="8" width="10" height="12" rx="2"/><path class="acc" d="M9 13h6"/></svg>'}
+
+  </script>
+</body>
+</html>

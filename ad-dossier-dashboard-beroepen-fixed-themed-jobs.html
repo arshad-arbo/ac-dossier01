@@ -1,0 +1,2712 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AD-Dossier · demo</title>
+  <style>
+    :root{
+      --website_theme_color:#ffffff;
+      --website_kleur1:#ec641a;  /* primary */
+      --website_kleur2:#79c6c0;  /* teal */
+      --website_kleur3:#85cee4;  /* light blue */
+      --website_kleur4:#686c7c;  /* slate */
+      --website_kleur5:#4c505a;  /* ink */
+      --website_kleur6:#69a1b1;  /* steel */
+      --website_kleur8:#f7f7f7;  /* surface */
+    }
+    html,body{height:100%}
+    body{margin:0;background:var(--website_kleur8);color:#111;font:14px/1.45 system-ui,Segoe UI,Roboto,Arial}
+    a{color:inherit}
+    /* Header */
+    .topbar{display:flex;align-items:center;gap:16px;padding:10px 16px;background:#fff;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:50}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .brand .logo{width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,var(--website_kleur1),#f59e0b);display:inline-block}
+    .user{margin-left:auto;display:flex;align-items:center;gap:8px}
+    .user .avatar{width:34px;height:34px;border-radius:50%;background:#e2e8f0;display:grid;place-items:center}
+    /* Tabs */
+    .tabs{display:flex;gap:24px;align-items:center;padding:8px 16px;background:#fff;border-bottom:1px solid #eef2f7}
+    .tab{display:flex;flex-direction:column;align-items:center;text-decoration:none;color:#334155;font-weight:600;gap:6px;padding:8px 10px;border-radius:12px}
+    .tab:hover{background:#fafafa}
+    .tab.active{color:#111;border-bottom:3px solid var(--website_kleur1)}
+    .tab .ico{width:42px;height:42px;border-radius:12px;border:2px solid #e5e7eb;display:grid;place-items:center}
+    .tab.active .ico{border-color:var(--website_kleur1);background:#fff4ed}
+    /* Layout */
+    .container{max-width:1200px;margin:16px auto;padding:0 16px}
+    .grid{display:grid;grid-template-columns:280px 1fr;gap:16px}
+    @media (max-width: 980px){.grid{grid-template-columns:1fr}}
+    /* Cards, buttons, inputs */
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px}
+    .card .head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #eef2f7}
+    .card .body{padding:14px 16px}
+    .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid #e5e7eb;background:#fff;border-radius:999px;padding:.45rem .9rem;cursor:pointer}
+    .btn.primary{background:var(--website_kleur1);border-color:var(--website_kleur1);color:#fff}
+    .btn.small{padding:.25rem .6rem;font-size:.85rem}
+    .btn.ghost{background:transparent}
+    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+    .field input,.field select{border:1px solid #e5e7eb;border-radius:10px;padding:.5rem .6rem;background:#fff}
+    .muted{color:#64748b}
+    /* Table */
+    table{width:100%;border-collapse:separate;border-spacing:0}
+    th,td{padding:10px;border-bottom:1px solid #f1f5f9;text-align:left;vertical-align:top}
+    thead th{font-size:.9rem;color:#475569;background:#fafafa}
+    tr:hover td{background:#fcfcfc}
+    .badge{display:inline-block;border-radius:6px;padding:.15rem .45rem;background:#eef2ff;border:1px solid #dbeafe;font-size:.8rem}
+    .row-actions{display:flex;gap:8px;justify-content:flex-end}
+    .kebab{border:1px solid #e5e7eb;border-radius:10px;background:#fff;width:32px;height:32px;display:grid;place-items:center}
+    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid #e5e7eb;background:#fff;border-radius:999px;padding:.2rem .55rem}
+    /* Sidebar */
+    .side .body{padding:12px 12px}
+    .check{display:flex;align-items:center;gap:8px}
+    /* Breadcrumb */
+    .crumbs{padding:8px 16px;color:#64748b}
+    .crumbs a{text-decoration:none;color:inherit}
+    /* Detail row */
+    .detail{background:#fff7ed}
+    .detail td{border-bottom:1px solid #fde1cc}
+    /* Utility */
+    .hide{display:none}
+  
+/* Shared additions for Basisprofielen, Functiehuis, Beroepen */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:100}
+.modal{background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.15);max-width:760px;width:92%}
+.modal .head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e5e7eb}
+.modal .body{padding:16px}
+.modal .foot{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid #e5e7eb}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{display:inline-flex;align-items:center;gap:6px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .5rem;font-size:12px}
+.tag .x{cursor:pointer;opacity:.7}
+.split{display:grid;grid-template-columns:1fr 360px;gap:16px}
+@media (max-width: 1100px){ .split{grid-template-columns:1fr} }
+.badge-green{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;padding:.2rem .5rem;border-radius:999px}
+.badge-amber{background:#fef3c7;color:#92400e;border:1px solid #fde68a;padding:.2rem .5rem;border-radius:999px}
+.badge-slate{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;padding:.2rem .5rem;border-radius:999px}
+.badge-blue{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;padding:.2rem .5rem;border-radius:999px}
+.family-chip{display:inline-flex;align-items:center;gap:6px;background:#eef2ff;border:1px solid #e5e7eb;border-radius:999px;padding:.2rem .55rem;font-size:12px}
+.kv{display:grid;grid-template-columns:160px 1fr;gap:8px;margin:8px 0}
+.kv div{padding:4px 0;border-bottom:1px dashed #e5e7eb}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width: 1000px){ .grid-2{grid-template-columns:1fr} }
+.code-chip{display:inline-flex;align-items:center;gap:6px;background:#ecfeff;border:1px solid #bae6fd;border-radius:999px;padding:.2rem .55rem;font-size:12px}
+
+
+/* --- THEME (TeamChat / AD Dossier) ---------------------------------------- */
+:root{
+  --theme-bg: #ffffff;
+  --brand: #ec641a;         /* website_kleur1 */
+  --k1: #ec641a;
+  --k2: #79c6c0;
+  --k3: #85cee4;
+  --k4: #686c7c;
+  --k5: #4c505a;
+  --k6: #69a1b1;
+  --k7: #c7d6d6;
+  --k8: #f7f7f7;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --radius: 12px;
+  --focus-ring: 0 0 0 3px rgba(236,100,26,.25);
+}
+html, body { background: var(--theme-bg); color: var(--text); font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif; }
+h1,h2,h3,h4 { color: var(--k5); }
+input[type="text"], input[type="search"], input[type="number"], input[type="email"],
+input[type="date"], input[type="time"], input[type="url"], textarea, select {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  box-shadow: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--brand); box-shadow: var(--focus-ring); }
+.btn { border-radius: 10px; border: 1px solid var(--border); }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn.primary:hover { filter: brightness(0.95); }
+.btn:hover { background: var(--k8); }
+.btn.small { padding: 6px 10px; border-radius: 8px; }
+.tabs { background: var(--theme-bg); }
+.tab.active { border-bottom: 3px solid var(--brand); color: var(--brand); }
+.card { border-radius: 14px; border: 1px solid var(--border); overflow: hidden; }
+.card .head { background: linear-gradient(180deg, #fff, var(--k8)); }
+.table thead th { background: var(--k8); color: var(--k5); }
+.table tbody tr:hover { background: #fcfcfd; }
+.table td, .table th { border-color: var(--border); }
+.tag { background: #f3f4f6; border-color: var(--border); }
+.badge-green{ background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+.badge-amber{ background: #fef3c7; border-color: #fde68a; color: #92400e; }
+.badge-slate{ background: #f3f4f6; border-color: var(--border); color: #374151; }
+.badge-blue{ background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+.family-chip{ background: #eef2ff; border-color: var(--border); }
+.kv{display:grid;grid-template-columns:160px 1fr;gap:8px;margin:8px 0}
+.kv div{padding:4px 0;border-bottom:1px dashed var(--border)}
+
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="logo"></span> AD-Dossier</div>
+    <div class="crumbs"><a href="#/dossiers">AD assist</a> › <span id="crumb-leaf">dossiers</span></div>
+    <div class="user">
+      <div class="avatar">👤</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <a class="tab" data-route="#/dossiers" href="#/dossiers">
+      <div class="ico">📁</div><div>Dossiers</div>
+    </a>
+    <a class="tab" data-route="#/basisprofielen" href="#/basisprofielen">
+      <div class="ico">🧩</div><div>Basisprofielen</div>
+    </a>
+    <a class="tab" data-route="#/functiehuis" href="#/functiehuis">
+      <div class="ico">🗂️</div><div>Functiehuis</div>
+    </a>
+    <a class="tab" data-route="#/beroepen" href="#/beroepen">
+      <div class="ico">📚</div><div>Beroepen</div>
+    </a>
+  </div>
+
+  <main class="container">
+    <div id="view"></div>
+  </main>
+
+  <template id="tpl-dossiers">
+    <div class="grid">
+      <aside class="card side" aria-label="filters">
+        <div class="head"><strong>Zoek & filter</strong></div>
+        <div class="body">
+          <div class="field">
+            <label class="muted">Zoek op naam, functie of werkgever</label>
+            <input id="q" placeholder="Zoeken">
+          </div>
+          <div class="field">
+            <label class="muted">Zoek per werkgever</label>
+            <select id="f-werkgever"></select>
+          </div>
+          <div class="field">
+            <label class="muted">Zoek per onderzoekstype</label>
+            <select id="f-type"></select>
+          </div>
+          <div class="field check">
+            <input id="f-archief" type="checkbox">
+            <label for="f-archief">Archief tonen</label>
+          </div>
+        </div>
+      </aside>
+
+      <section class="card">
+        <div class="head">
+          <div><strong>Overzicht dossiers</strong><div class="muted" style="font-size:.9rem">Hier zie je een overzicht van alle dossiers die je in beheer hebt. Alleen actieve dossiers worden getoond, tenzij je ‘archief tonen’ aanzet.</div></div>
+          <div class="row-actions">
+            <button class="btn small" id="btn-details">Toon details</button>
+            <button class="btn primary" id="btn-nieuw">Nieuw onderzoek</button>
+          </div>
+        </div>
+        <div class="body">
+          <table id="tbl">
+            <thead>
+              <tr>
+                <th style="width:28%">Dossier</th>
+                <th>Onderzoektype</th>
+                <th>Functie</th>
+                <th>Werkgever</th>
+                <th>Startdatum</th>
+                <th>Gewijzigd</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </template>
+
+  <template id="tpl-nieuw">
+    <div class="card" style="max-width:720px;margin:0 auto">
+      <div class="head">
+        <strong>Nieuw onderzoek</strong>
+        <button class="btn ghost" data-close>✕</button>
+      </div>
+      <div class="body">
+        <div class="grid" style="grid-template-columns:1fr 1fr">
+          <div class="field"><label>Werknemer</label><input id="n-werknemer" placeholder="Bijv. Jan Jansen"></div>
+          <div class="field"><label>Functie</label><input id="n-functie" placeholder="Bijv. Engineer"></div>
+          <div class="field"><label>Werkgever</label><input id="n-werkgever" placeholder="Bijv. Bedrijf A"></div>
+          <div class="field"><label>Onderzoekstype</label>
+            <select id="n-type">
+              <option>Arbeidsdeskundig onderzoek</option>
+              <option>Herbeoordeling</option>
+              <option>Poortwachter</option>
+            </select>
+          </div>
+          <div class="field"><label>Startdatum</label><input id="n-start" type="date"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+          <button class="btn" data-close>Annuleren</button>
+          <button class="btn primary" id="n-save">Opslaan</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-dossier-details">
+    <div class="card">
+      <div class="head">
+        <div>
+          <strong>Overzicht dossiers</strong>
+          <div class="muted" style="font-size:.9rem">Detailweergave (dummy data). Gebruik de knoppen om terug te gaan of het dossier te openen.</div>
+        </div>
+        <div class="row-actions">
+          <button class="btn small" id="dd-back">Verberg details</button>
+          <button class="btn primary" id="dd-open">Dossier openen</button>
+        </div>
+      </div>
+      <div class="body" id="dd-body"></div>
+    </div>
+  </template>
+
+
+  
+  <template id="tpl-dossier-home">
+    <div class="grid" style="grid-template-columns:1fr 320px;gap:16px">
+      <section class="card">
+        <div class="head"><strong>Dit is het dossier van de werknemer.</strong></div>
+        <div class="body">
+          <p class="muted">Klik op de knoppen aan de rechterkant om de benodigde gegevens in te voeren.</p>
+        </div>
+      </section>
+      <aside class="card" id="ds-side"></aside>
+    </div>
+  </template>
+
+  <template id="tpl-werknemer">
+    <div class="grid" style="grid-template-columns:1fr 320px;gap:16px">
+      <section class="card">
+        <div class="head">
+          <div>
+            <strong>Gegevens van werknemer</strong>
+            <div class="muted">Op deze pagina kun je algemene gegevens van de werknemer invullen. Ingevulde velden komen terug in de rapportage.</div>
+          </div>
+          <div class="row-actions">
+            <button class="btn small" id="wk-save">Opslaan</button>
+          </div>
+        </div>
+        <div class="body">
+          <nav class="subtabs" id="wk-tabs" style="margin-bottom:12px">
+            <button class="sub active" data-k="algemeen">Algemene gegevens</button>
+            <button class="sub" data-k="verzuim">Verzuimgegevens</button>
+            <button class="sub" data-k="cv">CV gegevens</button>
+          </nav>
+
+          <div id="wk-pane">
+            <!-- panes injected -->
+          </div>
+        </div>
+      </section>
+      <aside class="card" id="ds-side"></aside>
+    </div>
+  </template>
+
+  
+<template id="tpl-basisprofielen">
+  <div class="card" style="margin-bottom:16px">
+    <div class="head">
+      <div class="ad-toolbar" style="flex-wrap:wrap;gap:12px">
+        <h2 style="margin:0">Basisprofielen</h2>
+        <span class="ad-help">Beheer standaardprofielen voor functies, taken en koppeling met AD assist.</span>
+      </div>
+      <div class="ad-toolbar">
+        <button class="btn" id="bp-import">Importeren</button>
+        <button class="btn" id="bp-export">Exporteren</button>
+        <button class="btn primary" id="bp-nieuw">Nieuw profiel</button>
+      </div>
+    </div>
+    <div class="body">
+      <div class="filters">
+        <div class="row">
+          <label>Zoeken</label>
+          <input type="search" id="bp-q" placeholder="Zoek op profielnaam, sector, taken…"/>
+        </div>
+        <div class="row">
+          <label>Sector</label>
+          <select id="bp-sector"><option>Alle sectoren</option></select>
+        </div>
+        <div class="row">
+          <label>Status</label>
+          <select id="bp-status"><option>Alle statussen</option><option>Actief</option><option>Concept</option><option>Gearchiveerd</option></select>
+        </div>
+        <div class="row">
+          <label>Laatste wijziging</label>
+          <select id="bp-lw"><option>Alle</option><option>Laatste 7 dagen</option><option>Laatste 30 dagen</option><option>Ouder</option></select>
+        </div>
+        <div class="row">
+          <label>&nbsp;</label>
+          <label class="check"><input id="bp-alleen-mijn" type="checkbox"/> Alleen mijn profielen</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="card">
+      <div class="head"><strong>Overzicht</strong><span class="muted" id="bp-count"></span></div>
+      <div class="body" style="padding:0">
+        <table class="table" id="bp-table">
+          <thead>
+            <tr>
+              <th style="width:28px"></th>
+              <th>Profiel</th>
+              <th>Sector</th>
+              <th>Taken</th>
+              <th>Koppelingen</th>
+              <th>Laatst gewijzigd</th>
+              <th>Status</th>
+              <th style="width:220px"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <aside class="side card" id="bp-side">
+      <div class="head"><strong>Details</strong></div>
+      <div class="body">
+        <p class="muted">Selecteer een profiel om details te bekijken en te bewerken.</p>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="bp-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bp-modal-title">
+      <div class="head">
+        <strong id="bp-modal-title">Profiel</strong>
+        <button class="btn small" id="bp-close">Sluiten</button>
+      </div>
+      <div class="body">
+        <form id="bp-form" class="form">
+          <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+            <div class="row"><label>Profielnaam</label><input name="naam" required/></div>
+            <div class="row"><label>Sector</label><input name="sector" list="bp-sectorlist"/></div>
+            <div class="row"><label>Niveau</label><input name="niveau" placeholder="bijv. MBO-4, HBO"/></div>
+            <div class="row"><label>Status</label>
+              <select name="status"><option>Actief</option><option>Concept</option><option>Gearchiveerd</option></select>
+            </div>
+            <div class="row" style="grid-column:1/3">
+              <label>Omschrijving</label>
+              <textarea name="omschrijving" rows="3" placeholder="Korte omschrijving van het profiel…"></textarea>
+            </div>
+          </div>
+
+          <div class="row"><label>Taken</label>
+            <div class="tags" id="bp-taken-tags"></div>
+            <div class="grid" style="grid-template-columns:1fr auto;gap:6px;margin-top:6px">
+              <input id="bp-taken-input" placeholder="Nieuwe taak toevoegen…"/>
+              <button class="btn small" id="bp-add-taak" type="button">+ taak</button>
+            </div>
+          </div>
+
+          <div class="row"><label>Koppelingen (FML/Functies)</label>
+            <div class="tags" id="bp-koppelingen-tags"></div>
+            <div class="grid" style="grid-template-columns:1fr auto;gap:6px;margin-top:6px">
+              <input id="bp-koppeling-input" placeholder="Nieuwe koppeling toevoegen…"/>
+              <button class="btn small" id="bp-add-koppeling" type="button">+ koppeling</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="foot">
+        <button class="btn" id="bp-delete">Verwijderen</button>
+        <button class="btn" id="bp-dup">Dupliceer</button>
+        <button class="btn primary" id="bp-save">Opslaan</button>
+      </div>
+    </div>
+    <datalist id="bp-sectorlist"></datalist>
+  </div>
+</template>
+
+<template id="tpl-functiehuis">
+  <div class="card" style="margin-bottom:16px">
+    <div class="head">
+      <div class="ad-toolbar" style="flex-wrap:wrap;gap:12px">
+        <h2 style="margin:0">Functiehuis</h2>
+        <span class="ad-help">Beheer functies, families en koppelingen met Basisprofielen en AD assist.</span>
+      </div>
+      <div class="ad-toolbar">
+        <button class="btn" id="fh-import">Importeren</button>
+        <button class="btn" id="fh-export">Exporteren</button>
+        <button class="btn primary" id="fh-nieuw">Nieuwe functie</button>
+      </div>
+    </div>
+    <div class="body">
+      <div class="filters">
+        <div class="row">
+          <label>Zoeken</label>
+          <input type="search" id="fh-q" placeholder="Zoek op functienaam, familie, competenties…"/>
+        </div>
+        <div class="row">
+          <label>Familie</label>
+          <select id="fh-familie"><option>Alle families</option></select>
+        </div>
+        <div class="row">
+          <label>Status</label>
+          <select id="fh-status"><option>Alle statussen</option><option>Actief</option><option>Concept</option><option>Gearchiveerd</option></select>
+        </div>
+        <div class="row">
+          <label>Schaal</label>
+          <select id="fh-schaal"><option>Alle schalen</option><option>Schaal 6</option><option>Schaal 7</option><option>Schaal 8</option><option>Schaal 9</option><option>Schaal 10</option></select>
+        </div>
+        <div class="row">
+          <label>&nbsp;</label>
+          <label class="check"><input id="fh-alleen-mijn" type="checkbox"/> Alleen mijn functies</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="card">
+      <div class="head"><strong>Overzicht</strong><span class="muted" id="fh-count"></span></div>
+      <div class="body" style="padding:0">
+        <table class="table" id="fh-table">
+          <thead>
+            <tr>
+              <th style="width:28px"></th>
+              <th>Functie</th>
+              <th>Familie</th>
+              <th>Schaal</th>
+              <th>Profielen</th>
+              <th>Laatst gewijzigd</th>
+              <th>Status</th>
+              <th style="width:220px"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <aside class="side card" id="fh-side">
+      <div class="head"><strong>Details</strong></div>
+      <div class="body">
+        <p class="muted">Selecteer een functie om details te bekijken en te bewerken.</p>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="fh-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="fh-modal-title">
+      <div class="head">
+        <strong id="fh-modal-title">Functie</strong>
+        <button class="btn small" id="fh-close">Sluiten</button>
+      </div>
+      <div class="body">
+        <form id="fh-form" class="form">
+          <div class="grid-2">
+            <div class="row"><label>Functienaam</label><input name="naam" required/></div>
+            <div class="row"><label>Familie</label><input name="familie" list="fh-familielist"/></div>
+            <div class="row"><label>Schaal</label><input name="schaal" placeholder="bijv. Schaal 8"/></div>
+            <div class="row"><label>Status</label>
+              <select name="status"><option>Actief</option><option>Concept</option><option>Gearchiveerd</option></select>
+            </div>
+            <div class="row" style="grid-column:1/3">
+              <label>Omschrijving</label>
+              <textarea name="omschrijving" rows="3" placeholder="Korte omschrijving van de functie…"></textarea>
+            </div>
+          </div>
+
+          <div class="row"><label>Competenties</label>
+            <div class="tags" id="fh-competenties-tags"></div>
+            <div class="grid" style="grid-template-columns:1fr auto;gap:6px;margin-top:6px">
+              <input id="fh-competentie-input" placeholder="Nieuwe competentie…"/>
+              <button class="btn small" id="fh-add-competentie" type="button">+ competentie</button>
+            </div>
+          </div>
+
+          <div class="row"><label>Kern taken</label>
+            <div class="tags" id="fh-taken-tags"></div>
+            <div class="grid" style="grid-template-columns:1fr auto;gap:6px;margin-top:6px">
+              <input id="fh-taak-input" placeholder="Nieuwe taak…"/>
+              <button class="btn small" id="fh-add-taak" type="button">+ taak</button>
+            </div>
+          </div>
+
+          <div class="row"><label>Koppeling Basisprofielen</label>
+            <div class="tags" id="fh-profielen-tags"></div>
+            <div class="grid" style="grid-template-columns:1fr auto;gap:6px;margin-top:6px">
+              <input id="fh-profiel-input" placeholder="Naam basisprofiel…"/>
+              <button class="btn small" id="fh-add-profiel" type="button">+ profiel</button>
+            </div>
+            <div class="muted" style="margin-top:6px">Tip: typt automatisch; exacte link wordt op naam gemaakt.</div>
+          </div>
+        </form>
+      </div>
+      <div class="foot">
+        <button class="btn" id="fh-delete">Verwijderen</button>
+        <button class="btn" id="fh-dup">Dupliceer</button>
+        <button class="btn primary" id="fh-save">Opslaan</button>
+      </div>
+    </div>
+    <datalist id="fh-familielist"></datalist>
+  </div>
+</template>
+
+<template id="tpl-beroepen">
+  <div class="card" style="margin-bottom:16px">
+    <div class="head">
+      <div class="ad-toolbar" style="flex-wrap:wrap;gap:12px">
+        <h2 style="margin:0">Beroepen</h2>
+        <span class="ad-help">Catalogus van beroepen met koppelingen naar Basisprofielen en Functiehuis.</span>
+      </div>
+      <div class="ad-toolbar">
+        <button class="btn" id="br-import">Importeren</button>
+        <button class="btn" id="br-export">Exporteren</button><button class="btn" id="br-seed-web">Seed van web</button>
+        <button class="btn primary" id="br-nieuw">Nieuw beroep</button>
+      </div>
+    </div>
+    <div class="body">
+      <div class="filters">
+        <div class="row">
+          <label>Zoeken</label>
+          <input type="search" id="br-q" placeholder="Zoek op beroep, code (SBC/ISCO/ROME), sector, vaardigheden…"/>
+        </div>
+        <div class="row">
+          <label>Sector</label>
+          <select id="br-sector"><option>Alle sectoren</option></select>
+        </div>
+        <div class="row">
+          <label>Niveau</label>
+          <select id="br-niveau"><option>Alle niveaus</option><option>Praktijk</option><option>MBO-2</option><option>MBO-3</option><option>MBO-4</option><option>HBO</option><option>WO</option></select>
+        </div>
+        <div class="row">
+          <label>Status</label>
+          <select id="br-status"><option>Alle statussen</option><option>Actief</option><option>Concept</option><option>Gearchiveerd</option></select>
+        </div>
+        <div class="row">
+          <label>&nbsp;</label>
+          <label class="check"><input id="br-alleen-mijn" type="checkbox"/> Alleen mijn items</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="card">
+      <div class="head"><strong>Overzicht</strong><span class="muted" id="br-count"></span></div>
+      <div class="body" style="padding:0">
+        <table class="table" id="br-table">
+          <thead>
+            <tr>
+              <th style="width:28px"></th>
+              <th>Beroep</th>
+              <th>Sector</th>
+              <th>Niveau</th>
+              <th>Vaardigheden</th>
+              <th>Profielen</th>
+              <th>Laatst gewijzigd</th>
+              <th>Status</th>
+              <th style="width:220px"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <aside class="side card" id="br-side">
+      <div class="head"><strong>Details</strong></div>
+      <div class="body">
+        <p class="muted">Selecteer een beroep om details te bekijken en te bewerken.</p>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="br-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="br-modal-title">
+      <div class="head">
+        <strong id="br-modal-title">Beroep</strong>
+        <button class="btn small" id="br-close">Sluiten</button>
+      </div>
+      <div class="body">
+        <form id="br-form" class="form">
+          <div class="grid-2">
+            <div class="row"><label>Beroepsnaam</label><input name="naam" required/></div>
+            <div class="row"><label>Sector</label><input name="sector" list="br-sectorlist"/></div>
+            <div class="row"><label>Niveau</label><input name="niveau" placeholder="bijv. MBO-4, HBO"/></div>
+            <div class="row"><label>Status</label>
+              <select name="status"><option>Actief</option><option>Concept</option><option>Gearchiveerd</option></select>
+            </div>
+            <div class="row"><label>Code</label><input name="code" placeholder="SBC/ISCO/ROME code"/></div>
+            <div class="row"><label>Synoniemen</label><input name="synoniemen" placeholder="komma-gescheiden"/></div>
+            <div class="row" style="grid-column:1/3">
+              <label>Omschrijving</label>
+              <textarea name="omschrijving" rows="3" placeholder="Korte omschrijving van het beroep…"></textarea>
+            </div>
+          </div>
+
+          <div class="row"><label>Vaardigheden</label>
+            <div class="tags" id="br-vaard-tags"></div>
+            <div class="grid" style="grid-template-columns:1fr auto;gap:6px;margin-top:6px">
+              <input id="br-vaard-input" placeholder="Nieuwe vaardigheid…"/>
+              <button class="btn small" id="br-add-vaard" type="button">+ vaardigheid</button>
+            </div>
+          </div>
+
+          <div class="row"><label>Belastingen (optioneel)</label>
+            <div class="tags" id="br-bel-tags"></div>
+            <div class="grid" style="grid-template-columns:1fr auto;gap:6px;margin-top:6px">
+              <input id="br-bel-input" placeholder="bijv. Tillen 10kg, Sta/lopen, Verdeelde aandacht…"/>
+              <button class="btn small" id="br-add-bel" type="button">+ belasting</button>
+            </div>
+          </div>
+
+          <div class="row"><label>Koppeling Basisprofielen</label>
+            <div class="tags" id="br-prof-tags"></div>
+            <div class="grid" style="grid-template-columns:1fr auto;gap:6px;margin-top:6px">
+              <input id="br-prof-input" placeholder="Naam basisprofiel…"/>
+              <button class="btn small" id="br-add-prof" type="button">+ profiel</button>
+            </div>
+          </div>
+
+          <div class="row"><label>Koppeling Functies</label>
+            <div class="tags" id="br-func-tags"></div>
+            <div class="grid" style="grid-template-columns:1fr auto;gap:6px;margin-top:6px">
+              <input id="br-func-input" placeholder="Naam functie…"/>
+              <button class="btn small" id="br-add-func" type="button">+ functie</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="foot">
+        <button class="btn" id="br-delete">Verwijderen</button>
+        <button class="btn" id="br-dup">Dupliceer</button>
+        <button class="btn primary" id="br-save">Opslaan</button>
+      </div>
+    </div>
+    <datalist id="br-sectorlist"></datalist>
+  </div>
+</template>
+<template id="tpl-placeholder">
+    <div class="card">
+      <div class="head"><strong id="ph-title">Titel</strong></div>
+      <div class="body">
+        <p>Deze pagina is een werkend voorbeeld in de stijl van AC-dossier. Navigatie en theming zijn actief.</p>
+        <p>Gebruik bovenin de tabs om terug te gaan naar <a href="#/dossiers">Dossiers</a>.</p>
+      </div>
+    </div>
+  </template>
+
+  <!-- AD-assist flow (geïntegreerd, route: #/ad-assist?dos=ID) -->
+  <style id="ad-assist-css">
+    :root{
+      --website_theme_color: var(--bg, #ffffff);
+      --website_kleur1: var(--primary, #ec641a);
+      --website_kleur2: var(--teal, #79c6c0);
+      --website_kleur3: var(--accent, #85cee4);
+      --website_kleur4: var(--slate, #686c7c);
+      --website_kleur5: var(--ink, #4c505a);
+      --website_kleur6: var(--steel, #69a1b1);
+      --website_kleur8: var(--surface, #f7f7f7);
+    }
+    .ad-wrap{display:grid;grid-template-columns:280px 1fr;gap:16px}
+    @media (max-width:980px){.ad-wrap{grid-template-columns:1fr}}
+    .ad-nav{background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden}
+    .ad-nav h3{margin:0;padding:14px 16px;border-bottom:1px solid #e5e7eb}
+    .ad-steps{list-style:none;margin:0;padding:0}
+    .ad-step{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f2f2f2;cursor:pointer}
+    .ad-step:hover{background:#fff7ed}
+    .ad-step.active{background:#fff4ed;border-left:4px solid var(--website_kleur1)}
+    .ad-step .nr{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#f1f5f9;font-weight:700}
+    .ad-step .t{flex:1}
+    .ad-pane{display:grid;gap:16px}
+    .ad-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px}
+    .ad-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+    .ad-two{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .ad-two .half{grid-column:span 6}.ad-two .full{grid-column:span 12}.ad-two .third{grid-column:span 4}
+    .ad-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+    .ad-help{color:#64748b;font-size:.9rem}
+    .ad-table{width:100%;border-collapse:separate;border-spacing:0}
+    .ad-table th,.ad-table td{padding:8px;border-bottom:1px solid #f2f2f2;text-align:left;vertical-align:top}
+    .ad-chip{display:inline-flex;gap:6px;align-items:center;padding:.25rem .5rem;border-radius:999px;border:1px solid #e5e7eb;background:var(--website_kleur8)}
+    .ad-slider{accent-color:var(--website_kleur1);width:100%}
+    .ad-hidden{display:none!important}
+  </style>
+
+  <template id="tpl-ad-assist">
+    <div class="card ad-toolbar" style="margin-bottom:16px">
+      <div class="ad-toolbar" style="flex-wrap:wrap">
+        <h2 style="margin:0">AD assist — Dossier <span id="adDosLabel"></span></h2>
+        <span class="ad-help">Dossier → FML → Functiebelasting → Overschrijdingen → Matching → Advies → Rapport</span>
+      </div>
+      <div class="ad-toolbar">
+        <a class="btn" href="#/dossiers">← Terug naar dossiers</a>
+        <button class="btn primary" id="adSave">Opslaan</button>
+      </div>
+    </div>
+
+    <div class="ad-wrap">
+      <aside class="ad-nav" aria-label="Stappen">
+        <h3>Stappen</h3>
+        <ul id="adSteps" class="ad-steps"></ul>
+      </aside>
+
+      <section class="ad-pane" id="adPane">
+        <div class="ad-card ad-section" data-step="dossier">
+          <div class="ad-two">
+            <div class="half">
+              <label>Werknemer</label>
+              <select id="adEmp"></select>
+            </div>
+            <div class="half">
+              <label>Dossier</label>
+              <select id="adDos"></select>
+            </div>
+            <div class="third">
+              <label>Functie</label>
+              <input id="adFunctie" placeholder="Bijv. Engineer">
+            </div>
+            <div class="third">
+              <label>Uren (contract)</label>
+              <input id="adUren" type="number" min="0" value="40">
+            </div>
+            <div class="third">
+              <label>FTE</label>
+              <input id="adFTE" type="number" min="0" max="1" step="0.05" value="1">
+            </div>
+          </div>
+        </div>
+
+        <div class="ad-card ad-section ad-hidden" data-step="fml">
+          <div class="ad-toolbar">
+            <h3 style="margin:0">Belastbaarheid (FML 2020)</h3>
+            <div class="ad-toolbar">
+              <button class="btn" id="adFmlImport">Importeer FML</button>
+              <button class="btn" id="adFmlClear">Leegmaken</button>
+            </div>
+          </div>
+          <div class="ad-grid" id="adFmlGrid" aria-live="polite"></div>
+        </div>
+
+        <div class="ad-card ad-section ad-hidden" data-step="functie">
+          <div class="ad-toolbar">
+            <h3 style="margin:0">Functiebelasting</h3>
+          </div>
+          <div class="ad-two">
+            <div class="full">
+              <h4>Hoofdtaken (0–100%)</h4>
+              <div id="adHoofdtaken"></div>
+            </div>
+            <div class="full">
+              <h4>Kenmerkende functiebelasting</h4>
+              <div id="adKFB" class="ad-grid"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ad-card ad-section ad-hidden" data-step="overs">
+          <h3>Overschrijdingen (FML ↔ Functie)</h3>
+          <table class="ad-table" aria-live="polite">
+            <thead><tr><th>FML item</th><th>Beperking</th><th>Kenmerkende belasting</th><th>Toelichting</th></tr></thead>
+            <tbody id="adOversBody"></tbody>
+          </table>
+        </div>
+
+        <div class="ad-card ad-section ad-hidden" data-step="advies">
+          <h3>Advies</h3>
+          <div class="ad-two">
+            <div class="half">
+              <label>Geschikt voor eigen werk?</label>
+              <select id="adAdvEigen"><option>Ja</option><option selected>Nee</option></select>
+            </div>
+            <div class="half">
+              <label>Spoor</label>
+              <select id="adAdvSpoor"><option value="1">1</option><option value="2" selected>2</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="ad-card ad-section ad-hidden" data-step="rapport">
+          <div class="ad-toolbar">
+            <h3 style="margin:0">Rapportage</h3>
+            <div class="ad-toolbar">
+              <button class="btn" id="adPreview">Voorbeeld</button>
+              <button class="btn primary" id="adExportHTML">Export HTML</button>
+            </div>
+          </div>
+          <div id="adRapportPreview" class="ad-card ad-hidden"></div>
+        </div>
+      </section>
+    </div>
+  </template>
+
+  <script>
+  // Simple SPA router + state -----------------------------------------------
+  const el = (html)=>{const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstElementChild};
+  const $  = (sel,root=document)=>root.querySelector(sel);
+  const $$ = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
+
+  const DATA = {
+    
+  "beroepen": [
+    {
+      "id": 72001,
+      "naam": "Softwareontwikkelaar",
+      "sector": "ICT",
+      "niveau": "HBO",
+      "status": "Actief",
+      "gewijzigd": "2025-09-10",
+      "laatstDoor": "M. van Donselaar",
+      "code": "SBC 26114",
+      "synoniemen": [
+        "Programmeur",
+        "Developer"
+      ],
+      "omschrijving": "Ontwerpt en bouwt softwaretoepassingen.",
+      "vaardigheden": [
+        "Programmeren",
+        "Testen",
+        "Documenteren"
+      ],
+      "belastingen": [
+        "Cognitief — verdeelde aandacht",
+        "Zitten langdurig"
+      ],
+      "profielen": [
+        "Softwareontwikkelaar"
+      ],
+      "functies": [
+        "Softwareontwikkelaar II"
+      ]
+    },
+    {
+      "id": 72002,
+      "naam": "Klantenservicemedewerker",
+      "sector": "Dienstverlening",
+      "niveau": "MBO-3",
+      "status": "Actief",
+      "gewijzigd": "2025-09-14",
+      "laatstDoor": "Demo gebruiker",
+      "code": "SBC 31513",
+      "synoniemen": [
+        "Customer Support",
+        "Callcenter medewerker"
+      ],
+      "omschrijving": "Beantwoordt klantvragen via telefoon en e-mail.",
+      "vaardigheden": [
+        "Communicatie",
+        "Registreren",
+        "Conflicthantering"
+      ],
+      "belastingen": [
+        "Spraakbelasting",
+        "Werken in shifts"
+      ],
+      "profielen": [
+        "Klantenservicemedewerker"
+      ],
+      "functies": [
+        "Klantenservice Teamlead"
+      ]
+    },
+    {
+      "id": 72003,
+      "naam": "Magazijnmedewerker",
+      "sector": "Logistiek",
+      "niveau": "MBO-2",
+      "status": "Actief",
+      "gewijzigd": "2025-08-28",
+      "laatstDoor": "Demo gebruiker",
+      "code": "SBC 111220",
+      "synoniemen": [
+        "Orderpicker",
+        "Warehouse operative"
+      ],
+      "omschrijving": "Voert logistieke werkzaamheden uit in het magazijn.",
+      "vaardigheden": [
+        "Orderpicken",
+        "Verpakken",
+        "Laden/Lossen"
+      ],
+      "belastingen": [
+        "Tillen 10kg",
+        "Sta/lopen"
+      ],
+      "profielen": [
+        "Magazijnmedewerker"
+      ],
+      "functies": [
+        "Magazijncoördinator"
+      ]
+    },
+    {
+      "id": 72004,
+      "naam": "Verpleegkundige",
+      "sector": "Zorg",
+      "niveau": "HBO",
+      "status": "Actief",
+      "gewijzigd": "2025-09-01",
+      "laatstDoor": "M. van Donselaar",
+      "code": "SBC 25434",
+      "synoniemen": [],
+      "omschrijving": "Verleent verpleegkundige zorg en begeleiding.",
+      "vaardigheden": [
+        "Observeren",
+        "Rapporteren",
+        "Medicatie toedienen"
+      ],
+      "belastingen": [
+        "Sta/lopen",
+        "Tilbelasting"
+      ],
+      "profielen": [
+        "Verpleegkundige"
+      ],
+      "functies": [
+        "Verpleegkundig Specialist"
+      ]
+    }
+  ],
+  "brSectors": [
+    "ICT",
+    "Dienstverlening",
+    "Logistiek",
+    "Zorg",
+    "Onderwijs",
+    "Overheid"
+  ]
+,
+
+    
+  "functiehuis": [
+    {
+      "id": 61001,
+      "naam": "Softwareontwikkelaar II",
+      "familie": "ICT",
+      "schaal": "Schaal 9",
+      "status": "Actief",
+      "gewijzigd": "2025-09-12",
+      "laatstDoor": "M. van Donselaar",
+      "omschrijving": "Ontwerpt en bouwt software op gevorderd niveau.",
+      "competenties": [
+        "Analyseren",
+        "Nauwkeurigheid",
+        "Samenwerken"
+      ],
+      "taken": [
+        "Ontwerpen & ontwikkelen",
+        "Code reviews",
+        "Kwaliteitsbewaking"
+      ],
+      "profielen": [
+        "Softwareontwikkelaar"
+      ]
+    },
+    {
+      "id": 61002,
+      "naam": "Klantenservice Teamlead",
+      "familie": "Dienstverlening",
+      "schaal": "Schaal 8",
+      "status": "Concept",
+      "gewijzigd": "2025-09-16",
+      "laatstDoor": "Demo gebruiker",
+      "omschrijving": "Stuurt een team van klantadviseurs aan.",
+      "competenties": [
+        "Leiderschap",
+        "Communicatie",
+        "Plannen & organiseren"
+      ],
+      "taken": [
+        "Aansturen team",
+        "Escalaties afhandelen",
+        "Rapportages"
+      ],
+      "profielen": [
+        "Klantenservicemedewerker"
+      ]
+    },
+    {
+      "id": 61003,
+      "naam": "Magazijncoördinator",
+      "familie": "Logistiek",
+      "schaal": "Schaal 7",
+      "status": "Actief",
+      "gewijzigd": "2025-08-30",
+      "laatstDoor": "Demo gebruiker",
+      "omschrijving": "Coördineert magazijnprocessen en kwaliteit.",
+      "competenties": [
+        "Coördineren",
+        "Klantgerichtheid"
+      ],
+      "taken": [
+        "Procesoptimalisatie",
+        "Kwaliteitscontrole",
+        "Veiligheid"
+      ],
+      "profielen": [
+        "Magazijnmedewerker"
+      ]
+    },
+    {
+      "id": 61004,
+      "naam": "Verpleegkundig Specialist",
+      "familie": "Zorg",
+      "schaal": "Schaal 10",
+      "status": "Actief",
+      "gewijzigd": "2025-09-01",
+      "laatstDoor": "M. van Donselaar",
+      "omschrijving": "Verantwoordelijk voor complexe zorgverlening.",
+      "competenties": [
+        "Besluitvaardigheid",
+        "Stressbestendigheid",
+        "Samenwerken"
+      ],
+      "taken": [
+        "Behandelplannen",
+        "Supervisie",
+        "Kwaliteit & veiligheid"
+      ],
+      "profielen": [
+        "Verpleegkundige"
+      ]
+    }
+  ],
+  "fhFamilies": [
+    "ICT",
+    "Dienstverlening",
+    "Logistiek",
+    "Zorg",
+    "Finance",
+    "HR"
+  ]
+,
+
+    
+  "basisProfielen": [
+    {
+      "id": 50101,
+      "naam": "Softwareontwikkelaar",
+      "sector": "ICT",
+      "niveau": "HBO",
+      "status": "Actief",
+      "gewijzigd": "2025-09-10",
+      "laatstDoor": "M. van Donselaar",
+      "omschrijving": "Ontwikkelt en onderhoudt softwarecomponenten.",
+      "taken": [
+        "Analyseren van requirements",
+        "Ontwikkelen en testen",
+        "Documenteren",
+        "Code reviews"
+      ],
+      "koppelingen": [
+        "FML: Cognitief — verdeelde aandacht",
+        "Functie: Developer II"
+      ]
+    },
+    {
+      "id": 50102,
+      "naam": "Klantenservicemedewerker",
+      "sector": "Dienstverlening",
+      "niveau": "MBO-4",
+      "status": "Concept",
+      "gewijzigd": "2025-09-14",
+      "laatstDoor": "Demo gebruiker",
+      "omschrijving": "Behandelt klantvragen via telefoon en e-mail.",
+      "taken": [
+        "Telefoon opnemen",
+        "Tickets registreren",
+        "Escalaties doorzetten"
+      ],
+      "koppelingen": [
+        "FML: Communicatie — spraak",
+        "Functie: Customer Support"
+      ]
+    },
+    {
+      "id": 50103,
+      "naam": "Magazijnmedewerker",
+      "sector": "Logistiek",
+      "niveau": "MBO-2",
+      "status": "Actief",
+      "gewijzigd": "2025-08-28",
+      "laatstDoor": "Demo gebruiker",
+      "omschrijving": "Pickt orders, verpakt en laadt/lost goederen.",
+      "taken": [
+        "Orderpicken",
+        "Verpakken",
+        "Laden/Lossen"
+      ],
+      "koppelingen": [
+        "FML: Fysiek — tillen 10kg",
+        "Functie: Warehouse Operative"
+      ]
+    },
+    {
+      "id": 50104,
+      "naam": "Verpleegkundige",
+      "sector": "Zorg",
+      "niveau": "HBO",
+      "status": "Actief",
+      "gewijzigd": "2025-09-01",
+      "laatstDoor": "M. van Donselaar",
+      "omschrijving": "Verleent verpleegkundige zorg en begeleiding.",
+      "taken": [
+        "Observeren & rapporteren",
+        "Verzorgen patiënten",
+        "Medicatie toedienen"
+      ],
+      "koppelingen": [
+        "FML: Fysiek — staan/lopen",
+        "Functie: Verpleegkundige A"
+      ]
+    }
+  ],
+  "bpSectors": [
+    "ICT",
+    "Dienstverlening",
+    "Logistiek",
+    "Zorg",
+    "Overheid",
+    "Onderwijs"
+  ]
+,
+
+    dossierRows: [
+      {id:99001, werknemer:"Jan Jansen", type:"Arbeidsdeskundig onderzoek", functie:"Engineer", werkgever:"Bedrijf A", start:"2025-08-27", gewijzigd:"2025-08-27", archief:false, samenvatting:"Onderzoek naar belastbaarheid, kenmerkend programmeren & documentatie."},
+      {id:99002, werknemer:"Maria de Vries", type:"Arbeidsdeskundig onderzoek", functie:"Pedagogisch professional", werkgever:"Demo Stichting", start:"2025-08-13", gewijzigd:"2025-08-13", archief:false, samenvatting:"Beoordeling werkdruk, conflicthantering en sta-/loopbelasting."},
+      {id:99003, werknemer:"Arjan Voorbeeld", type:"Arbeidsdeskundig onderzoek", functie:"Engineer", werkgever:"Demo BV", start:"2025-07-30", gewijzigd:"2025-07-30", archief:false, samenvatting:"Inventarisatie taakverdeling en urenopbouw."},
+      {id:99004, werknemer:"Laura Voorbeeld", type:"Arbeidsdeskundig onderzoek", functie:"Pedagogisch medewerker", werkgever:"Demo Stichting", start:"2025-02-26", gewijzigd:"2025-02-26", archief:true, samenvatting:"Afgeronde rapportage – verplaatst naar archief."},
+      {id:99005, werknemer:"Test Tester", type:"Arbeidsdeskundig onderzoek", functie:"Onbekend", werkgever:"Bedrijf B", start:"2024-11-21", gewijzigd:"2024-11-21", archief:true, samenvatting:"Dummy dossier tbv. demo."}
+    ],
+    types: ["Alle onderzoekstypes","Arbeidsdeskundig onderzoek","Herbeoordeling","Poortwachter"],
+    werkgevers: ["Alle werkgevers","Bedrijf A","Demo Stichting","Demo BV","Bedrijf B"]
+  };
+
+  function setActiveTab(route){
+    $$('.tab').forEach(t => t.classList.toggle('active', t.getAttribute('data-route')===route));
+  }
+  function setCrumb(text){ $('#crumb-leaf').textContent = text; }
+
+  function route(){
+    const h = location.hash || '#/dossiers';
+    if (!h || h==='#') location.hash = '#/dossiers';
+
+    if (h.startsWith('#/dossiers')){
+      setActiveTab('#/dossiers'); setCrumb('dossiers'); renderDossiers();
+    } else if (h.startsWith('#/basisprofielen')){
+      setActiveTab('#/basisprofielen'); setCrumb('basisprofielen'); renderBasisprofielen();
+    } else if (h.startsWith('#/functiehuis')){
+      setActiveTab('#/functiehuis'); setCrumb('functiehuis'); renderFunctiehuis();
+    } else if (h.startsWith('#/beroepen')){
+      setActiveTab('#/beroepen'); setCrumb('beroepen'); renderBeroepen();
+    } else if (h.startsWith('#/dossier-home')){ setActiveTab('#/dossiers'); setCrumb('dossier'); renderDossierHome(); }
+    else if (h.startsWith('#/dossier-werknemer')){ setActiveTab('#/dossiers'); setCrumb('werknemer'); renderWerknemer(); }
+    else if (h.startsWith('#/dossier')){ setActiveTab('#/dossiers'); setCrumb('dossier'); renderDossierDetails(); }
+    else if (h.startsWith('#/ad-assist')){
+      setActiveTab('#/dossiers'); setCrumb('dossier'); renderAdAssist();
+    } else {
+      location.hash = '#/dossiers';
+    }
+  }
+  window.addEventListener('hashchange', route);
+
+  
+  // Basisprofielen screen -----------------------------------------------------
+  const BP_KEY = 'AD_BASIS_PROFIELEN_V1';
+  function bpLoad(){ try{ const s = localStorage.getItem(BP_KEY); if (s) return JSON.parse(s);}catch(e){}; return [...DATA.basisProfielen]; }
+  function bpSave(list){ localStorage.setItem(BP_KEY, JSON.stringify(list)); }
+
+  function renderBasisprofielen(){
+    const host = $('#view'); host.innerHTML = $('#tpl-basisprofielen').innerHTML;
+    let list = bpLoad();
+
+    const sectorSelect = $('#bp-sector');
+    const sectorlistEl = $('#bp-sectorlist');
+    const sectors = Array.from(new Set(['Alle sectoren', ...DATA.bpSectors, ...list.map(p=>p.sector).filter(Boolean)])).filter(Boolean);
+    sectorSelect.innerHTML = sectors.map(s=>`<option>${s}</option>`).join('');
+    sectorlistEl.innerHTML = DATA.bpSectors.map(s=>`<option value="${s}">`).join('');
+
+    const state = { q:'', sector:'Alle sectoren', status:'Alle statussen', lw:'Alle', mine:false, selected:null };
+    const tbody = $('#bp-table tbody');
+    const side = $('#bp-side .body');
+    const countEl = $('#bp-count');
+
+    function matches(p){
+      const q = state.q.toLowerCase();
+      const hit = !q || [p.naam, p.sector, (p.taken||[]).join(' '), (p.koppelingen||[]).join(' ')].some(v=> (v||'').toLowerCase().includes(q));
+      const sec = (state.sector==='Alle sectoren') || p.sector===state.sector;
+      const st  = (state.status==='Alle statussen') || p.status===state.status;
+      const age = (Date.now()-new Date(p.gewijzigd||'1970-01-01').getTime())/86400000;
+      const lw  = (state.lw==='Alle') || (state.lw==='Laatste 7 dagen' && age<=7) || (state.lw==='Laatste 30 dagen' && age<=30) || (state.lw==='Ouder' && age>30);
+      const mine = !state.mine || (p.laatstDoor||'').toLowerCase().includes('donselaar');
+      return hit && sec && st && lw && mine;
+    }
+    function badge(status){
+      if (status==='Actief') return `<span class="badge-green">Actief</span>`;
+      if (status==='Concept') return `<span class="badge-amber">Concept</span>`;
+      return `<span class="badge-slate">Gearchiveerd</span>`;
+    }
+    function renderTable(){
+      tbody.innerHTML='';
+      const rows = list.filter(matches);
+      countEl.textContent = `(${rows.length} / ${list.length})`;
+      rows.forEach(p=>{
+        const tr = el(`<tr data-id="${p.id}">
+          <td><input type="radio" name="bp-sel" ${state.selected===p.id?'checked':''}></td>
+          <td><strong>${p.naam}</strong><div class="muted">${p.niveau||''}</div></td>
+          <td>${p.sector||''}</td>
+          <td>${(p.taken||[]).length}</td>
+          <td>${(p.koppelingen||[]).length}</td>
+          <td>${p.gewijzigd||''}</td>
+          <td>${badge(p.status||'')}</td>
+          <td class="row-actions">
+            <button class="btn small" data-act="open">Open</button>
+            <button class="btn small" data-act="edit">Bewerk</button>
+            <button class="btn small" data-act="dup">Dupliceer</button>
+            <button class="kebab" title="Meer opties">⋯</button>
+          </td>
+        </tr>`);
+        tbody.appendChild(tr);
+      });
+      if (rows.length===0){
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#64748b;padding:20px">Geen profielen gevonden</td></tr>`;
+      }
+    }
+    function renderSide(p){
+      if (!p){ side.innerHTML = '<p class="muted">Selecteer een profiel om details te bekijken en te bewerken.</p>'; return; }
+      side.innerHTML = `
+        <div class="kv"><div>Profiel</div><div><strong>${p.naam}</strong></div></div>
+        <div class="kv"><div>Sector</div><div>${p.sector||''}</div></div>
+        <div class="kv"><div>Niveau</div><div>${p.niveau||''}</div></div>
+        <div class="kv"><div>Status</div><div>${p.status||''}</div></div>
+        <div class="kv"><div>Laatst gewijzigd</div><div>${p.gewijzigd||''}</div></div>
+        <div class="kv"><div>Laatst door</div><div>${p.laatstDoor||''}</div></div>
+        <div style="margin-top:10px">
+          <div class="muted">Omschrijving</div>
+          <div>${(p.omschrijving||'').replace(/\\n/g,'<br>')}</div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="muted">Taken</div>
+          <div class="tags">${(p.taken||[]).map(t=>`<span class="tag">${t}</span>`).join('')||'<span class="muted">—</span>'}</div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="muted">Koppelingen</div>
+          <div class="tags">${(p.koppelingen||[]).map(t=>`<span class="tag">${t}</span>`).join('')||'<span class="muted">—</span>'}</div>
+        </div>
+        <div class="ad-toolbar" style="margin-top:16px">
+          <button class="btn" id="bp-use-in-ad">Open in AD assist</button>
+          <a class="btn" href="#/dossiers">← Terug</a>
+        </div>
+      `;
+      const btn = $('#bp-use-in-ad'); if (btn) btn.addEventListener('click', ()=>{ location.hash = '#/ad-assist'; });
+    }
+    function selectById(id){
+      state.selected = id;
+      const p = list.find(x=>x.id===id);
+      renderSide(p);
+      $$('#bp-table tbody tr').forEach(row=>{
+        const r = $('input[type=radio]', row); if (r) r.checked = (row.getAttribute('data-id')==id);
+      });
+    }
+    // Filters
+    $('#bp-q').addEventListener('input', e=>{ state.q = e.target.value; renderTable(); });
+    $('#bp-sector').addEventListener('change', e=>{ state.sector = e.target.value; renderTable(); });
+    $('#bp-status').addEventListener('change', e=>{ state.status = e.target.value; renderTable(); });
+    $('#bp-lw').addEventListener('change', e=>{ state.lw = e.target.value; renderTable(); });
+    $('#bp-alleen-mijn').addEventListener('change', e=>{ state.mine = e.target.checked; renderTable(); });
+
+    // Table actions
+    $('#bp-table').addEventListener('click', e=>{
+      const tr = e.target.closest('tr'); if (!tr) return;
+      const id = Number(tr.getAttribute('data-id'));
+      if (e.target.matches('input[type=radio]') || e.target.getAttribute('data-act')==='open'){
+        selectById(id);
+      } else if (e.target.getAttribute('data-act')==='edit'){
+        openModal(list.find(p=>p.id===id));
+      } else if (e.target.getAttribute('data-act')==='dup'){
+        const src = list.find(p=>p.id===id); if (!src) return;
+        const copy = JSON.parse(JSON.stringify(src));
+        copy.id = Math.floor(60000 + Math.random()*39999);
+        copy.naam = src.naam + " (kopie)";
+        copy.status = 'Concept';
+        copy.gewijzigd = new Date().toISOString().slice(0,10);
+        list.unshift(copy); bpSave(list); renderTable(); selectById(copy.id);
+      }
+    });
+
+    // Modal helpers
+    const modal = $('#bp-modal');
+    function openModal(p){
+      const isNew = !p;
+      const form = $('#bp-form');
+      modal.style.display='flex';
+      $('#bp-modal-title').textContent = isNew ? 'Nieuw profiel' : 'Profiel bewerken';
+      form.reset();
+      const data = p || { id: Math.floor(70000 + Math.random()*29999), naam:'', sector:'', niveau:'', status:'Concept', omschrijving:'', taken:[], koppelingen:[], gewijzigd: new Date().toISOString().slice(0,10), laatstDoor:'M. van Donselaar' };
+      form.querySelector('[name=naam]').value = data.naam;
+      form.querySelector('[name=sector]').value = data.sector||'';
+      form.querySelector('[name=niveau]').value = data.niveau||'';
+      form.querySelector('[name=status]').value = data.status||'Concept';
+      form.querySelector('[name=omschrijving]').value = data.omschrijving||'';
+      const takenTags = $('#bp-taken-tags'); takenTags.innerHTML = (data.taken||[]).map((t,i)=>`<span class="tag">${t}<span class="x" data-del="taak" data-i="${i}">✕</span></span>`).join('');
+      const koppTags = $('#bp-koppelingen-tags'); koppTags.innerHTML = (data.koppelingen||[]).map((t,i)=>`<span class="tag">${t}<span class="x" data-del="kop" data-i="${i}">✕</span></span>`).join('');
+      takenTags.addEventListener('click', ev=>{ if (ev.target.classList.contains('x')){ const i=Number(ev.target.getAttribute('data-i')); data.taken.splice(i,1); openModal(data); } });
+      koppTags.addEventListener('click', ev=>{ if (ev.target.classList.contains('x')){ const i=Number(ev.target.getAttribute('data-i')); data.koppelingen.splice(i,1); openModal(data); } });
+      $('#bp-add-taak').onclick = ()=>{ const v=$('#bp-taken-input').value.trim(); if(v){ data.taken.push(v); $('#bp-taken-input').value=''; openModal(data);} };
+      $('#bp-add-koppeling').onclick = ()=>{ const v=$('#bp-koppeling-input').value.trim(); if(v){ data.koppelingen.push(v); $('#bp-koppeling-input').value=''; openModal(data);} };
+      $('#bp-save').onclick = ()=>{
+        data.naam = form.querySelector('[name=naam]').value.trim();
+        data.sector = form.querySelector('[name=sector]').value.trim();
+        data.niveau = form.querySelector('[name=niveau]').value.trim();
+        data.status = form.querySelector('[name=status]').value;
+        data.omschrijving = form.querySelector('[name=omschrijving]').value;
+        data.gewijzigd = new Date().toISOString().slice(0,10);
+        if (isNew){ list.unshift(data); } else { const idx = list.findIndex(x=>x.id===(p?p.id:null)); if (idx>-1) list[idx]=data; }
+        bpSave(list); renderTable(); selectById(data.id); closeModal();
+      };
+      $('#bp-delete').onclick = ()=>{
+        if (!p){ closeModal(); return; }
+        if (confirm('Profiel verwijderen?')){ list = list.filter(x=>x.id!==p.id); bpSave(list); renderTable(); selectById(null); closeModal(); }
+      };
+      $('#bp-dup').onclick = ()=>{
+        const copy = JSON.parse(JSON.stringify(p||{naam:'Nieuw profiel'}));
+        copy.id = Math.floor(60000 + Math.random()*39999);
+        copy.naam = (p?p.naam:'Nieuw profiel') + " (kopie)";
+        copy.status = 'Concept';
+        copy.gewijzigd = new Date().toISOString().slice(0,10);
+        list.unshift(copy); bpSave(list); renderTable(); selectById(copy.id); closeModal();
+      };
+      $('#bp-close').onclick = closeModal;
+    }
+    function closeModal(){ $('#bp-modal').style.display='none'; }
+
+    // Toolbar
+    $('#bp-nieuw').addEventListener('click', ()=> openModal(null));
+    $('#bp-export').addEventListener('click', ()=>{
+      const blob = new Blob([JSON.stringify(list, null, 2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'basisprofielen.json'; a.click();
+    });
+    $('#bp-import').addEventListener('click', ()=>{
+      const inp = document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+      inp.onchange = ()=>{
+        const f = inp.files[0]; if(!f) return;
+        const r = new FileReader();
+        r.onload = ()=>{ try{ list = JSON.parse(r.result); bpSave(list); renderTable(); selectById(list[0]?.id||null);}catch(e){alert('Kon JSON niet lezen.');} };
+        r.readAsText(f);
+      };
+      inp.click();
+    });
+
+    renderTable();
+    if (list.length){ selectById(list[0].id); }
+
+    const seedBtn = $('#br-seed-web');
+    if (seedBtn) seedBtn.addEventListener('click', async ()=>{
+      try{
+        const resp = await fetch(JOB_PROXY + 'nl.wikipedia.org/wiki/Categorie:Beroep');
+        const txt = await resp.text();
+        const names = Array.from(txt.matchAll(/<a[^>]+href="\/wiki\/([^":#]+)"[^>]*>(.*?)<\/a>/g))
+          .map(m=>m[2].replace(/<[^>]+>/g,' ').trim())
+          .filter(t=> t && !t.includes(':') && /^[A-Za-zÀ-ÿ \-']{3,50}$/.test(t));
+        const unique = [...new Set(names)].slice(0, 20);
+        if (!unique.length){ alert('Geen titels gevonden (proxy of pagina gewijzigd).'); return; }
+        const now = new Date().toISOString().slice(0,10);
+        unique.forEach(n=>{
+          if (list.some(x=> x.naam.toLowerCase()===n.toLowerCase())) return;
+          list.push({ id: Math.floor(94000 + Math.random()*5000), naam: n, sector: '', niveau: '', status:'Concept', code:'', synoniemen:[], omschrijving:'', vaardigheden:[], belastingen:[], profielen:[], functies:[], gewijzigd: now, laatstDoor:'Seed (web)'});
+        });
+        brSave(list); renderTable(); selectById(list[0].id);
+      }catch(e){ console.warn(e); alert('Seed mislukt (proxy nodig).'); }
+    });
+  }
+
+  // Functiehuis screen --------------------------------------------------------
+  const FH_KEY = 'AD_FUNCTIEHUIS_V1';
+  function fhLoad(){ try{ const s=localStorage.getItem(FH_KEY); if(s) return JSON.parse(s);}catch(e){}; return [...DATA.functiehuis]; }
+  function fhSave(list){ localStorage.setItem(FH_KEY, JSON.stringify(list)); }
+
+  function renderFunctiehuis(){
+    const host = $('#view'); host.innerHTML = $('#tpl-functiehuis').innerHTML;
+    let list = fhLoad();
+
+    const familieSelect = $('#fh-familie');
+    const familielistEl = $('#fh-familielist');
+    const fams = Array.from(new Set(['Alle families', ...DATA.fhFamilies, ...list.map(f=>f.familie).filter(Boolean)])).filter(Boolean);
+    familieSelect.innerHTML = fams.map(f=>`<option>${f}</option>`).join('');
+    familielistEl.innerHTML = DATA.fhFamilies.map(f=>`<option value="${f}">`).join('');
+
+    const state = { q:'', familie:'Alle families', status:'Alle statussen', schaal:'Alle schalen', mine:false, selected:null };
+    const tbody = $('#fh-table tbody');
+    const side = $('#fh-side .body');
+    const countEl = $('#fh-count');
+
+    function matches(f){
+      const q = state.q.toLowerCase();
+      const hit = !q || [f.naam, f.familie, f.schaal, (f.competenties||[]).join(' '), (f.taken||[]).join(' '), (f.profielen||[]).join(' ')].some(v=>(v||'').toLowerCase().includes(q));
+      const fam = (state.familie==='Alle families') || f.familie===state.familie;
+      const st  = (state.status==='Alle statussen') || f.status===state.status;
+      const sc  = (state.schaal==='Alle schalen') || f.schaal===state.schaal;
+      const mine = !state.mine || (f.laatstDoor||'').toLowerCase().includes('donselaar');
+      return hit && fam && st && sc && mine;
+    }
+    function badge(status){
+      if (status==='Actief') return `<span class="badge-green">Actief</span>`;
+      if (status==='Concept') return `<span class="badge-amber">Concept</span>`;
+      return `<span class="badge-slate">Gearchiveerd</span>`;
+    }
+    function renderTable(){
+      tbody.innerHTML='';
+      const rows = list.filter(matches);
+      countEl.textContent = `(${rows.length} / ${list.length})`;
+      rows.forEach(f=>{
+        const tr = el(`<tr data-id="${f.id}">
+          <td><input type="radio" name="fh-sel" ${state.selected===f.id?'checked':''}></td>
+          <td><strong>${f.naam}</strong></td>
+          <td>${f.familie?`<span class="family-chip">${f.familie}</span>`:''}</td>
+          <td>${f.schaal?`<span class="badge-blue">${f.schaal}</span>`:''}</td>
+          <td>${(f.profielen||[]).length}</td>
+          <td>${f.gewijzigd||''}</td>
+          <td>${badge(f.status||'')}</td>
+          <td class="row-actions">
+            <button class="btn small" data-act="open">Open</button>
+            <button class="btn small" data-act="edit">Bewerk</button>
+            <button class="btn small" data-act="dup">Dupliceer</button>
+            <button class="kebab" title="Meer opties">⋯</button>
+          </td>
+        </tr>`);
+        tbody.appendChild(tr);
+      });
+      if (rows.length===0){
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#64748b;padding:20px">Geen functies gevonden</td></tr>`;
+      }
+    }
+    function linkToProfilesHTML(listNames){
+      if (!listNames || !listNames.length) return '<span class="muted">—</span>';
+      return listNames.map(n=>`<span class="tag">${n}</span>`).join(' ');
+    }
+    function renderSide(f){
+      if (!f){ side.innerHTML = '<p class="muted">Selecteer een functie om details te bekijken en te bewerken.</p>'; return; }
+      side.innerHTML = `
+        <div class="kv"><div>Functie</div><div><strong>${f.naam}</strong></div></div>
+        <div class="kv"><div>Familie</div><div>${f.familie||''}</div></div>
+        <div class="kv"><div>Schaal</div><div>${f.schaal||''}</div></div>
+        <div class="kv"><div>Status</div><div>${f.status||''}</div></div>
+        <div class="kv"><div>Laatst gewijzigd</div><div>${f.gewijzigd||''}</div></div>
+        <div class="kv"><div>Laatst door</div><div>${f.laatstDoor||''}</div></div>
+        <div style="margin-top:10px">
+          <div class="muted">Omschrijving</div>
+          <div>${(f.omschrijving||'').replace(/\\n/g,'<br>')}</div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="muted">Competenties</div>
+          <div class="tags">${(f.competenties||[]).map(c=>`<span class="tag">${c}</span>`).join('')||'<span class="muted">—</span>'}</div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="muted">Kern taken</div>
+          <div class="tags">${(f.taken||[]).map(t=>`<span class="tag">${t}</span>`).join('')||'<span class="muted">—</span>'}</div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="muted">Koppeling Basisprofielen</div>
+          <div class="tags">${linkToProfilesHTML(f.profielen)}</div>
+        </div>
+        <div class="ad-toolbar" style="margin-top:16px;flex-wrap:wrap">
+          <a class="btn" href="#/basisprofielen">Open Basisprofielen</a>
+          <button class="btn" id="fh-use-in-ad">Open in AD assist</button>
+          <a class="btn" href="#/dossiers">← Terug</a>
+        </div>
+      `;
+      const btn = $('#fh-use-in-ad'); if (btn) btn.addEventListener('click', ()=>{ location.hash = '#/ad-assist'; });
+    }
+    function selectById(id){
+      state.selected = id;
+      const f = list.find(x=>x.id===id);
+      renderSide(f);
+      $$('#fh-table tbody tr').forEach(row=>{
+        const r = $('input[type=radio]', row); if (r) r.checked = (row.getAttribute('data-id')==id);
+      });
+    }
+    // Filters
+    $('#fh-q').addEventListener('input', e=>{ state.q=e.target.value; renderTable(); });
+    $('#fh-familie').addEventListener('change', e=>{ state.familie=e.target.value; renderTable(); });
+    $('#fh-status').addEventListener('change', e=>{ state.status=e.target.value; renderTable(); });
+    $('#fh-schaal').addEventListener('change', e=>{ state.schaal=e.target.value; renderTable(); });
+    $('#fh-alleen-mijn').addEventListener('change', e=>{ state.mine=e.target.checked; renderTable(); });
+
+    // Table actions
+    $('#fh-table').addEventListener('click', e=>{
+      const tr = e.target.closest('tr'); if (!tr) return;
+      const id = Number(tr.getAttribute('data-id'));
+      if (e.target.matches('input[type=radio]') || e.target.getAttribute('data-act')==='open'){
+        selectById(id);
+      } else if (e.target.getAttribute('data-act')==='edit'){
+        openModal(list.find(f=>f.id===id));
+      } else if (e.target.getAttribute('data-act')==='dup'){
+        const src = list.find(f=>f.id===id); if(!src) return;
+        const copy = JSON.parse(JSON.stringify(src));
+        copy.id = Math.floor(81000 + Math.random()*18999);
+        copy.naam = src.naam + " (kopie)";
+        copy.status = 'Concept';
+        copy.gewijzigd = new Date().toISOString().slice(0,10);
+        list.unshift(copy); fhSave(list); renderTable(); selectById(copy.id);
+      }
+    });
+
+    // Modal
+    const modal = $('#fh-modal');
+    function openModal(f){
+      const isNew = !f;
+      const form = $('#fh-form');
+      modal.style.display='flex';
+      $('#fh-modal-title').textContent = isNew ? 'Nieuwe functie' : 'Functie bewerken';
+      form.reset();
+      const data = f || { id: Math.floor(90000 + Math.random()*9999), naam:'', familie:'', schaal:'', status:'Concept', omschrijving:'', competenties:[], taken:[], profielen:[], gewijzigd: new Date().toISOString().slice(0,10), laatstDoor:'M. van Donselaar' };
+      form.querySelector('[name=naam]').value = data.naam;
+      form.querySelector('[name=familie]').value = data.familie||'';
+      form.querySelector('[name=schaal]').value = data.schaal||'';
+      form.querySelector('[name=status]').value = data.status||'Concept';
+      form.querySelector('[name=omschrijving]').value = data.omschrijving||'';
+      const compTags = $('#fh-competenties-tags'); compTags.innerHTML = (data.competenties||[]).map((t,i)=>`<span class="tag">${t}<span class="x" data-del="comp" data-i="${i}">✕</span></span>`).join('');
+      const takenTags = $('#fh-taken-tags'); takenTags.innerHTML = (data.taken||[]).map((t,i)=>`<span class="tag">${t}<span class="x" data-del="taak" data-i="${i}">✕</span></span>`).join('');
+      const profTags = $('#fh-profielen-tags'); profTags.innerHTML = (data.profielen||[]).map((t,i)=>`<span class="tag">${t}<span class="x" data-del="prof" data-i="${i}">✕</span></span>`).join('');
+      compTags.addEventListener('click', ev=>{ if(ev.target.classList.contains('x')){ const i=Number(ev.target.getAttribute('data-i')); data.competenties.splice(i,1); openModal(data);} });
+      takenTags.addEventListener('click', ev=>{ if(ev.target.classList.contains('x')){ const i=Number(ev.target.getAttribute('data-i')); data.taken.splice(i,1); openModal(data);} });
+      profTags.addEventListener('click', ev=>{ if(ev.target.classList.contains('x')){ const i=Number(ev.target.getAttribute('data-i')); data.profielen.splice(i,1); openModal(data);} });
+      $('#fh-add-competentie').onclick = ()=>{ const v=$('#fh-competentie-input').value.trim(); if(v){ data.competenties.push(v); $('#fh-competentie-input').value=''; openModal(data);} };
+      $('#fh-add-taak').onclick = ()=>{ const v=$('#fh-taak-input').value.trim(); if(v){ data.taken.push(v); $('#fh-taak-input').value=''; openModal(data);} };
+      $('#fh-add-profiel').onclick = ()=>{ const v=$('#fh-profiel-input').value.trim(); if(v){ data.profielen.push(v); $('#fh-profiel-input').value=''; openModal(data);} };
+      $('#fh-save').onclick = ()=>{
+        data.naam = form.querySelector('[name=naam]').value.trim();
+        data.familie = form.querySelector('[name=familie]').value.trim();
+        data.schaal = form.querySelector('[name=schaal]').value.trim();
+        data.status = form.querySelector('[name=status]').value;
+        data.omschrijving = form.querySelector('[name=omschrijving]').value;
+        data.gewijzigd = new Date().toISOString().slice(0,10);
+        if (isNew){ list.unshift(data); } else { const idx = list.findIndex(x=>x.id===(f?f.id:null)); if (idx>-1) list[idx]=data; }
+        fhSave(list); renderTable(); selectById(data.id); closeModal();
+      };
+      $('#fh-delete').onclick = ()=>{
+        if(!f){ closeModal(); return; }
+        if(confirm('Functie verwijderen?')){ list = list.filter(x=>x.id!==f.id); fhSave(list); renderTable(); selectById(null); closeModal(); }
+      };
+      $('#fh-dup').onclick = ()=>{
+        const copy = JSON.parse(JSON.stringify(f||{naam:'Nieuwe functie'}));
+        copy.id = Math.floor(81000 + Math.random()*18999);
+        copy.naam = (f?f.naam:'Nieuwe functie') + " (kopie)";
+        copy.status = 'Concept';
+        copy.gewijzigd = new Date().toISOString().slice(0,10);
+        list.unshift(copy); fhSave(list); renderTable(); selectById(copy.id); closeModal();
+      };
+      $('#fh-close').onclick = closeModal;
+    }
+    function closeModal(){ $('#fh-modal').style.display='none'; }
+
+    // Toolbar
+    $('#fh-nieuw').addEventListener('click', ()=> openModal(null));
+    $('#fh-export').addEventListener('click', ()=>{
+      const blob = new Blob([JSON.stringify(list, null, 2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'functiehuis.json'; a.click();
+    });
+    $('#fh-import').addEventListener('click', ()=>{
+      const inp = document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+      inp.onchange = ()=>{
+        const f = inp.files[0]; if(!f) return;
+        const r = new FileReader();
+        r.onload = ()=>{ try{ list = JSON.parse(r.result); fhSave(list); renderTable(); selectById(list[0]?.id||null);}catch(e){alert('Kon JSON niet lezen.');} };
+        r.readAsText(f);
+      };
+      inp.click();
+    });
+
+    renderTable();
+    if (list.length){ selectById(list[0].id); }
+  }
+
+  // Beroepen screen -----------------------------------------------------------
+  const BR_KEY = 'AD_BEROEPEN_V1';
+  function brLoad(){ try{ const s=localStorage.getItem(BR_KEY); if(s) return JSON.parse(s);}catch(e){}; return [...DATA.beroepen]; }
+  function brSave(list){ localStorage.setItem(BR_KEY, JSON.stringify(list)); }
+
+  function renderBeroepen(){
+    const host = $('#view'); host.innerHTML = $('#tpl-beroepen').innerHTML;
+    let list = brLoad();
+
+    const sectorSelect = $('#br-sector');
+    const sectorlistEl = $('#br-sectorlist');
+    const sectors = Array.from(new Set(['Alle sectoren', ...DATA.brSectors, ...list.map(b=>b.sector).filter(Boolean)])).filter(Boolean);
+    sectorSelect.innerHTML = sectors.map(s=>`<option>${s}</option>`).join('');
+    sectorlistEl.innerHTML = DATA.brSectors.map(s=>`<option value="${s}">`).join('');
+
+    const state = { q:'', sector:'Alle sectoren', niveau:'Alle niveaus', status:'Alle statussen', mine:false, selected:null };
+    const tbody = $('#br-table tbody');
+    const side = $('#br-side .body');
+    const countEl = $('#br-count');
+
+    function matches(b){
+      const q = state.q.toLowerCase();
+      const hit = !q || [b.naam, b.sector, b.niveau, b.code, (b.synoniemen||[]).join(' '), (b.vaardigheden||[]).join(' '), (b.profielen||[]).join(' '), (b.functies||[]).join(' ')].some(v=>(v||'').toLowerCase().includes(q));
+      const sec = (state.sector==='Alle sectoren') || b.sector===state.sector;
+      const niv = (state.niveau==='Alle niveaus') || b.niveau===state.niveau;
+      const st  = (state.status==='Alle statussen') || b.status===state.status;
+      const mine = !state.mine || (b.laatstDoor||'').toLowerCase().includes('donselaar');
+      return hit && sec && niv && st && mine;
+    }
+
+    function badge(status){
+      if (status==='Actief') return `<span class="badge-green">Actief</span>`;
+      if (status==='Concept') return `<span class="badge-amber">Concept</span>`;
+      return `<span class="badge-slate">Gearchiveerd</span>`;
+    }
+
+    function renderTable(){
+      tbody.innerHTML='';
+      const rows = list.filter(matches);
+      countEl.textContent = `(${rows.length} / ${list.length})`;
+      rows.forEach(b=>{
+        const tr = el(`<tr data-id="${b.id}">
+          <td><input type="radio" name="br-sel" ${state.selected===b.id?'checked':''}></td>
+          <td><strong>${b.naam}</strong><div class="muted">${b.code?`<span class="code-chip">${b.code}</span>`:''}</div></td>
+          <td>${b.sector||''}</td>
+          <td>${b.niveau||''}</td>
+          <td>${(b.vaardigheden||[]).length}</td>
+          <td>${(b.profielen||[]).length}</td>
+          <td>${b.gewijzigd||''}</td>
+          <td>${badge(b.status||'')}</td>
+          <td class="row-actions">
+            <button class="btn small" data-act="open">Open</button>
+            <button class="btn small" data-act="edit">Bewerk</button>
+            <button class="btn small" data-act="dup">Dupliceer</button>
+            <button class="kebab" title="Meer opties">⋯</button>
+          </td>
+        </tr>`);
+        tbody.appendChild(tr);
+      });
+      if (rows.length===0){
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#64748b;padding:20px">Geen beroepen gevonden</td></tr>`;
+      }
+    }
+
+    function tagsHtml(arr){ return (arr||[]).map(x=>`<span class="tag">${x}</span>`).join('') || '<span class="muted">—</span>'; }
+
+    function renderSide(b){
+      if (!b){ side.innerHTML = '<p class="muted">Selecteer een beroep om details te bekijken en te bewerken.</p>'; return; }
+      side.innerHTML = `
+        <div class="kv"><div>Beroep</div><div><strong>${b.naam}</strong></div></div>
+        <div class="kv"><div>Sector</div><div>${b.sector||''}</div></div>
+        <div class="kv"><div>Niveau</div><div>${b.niveau||''}</div></div>
+        <div class="kv"><div>Code</div><div>${b.code?`<span class="code-chip">${b.code}</span>`:''}</div></div>
+        <div class="kv"><div>Status</div><div>${b.status||''}</div></div>
+        <div class="kv"><div>Laatst gewijzigd</div><div>${b.gewijzigd||''}</div></div>
+        <div class="kv"><div>Laatst door</div><div>${b.laatstDoor||''}</div></div>
+        <div style="margin-top:10px">
+          <div class="muted">Omschrijving</div>
+          <div>${(b.omschrijving||'').replace(/\\n/g,'<br>')}</div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="muted">Vaardigheden</div>
+          <div class="tags">${tagsHtml(b.vaardigheden)}</div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="muted">Belastingen</div>
+          <div class="tags">${tagsHtml(b.belastingen)}</div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="muted">Basisprofielen</div>
+          <div class="tags">${tagsHtml(b.profielen)}</div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="muted">Functies</div>
+          <div class="tags">${tagsHtml(b.functies)}</div>
+        </div>
+        <div class="ad-toolbar" style="margin-top:16px;flex-wrap:wrap">
+          <a class="btn" href="#/basisprofielen">Open Basisprofielen</a>
+          <a class="btn" href="#/functiehuis">Open Functiehuis</a>
+          <button class="btn" id="br-use-in-ad">Open in AD assist</button>
+          <a class="btn" href="#/dossiers">← Terug</a>
+        </div>
+      `;
+      // Vacatures UI toevoegen
+      const vBox = el(`<div class="card" style="margin-top:14px"><div class="head"><strong>Vacatures</strong></div>
+        <div class="body">
+          <form id="br-job-form" class="form" style="margin-bottom:8px">
+            <div class="grid" style="grid-template-columns:1.2fr .8fr auto; gap:8px">
+              <input name="q" value="${(b.naam||'')}" placeholder="Zoekterm (bijv. functienaam)"/>
+              <input name="loc" value="Nederland" placeholder="Locatie (bijv. Utrecht, NL)"/>
+              <button type="button" id="br-job-run" class="btn primary">Zoek vacatures</button>
+            </div>
+            <div class="tags" style="margin-top:6px">
+              <label class="check"><input type="checkbox" name="site" value="indeed_nl" checked> Indeed.nl</label>
+              <label class="check"><input type="checkbox" name="site" value="vacaturebank" checked> Vacaturebank.nl</label>
+              <label class="check"><input type="checkbox" name="site" value="vacatures_com" checked> Vacatures.com</label>
+              <label class="check"><input type="checkbox" name="site" value="indeed_com"> Indeed.com</label>
+              <label class="check"><input type="checkbox" name="site" value="linkedin"> LinkedIn</label>
+            </div>
+          </form>
+          <div id="br-jobs-results" class="muted">Nog geen zoekopdracht uitgevoerd.</div>
+        </div></div>`);
+      side.appendChild(vBox);
+      const run = $('#br-job-run'); if (run) run.addEventListener('click', ()=> zoekVacaturesFor(b));
+      const btn = $('#br-use-in-ad'); if (btn) btn.addEventListener('click', ()=>{ location.hash = '#/ad-assist'; });
+    }
+
+    function selectById(id){
+      state.selected = id;
+      const b = list.find(x=>x.id===id);
+      renderSide(b);
+      $$('#br-table tbody tr').forEach(row=>{
+        const r = $('input[type=radio]', row); if (r) r.checked = (row.getAttribute('data-id')==id);
+      });
+    }
+
+    // Filters
+    $('#br-q').addEventListener('input', e=>{ state.q=e.target.value; renderTable(); });
+    $('#br-sector').addEventListener('change', e=>{ state.sector=e.target.value; renderTable(); });
+    $('#br-niveau').addEventListener('change', e=>{ state.niveau=e.target.value; renderTable(); });
+    $('#br-status').addEventListener('change', e=>{ state.status=e.target.value; renderTable(); });
+    $('#br-alleen-mijn').addEventListener('change', e=>{ state.mine=e.target.checked; renderTable(); });
+
+    // Table actions
+    $('#br-table').addEventListener('click', e=>{
+      const tr = e.target.closest('tr'); if (!tr) return;
+      const id = Number(tr.getAttribute('data-id'));
+      if (e.target.matches('input[type=radio]') || e.target.getAttribute('data-act')==='open'){
+        selectById(id);
+      } else if (e.target.getAttribute('data-act')==='edit'){
+        openModal(list.find(b=>b.id===id));
+      } else if (e.target.getAttribute('data-act')==='dup'){
+        const src = list.find(b=>b.id===id); if(!src) return;
+        const copy = JSON.parse(JSON.stringify(src));
+        copy.id = Math.floor(92000 + Math.random()*7999);
+        copy.naam = src.naam + " (kopie)";
+        copy.status = 'Concept';
+        copy.gewijzigd = new Date().toISOString().slice(0,10);
+        list.unshift(copy); brSave(list); renderTable(); selectById(copy.id);
+      }
+    });
+
+    // Modal helpers
+    const modal = $('#br-modal');
+    function openModal(b){
+      const isNew = !b;
+      const form = $('#br-form');
+      modal.style.display='flex';
+      $('#br-modal-title').textContent = isNew ? 'Nieuw beroep' : 'Beroep bewerken';
+      form.reset();
+      const data = b || { id: Math.floor(93000 + Math.random()*6999), naam:'', sector:'', niveau:'', status:'Concept', code:'', synoniemen:[], omschrijving:'', vaardigheden:[], belastingen:[], profielen:[], functies:[], gewijzigd: new Date().toISOString().slice(0,10), laatstDoor:'M. van Donselaar' };
+      form.querySelector('[name=naam]').value = data.naam;
+      form.querySelector('[name=sector]').value = data.sector||'';
+      form.querySelector('[name=niveau]').value = data.niveau||'';
+      form.querySelector('[name=status]').value = data.status||'Concept';
+      form.querySelector('[name=code]').value = data.code||'';
+      form.querySelector('[name=synoniemen]').value = (data.synoniemen||[]).join(', ');
+      form.querySelector('[name=omschrijving]').value = data.omschrijving||'';
+
+      const vaardTags = $('#br-vaard-tags'); vaardTags.innerHTML = (data.vaardigheden||[]).map((t,i)=>`<span class="tag">${t}<span class="x" data-del="vaard" data-i="${i}">✕</span></span>`).join('');
+      const belTags = $('#br-bel-tags'); belTags.innerHTML = (data.belastingen||[]).map((t,i)=>`<span class="tag">${t}<span class="x" data-del="bel" data-i="${i}">✕</span></span>`).join('');
+      const profTags = $('#br-prof-tags'); profTags.innerHTML = (data.profielen||[]).map((t,i)=>`<span class="tag">${t}<span class="x" data-del="prof" data-i="${i}">✕</span></span>`).join('');
+      const funcTags = $('#br-func-tags'); funcTags.innerHTML = (data.functies||[]).map((t,i)=>`<span class="tag">${t}<span class="x" data-del="func" data-i="${i}">✕</span></span>`).join('');
+
+      function regClicks(container, key){
+        container.addEventListener('click', ev=>{
+          if (ev.target.classList.contains('x')){
+            const i=Number(ev.target.getAttribute('data-i'));
+            data[key].splice(i,1);
+            openModal(data);
+          }
+        });
+      }
+      regClicks(vaardTags, 'vaardigheden');
+      regClicks(belTags, 'belastingen');
+      regClicks(profTags, 'profielen');
+      regClicks(funcTags, 'functies');
+
+      $('#br-add-vaard').onclick = ()=>{ const v=$('#br-vaard-input').value.trim(); if(v){ data.vaardigheden.push(v); $('#br-vaard-input').value=''; openModal(data);} };
+      $('#br-add-bel').onclick = ()=>{ const v=$('#br-bel-input').value.trim(); if(v){ data.belastingen.push(v); $('#br-bel-input').value=''; openModal(data);} };
+      $('#br-add-prof').onclick = ()=>{ const v=$('#br-prof-input').value.trim(); if(v){ data.profielen.push(v); $('#br-prof-input').value=''; openModal(data);} };
+      $('#br-add-func').onclick = ()=>{ const v=$('#br-func-input').value.trim(); if(v){ data.functies.push(v); $('#br-func-input').value=''; openModal(data);} };
+
+      $('#br-save').onclick = ()=>{
+        data.naam = form.querySelector('[name=naam]').value.trim();
+        data.sector = form.querySelector('[name=sector]').value.trim();
+        data.niveau = form.querySelector('[name=niveau]').value.trim();
+        data.status = form.querySelector('[name=status]').value;
+        data.code = form.querySelector('[name=code]').value.trim();
+        data.synoniemen = form.querySelector('[name=synoniemen]').value.split(',').map(s=>s.trim()).filter(Boolean);
+        data.omschrijving = form.querySelector('[name=omschrijving]').value;
+        data.gewijzigd = new Date().toISOString().slice(0,10);
+        if (isNew){ list.unshift(data); } else { const idx = list.findIndex(x=>x.id===(b?b.id:null)); if (idx>-1) list[idx]=data; }
+        brSave(list); renderTable(); selectById(data.id); closeModal();
+      };
+      $('#br-delete').onclick = ()=>{
+        if(!b){ closeModal(); return; }
+        if(confirm('Beroep verwijderen?')){ list = list.filter(x=>x.id!==b.id); brSave(list); renderTable(); selectById(null); closeModal(); }
+      };
+      $('#br-dup').onclick = ()=>{
+        const copy = JSON.parse(JSON.stringify(b||{naam:'Nieuw beroep'}));
+        copy.id = Math.floor(92000 + Math.random()*7999);
+        copy.naam = (b?b.naam:'Nieuw beroep') + " (kopie)";
+        copy.status = 'Concept';
+        copy.gewijzigd = new Date().toISOString().slice(0,10);
+        list.unshift(copy); brSave(list); renderTable(); selectById(copy.id); closeModal();
+      };
+      $('#br-close').onclick = closeModal;
+    }
+    function closeModal(){ $('#br-modal').style.display='none'; }
+
+    // Toolbar
+    $('#br-nieuw').addEventListener('click', ()=> openModal(null));
+    $('#br-export').addEventListener('click', ()=>{
+      const blob = new Blob([JSON.stringify(list, null, 2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'beroepen.json'; a.click();
+    });
+    $('#br-import').addEventListener('click', ()=>{
+      const inp = document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+      inp.onchange = ()=>{
+        const f = inp.files[0]; if(!f) return;
+        const r = new FileReader();
+        r.onload = ()=>{ try{ list = JSON.parse(r.result); brSave(list); renderTable(); selectById(list[0]?.id||null);}catch(e){alert('Kon JSON niet lezen.');} };
+        r.readAsText(f);
+      };
+      inp.click();
+    });
+
+    renderTable();
+    if (list.length){ selectById(list[0].id); }
+  }
+
+  /* VACATURES MODULE --------------------------------------------------------- */
+  const JOB_PROXY = 'https://r.jina.ai/http://'; // demo friendly reader-proxy
+  function normalizeUrl(u){ try{ return new URL(u).href; }catch(e){ return u; } }
+  function deprox(url){ return url.replace(/^https:\/\/r\.jina\.ai\/http(s)?:\/\//, 'http$1://'); }
+
+  const JOB_ADAPTERS = [
+    { key: 'indeed_nl', name: 'Indeed.nl',
+      build: (q, loc)=> `https://nl.indeed.com/jobs?q=${encodeURIComponent(q)}&l=${encodeURIComponent(loc||'Nederland')}`,
+      parse: (html)=> genericParse(html, /https?:\/\/nl\.indeed\.com\/[^"'\s<>]+/gi) },
+    { key: 'indeed_com', name: 'Indeed.com',
+      build: (q, loc)=> `https://www.indeed.com/jobs?q=${encodeURIComponent(q)}&l=${encodeURIComponent(loc||'Netherlands')}`,
+      parse: (html)=> genericParse(html, /https?:\/\/www\.indeed\.com\/[^"'\s<>]+/gi) },
+    { key: 'vacaturebank', name: 'Vacaturebank.nl',
+      build: (q, loc)=> `https://www.vacaturebank.nl/vacatures/?q=${encodeURIComponent(q)}&l=${encodeURIComponent(loc||'Nederland')}`,
+      parse: (html)=> genericParse(html, /https?:\/\/www\.vacaturebank\.nl\/[^"'\s<>]+/gi) },
+    { key: 'vacatures_com', name: 'Vacatures.com',
+      build: (q, loc)=> `https://www.vacatures.com/zoeken/?q=${encodeURIComponent(q)}&loc=${encodeURIComponent(loc||'Nederland')}`,
+      parse: (html)=> genericParse(html, /https?:\/\/www\.vacatures\.com\/[^"'\s<>]+/gi) },
+    { key: 'linkedin', name: 'LinkedIn',
+      build: (q, loc)=> `https://www.linkedin.com/jobs/search?keywords=${encodeURIComponent(q)}&location=${encodeURIComponent(loc||'Netherlands')}`,
+      parse: (html)=> genericParse(html, /https?:\/\/www\.linkedin\.com\/jobs\/view\/[^"'\s<>]+/gi) },
+  ];
+
+  function genericParse(html, hrefRegex){
+    const out = []; const seen = new Set();
+    const aTag = /<a[^>]*?href="([^"]+)"[^>]*>(.*?)<\/a>/gi; let m;
+    while ((m = aTag.exec(html))){
+      const href = m[1]; if(!hrefRegex.test(href)) continue;
+      const title = m[2].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+      if (!title) continue;
+      const url = normalizeUrl(href); if(seen.has(url)) continue; seen.add(url);
+      const idx = Math.max(0, aTag.lastIndex - 200);
+      const snippet = html.slice(idx, idx+300).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+      out.push({title, url, snippet});
+      if (out.length >= 25) break;
+    }
+    return out;
+  }
+
+  async function fetchWithProxy(url){
+    const proxyUrl = JOB_PROXY + url.replace(/^https?:\/\//,'');
+    const res = await fetch(proxyUrl, {credentials:'omit'});
+    const txt = await res.text();
+    return txt;
+  }
+
+  function scoreMatch(item, b){
+    const keys = new Set([b.naam, ...(b.vaardigheden||[]), ...(b.synoniemen||[])]);
+    const text = (item.title + ' ' + (item.snippet||'')).toLowerCase();
+    let score = 0;
+    keys.forEach(k=>{ if(!k) return; const w=k.toLowerCase(); if (text.includes(w)) score += 10; });
+    if (item.title.toLowerCase().includes((b.naam||'').toLowerCase())) score += 20;
+    return Math.min(100, score);
+  }
+
+  async function zoekVacaturesFor(beroep){
+    const form = $('#br-job-form');
+    const q = (form?.querySelector('[name=q]')?.value || beroep.naam || '').trim();
+    const loc = (form?.querySelector('[name=loc]')?.value || 'Nederland').trim();
+    const sites = Array.from(form?.querySelectorAll('input[name=site]:checked')||[]).map(i=>i.value);
+    const out = $('#br-jobs-results');
+    out.innerHTML = '<div class="muted">Bezig met zoeken…</div>';
+    const adapters = JOB_ADAPTERS.filter(a=>!sites.length || sites.includes(a.key));
+    const all = [];
+    for (const ad of adapters){
+      try{
+        const url = ad.build(q, loc);
+        const html = await fetchWithProxy(url);
+        const rows = ad.parse(html).map(r=>({...r, source: ad.name}));
+        all.push(...rows);
+      }catch(e){ console.warn('Adapter fail', ad.name, e); }
+    }
+    if (!all.length){ out.innerHTML = '<div class="muted">Geen resultaten (proxy vereist of site blokkeert scraping). Probeer andere site of stel een server-side proxy in.</div>'; return; }
+    const uniq = []; const seen = new Set();
+    for (const r of all){ if (seen.has(r.url)) continue; seen.add(r.url); uniq.push(r); }
+    uniq.forEach(r=> r.score = scoreMatch(r, beroep));
+    uniq.sort((a,b)=> b.score - a.score);
+    out.innerHTML = '';
+    uniq.slice(0,40).forEach(item=>{
+      const row = el(`<div class="card" style="margin-bottom:8px">
+        <div class="body">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+            <div>
+              <div><strong>${item.title}</strong></div>
+              <div class="muted">${item.source}</div>
+            </div>
+            <div class="ad-toolbar" style="gap:8px">
+              <span class="badge-blue">Match ${item.score}</span>
+              <a class="btn small" target="_blank" rel="noopener" href="${deprox(item.url)}">Open</a>
+            </div>
+          </div>
+          <div class="muted" style="margin-top:6px">${(item.snippet||'').slice(0,220)}</div>
+        </div>
+      </div>`);
+      out.appendChild(row);
+    });
+  }
+
+  // Dossiers screen ----------------------------------------------------------
+  function renderDossiers(){
+    const host = $('#view'); host.innerHTML = $('#tpl-dossiers').innerHTML;
+    const tbody = $('#tbl tbody');
+
+    // Fill filters
+    $('#f-werkgever').innerHTML = DATA.werkgevers.map(w=>`<option>${w}</option>`).join('');
+    $('#f-type').innerHTML = DATA.types.map(t=>`<option>${t}</option>`).join('');
+
+    const state = { q:'', wg:'Alle werkgevers', tp:'Alle onderzoekstypes', arch:false, details:false };
+
+    function apply(){
+      tbody.innerHTML = '';
+      const rows = DATA.dossierRows.filter(r => {
+        if (!state.arch && r.archief) return false;
+        if (state.wg!=='Alle werkgevers' && r.werkgever!==state.wg) return false;
+        if (state.tp!=='Alle onderzoekstypes' && r.type!==state.tp) return false;
+        const hay = (r.werknemer+' '+r.functie+' '+r.werkgever).toLowerCase();
+        if (state.q && !hay.includes(state.q)) return false;
+        return true;
+      });
+      rows.forEach(r => {
+        const tr = el(`<tr>
+          <td><strong>${r.werknemer}</strong></td>
+          <td>${r.type}</td>
+          <td><span class="badge">${r.functie}</span></td>
+          <td>${r.werkgever}</td>
+          <td>${r.start}</td>
+          <td>${r.gewijzigd}</td>
+          <td class="row-actions">
+            <button class="btn small" data-details="${r.id}">Toon details</button>
+            <button class="btn small" data-open="${r.id}">Dossier openen</button>
+            <button class="kebab" title="Meer opties">⋯</button>
+          </td>
+        </tr>`);
+        tbody.appendChild(tr);
+        if (state.details){
+          const det = el(`<tr class="detail"><td colspan="7"><div class="muted">Samenvatting: ${r.samenvatting}</div></td></tr>`);
+          tbody.appendChild(det);
+        }
+      });
+
+      // Wire open buttons
+      $$('button[data-details]').forEach(btn => btn.addEventListener('click', e => { const id = e.currentTarget.getAttribute('data-details'); location.hash = `#/dossier?dos=${id}`; }));
+      $$('button[data-open]').forEach(btn => btn.addEventListener('click', e => {
+        const id = e.currentTarget.getAttribute('data-open');
+        location.hash = `#/dossier-home?dos=${id}`;
+      }));
+    }
+
+    $('#q').addEventListener('input', e=>{state.q = e.target.value.toLowerCase(); apply();});
+    $('#f-werkgever').addEventListener('change', e=>{state.wg = e.target.value; apply();});
+    $('#f-type').addEventListener('change', e=>{state.tp = e.target.value; apply();});
+    $('#f-archief').addEventListener('change', e=>{state.arch = e.target.checked; apply();});
+    $('#btn-details').addEventListener('click', e=>{state.details = !state.details; e.currentTarget.textContent = state.details?'Verberg details':'Toon details'; apply();});
+
+    // Nieuw onderzoek modal (inline)
+    $('#btn-nieuw').addEventListener('click', () => {
+      const layer = el(`<div style="position:fixed;inset:0;background:rgba(0,0,0,.2);display:grid;place-items:center;z-index:1000"></div>`);
+      layer.addEventListener('click', ev => { if (ev.target===layer) layer.remove(); });
+      const modal = el($('#tpl-nieuw').innerHTML);
+      layer.appendChild(modal); document.body.appendChild(layer);
+      $$('[data-close]', modal).forEach(b=>b.addEventListener('click', ()=>layer.remove()));
+      $('#n-save', modal).addEventListener('click', ()=>{
+        const r = {
+          id: Math.max(...DATA.dossierRows.map(x=>x.id))+1,
+          werknemer: $('#n-werknemer', modal).value || 'Nieuwe werknemer',
+          functie: $('#n-functie', modal).value || 'Onbekend',
+          werkgever: $('#n-werkgever', modal).value || 'Onbekend',
+          type: $('#n-type', modal).value || 'Arbeidsdeskundig onderzoek',
+          start: $('#n-start', modal).value || new Date().toISOString().slice(0,10),
+          gewijzigd: new Date().toISOString().slice(0,10),
+          archief:false,
+          samenvatting:'Nieuw dossier (demo).'
+        };
+        DATA.dossierRows.unshift(r);
+        layer.remove(); apply();
+      });
+    });
+
+    apply();
+  }
+
+  // Dossier detail page ------------------------------------------------------
+  function renderDossierDetails(){
+    const host = $('#view'); host.innerHTML = $('#tpl-dossier-details').innerHTML;
+    const params = new URLSearchParams((location.hash.split('?')[1]||''));
+    const dosId = Number(params.get('dos')) || (DATA.dossierRows[0] && DATA.dossierRows[0].id);
+    const r = DATA.dossierRows.find(x=>x.id===dosId) || DATA.dossierRows[0];
+
+    function fakeEmail(name){
+      const n = (name||'').toLowerCase().replace(/[^a-z]+/g,'.').replace(/\.+/g,'.').replace(/^\./,'').replace(/\.$/,'');
+      return (n||'demo')+'@example.com';
+    }
+    function fakeSite(wg){ const d = (wg||'demo').toLowerCase().replace(/[^a-z]+/g,'-'); return 'https://www.'+d+'.nl'; }
+
+    const body = $('#dd-body');
+    body.innerHTML = `
+      <div class="grid" style="grid-template-columns:1fr 1fr 1fr; gap:16px">
+        <div class="card">
+          <div class="head"><strong>Werknemer</strong></div>
+          <div class="body">
+            <div><span class="muted">Naam</span><br><strong>${r.werknemer||r.persoon||'—'}</strong></div>
+            <div style="margin-top:8px"><span class="muted">E‑mail</span><br><a href="mailto:${fakeEmail(r.werknemer||r.persoon)}">${fakeEmail(r.werknemer||r.persoon)}</a></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="head"><strong>Werkgever</strong></div>
+          <div class="body">
+            <div><span class="muted">Organisatie</span><br><strong>${r.werkgever||'—'}</strong></div>
+            <div style="margin-top:8px"><span class="muted">Website</span><br><a href="${fakeSite(r.werkgever)}" target="_blank">${fakeSite(r.werkgever)}</a></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="head"><strong>Dossier</strong></div>
+          <div class="body">
+            <div class="row" style="gap:12px; flex-wrap:wrap">
+              <span class="pill">Type: ${r.type}</span>
+              <span class="pill">Startdatum: ${r.start}</span>
+              <span class="pill">Gewijzigd: ${r.gewijzigd}</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    // Buttons
+    $('#dd-back').addEventListener('click', ()=>{ location.hash = '#/dossiers'; });
+    $('#dd-open').addEventListener('click', ()=>{ location.hash = '#/dossier-home?dos='+ (r.id); });
+  }
+
+  
+  // Dossier home + werknemer -------------------------------------------------
+  function dossierSummary(r){
+    // Build right sidebar HTML
+    const dos = `
+      <div class="head"><strong>Huidig dossier</strong></div>
+      <div class="body">
+        <div style="display:grid;grid-template-columns:110px 1fr;gap:6px 10px;font-size:.95rem">
+          <div class="muted">Functie</div><div>${r.functie}</div>
+          <div class="muted">Naam</div><div>${r.werknemer||r.persoon}</div>
+          <div class="muted">Soort onderzoek</div><div>${r.type}</div>
+          <div class="muted">Werkgever</div><div>${r.werkgever}</div>
+        </div>
+        <div class="hr"></div>
+        <div class="ad-steps">
+          ${[
+            {k:'werknemer',label:'WERKNEMER',desc:'Gegevens van de werknemer inzien en/of aanpassen.'},
+            {k:'functie',label:'FUNCTIE',desc:'Functieprofiel kiezen en koppelen.'},
+            {k:'gesprekken',label:'GESPREKKEN',desc:'Gesprekken invoeren en/of terugzien.'},
+            {k:'belast',label:'BELASTBAARHEID',desc:'Belastbaarheid invoeren.'},
+            {k:'overs',label:'OVERSCHRIJDINGEN',desc:'Overschrijdingen op functieniveau bepalen.'},
+            {k:'match-intern',label:'MATCHING INTERN',desc:'Matchen met functies binnen de organisatie.'},
+            {k:'match-extern',label:'MATCHING EXTERN',desc:'Matchen met functies buiten de organisatie.'},
+            {k:'conclusies',label:'CONCLUSIES',desc:'Conclusies en/of bevindingen noteren.'},
+            {k:'rapport',label:'RAPPORTAGE',desc:'Rapportage maken en downloaden.'}
+          ].map(it=>`
+            <div class="ad-step" style="cursor:pointer" data-g="${it.k}">
+              <span class="nr">•</span><span class="t"><strong>${it.label}</strong><br><span class="muted" style="font-weight:400">${it.desc}</span></span>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    return dos;
+  }
+
+  function renderDossierHome(){
+    const host = $('#view'); host.innerHTML = $('#tpl-dossier-home').innerHTML;
+    const params = new URLSearchParams((location.hash.split('?')[1]||'')); const dosId = Number(params.get('dos')) || (DATA.dossierRows[0] && DATA.dossierRows[0].id);
+    const r = DATA.dossierRows.find(x=>x.id===dosId) || DATA.dossierRows[0];
+    $('#ds-side').innerHTML = dossierSummary(r);
+    // Wire clicks
+    $$('.ad-step', $('#ds-side')).forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const k = el.getAttribute('data-g');
+        if (k==='werknemer') location.hash = '#/dossier-werknemer?dos='+r.id;
+        else if (k==='belast') location.hash = '#/ad-assist?dos='+r.id+'&step=fml';
+        else if (k==='overs') location.hash = '#/ad-assist?dos='+r.id+'&step=overs';
+        else if (k==='rapport') location.hash = '#/ad-assist?dos='+r.id+'&step=rapport';
+        else alert('Demo: '+k+' is nog niet uitgewerkt.');
+      });
+    });
+  }
+
+  function renderWerknemer(){
+    const host = $('#view'); host.innerHTML = $('#tpl-werknemer').innerHTML;
+    const params = new URLSearchParams((location.hash.split('?')[1]||'')); const dosId = Number(params.get('dos')) || (DATA.dossierRows[0] && DATA.dossierRows[0].id);
+    const r = DATA.dossierRows.find(x=>x.id===dosId) || DATA.dossierRows[0];
+    $('#ds-side').innerHTML = dossierSummary(r);
+
+    // Prefill (dummy / saved)
+    const key = 'werknemer.'+dosId;
+    const saved = JSON.parse(localStorage.getItem(key) || '{}');
+    const init = Object.assign({
+      naam: r.werknemer || r.persoon || 'Demo Werknemer',
+      email: (r.werknemer||'demo').toLowerCase().replace(/[^a-z]+/g,'.')+'@example.com',
+      geslacht: 'Man',
+      straat: 'Voorbeeldstraat', hn: '10', toe: 'A',
+      postcode: '1234 AB', plaats: 'Utrecht',
+      geboortedatum: '1984-09-12',
+      personeelsnr: 'EMP-'+dosId,
+      casusnr: 'CAS-'+dosId,
+      opleid: 'HBO',
+      afdeling: 'Operations',
+      // verzuim
+      eersteziek: '2025-08-01', oorzaak: 'Medisch', beperkingen: 'Beperkt tillen, tempo',
+      // cv
+      functietitel: r.functie || 'Medewerker', ervaring: '8 jaar', skills: 'Communicatie; Analyseren; Office'
+    }, saved);
+
+    function paneAlgemeen(){
+      return `
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <label>Naam<input id="f-naam" value="${init.naam}"></label>
+        <label>E-mailadres<input id="f-email" value="${init.email}"></label>
+        <label>Geslacht<select id="f-geslacht"><option ${init.geslacht==='Man'?'selected':''}>Man</option><option ${init.geslacht==='Vrouw'?'selected':''}>Vrouw</option><option ${init.geslacht==='X'?'selected':''}>X</option></select></label>
+        <div></div>
+        <label>Adres<div class="row"><input id="f-straat" style="flex:1" value="${init.straat}"><input id="f-hn" style="width:90px" value="${init.hn}"><input id="f-toe" style="width:90px" value="${init.toe}"></div></label>
+        <label>Postcode<input id="f-postcode" value="${init.postcode}"></label>
+        <label>Plaats<input id="f-plaats" value="${init.plaats}"></label>
+        <label>Geboortedatum<input id="f-geboorte" type="date" value="${init.geboortedatum}"></label>
+        <label>Personeelsnummer<input id="f-persnr" value="${init.personeelsnr}"></label>
+        <label>Casusnummer<input id="f-casus" value="${init.casusnr}"></label>
+        <label>Opleidingsniveau<select id="f-opleid"><option ${init.opleid==='MBO'?'selected':''}>MBO</option><option ${init.opleid==='HBO'?'selected':''}>HBO</option><option ${init.opleid==='WO'?'selected':''}>WO</option></select></label>
+        <label>Afdeling<input id="f-afd" value="${init.afdeling}"></label>
+      </div>`;
+    }
+    function paneVerzuim(){
+      return `
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <label>Eerste ziektedag<input id="f-eerste" type="date" value="${init.eersteziek}"></label>
+        <label>Oorzaak<input id="f-oorzaak" value="${init.oorzaak}"></label>
+        <label class="full">Belastbaarheid/Beperkingen<textarea id="f-beperkingen" rows="4">${init.beperkingen}</textarea></label>
+      </div>`;
+    }
+    function paneCV(){
+      return `
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <label>Functietitel<input id="f-functietitel" value="${init.functietitel}"></label>
+        <label>Ervaring<input id="f-ervaring" value="${init.ervaring}"></label>
+        <label class="full">Vaardigheden<textarea id="f-skills" rows="4">${init.skills}</textarea></label>
+      </div>`;
+    }
+
+    function renderPane(k){
+      const pane = $('#wk-pane');
+      pane.innerHTML = (k==='verzuim'? paneVerzuim() : k==='cv'? paneCV() : paneAlgemeen());
+      $$('.sub', $('#wk-tabs')).forEach(b=>b.classList.toggle('active', b.dataset.k===k));
+    }
+    renderPane('algemeen');
+    $$('.sub', $('#wk-tabs')).forEach(b=>b.addEventListener('click', ()=>renderPane(b.dataset.k)));
+
+    // Save
+    $('#wk-save').addEventListener('click', ()=>{
+      const data = {
+        naam: $('#f-naam')?.value || init.naam,
+        email: $('#f-email')?.value || init.email,
+        geslacht: $('#f-geslacht')?.value || init.geslacht,
+        straat: $('#f-straat')?.value || init.straat,
+        hn: $('#f-hn')?.value || init.hn,
+        toe: $('#f-toe')?.value || init.toe,
+        postcode: $('#f-postcode')?.value || init.postcode,
+        plaats: $('#f-plaats')?.value || init.plaats,
+        geboortedatum: $('#f-geboorte')?.value || init.geboortedatum,
+        personeelsnr: $('#f-persnr')?.value || init.personeelsnr,
+        casusnr: $('#f-casus')?.value || init.casusnr,
+        opleid: $('#f-opleid')?.value || init.opleid,
+        afdeling: $('#f-afd')?.value || init.afdeling,
+        eersteziek: $('#f-eerste')?.value || init.eersteziek,
+        oorzaak: $('#f-oorzaak')?.value || init.oorzaak,
+        beperkingen: $('#f-beperkingen')?.value || init.beperkingen,
+        functietitel: $('#f-functietitel')?.value || init.functietitel,
+        ervaring: $('#f-ervaring')?.value || init.ervaring,
+        skills: $('#f-skills')?.value || init.skills
+      };
+      localStorage.setItem(key, JSON.stringify(data));
+      alert('Werknemergegevens opgeslagen (demo).');
+    });
+
+    // Sidebar links
+    $$('.ad-step', $('#ds-side')).forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const k = el.getAttribute('data-g');
+        if (k==='werknemer') return;
+        if (k==='belast') location.hash = '#/ad-assist?dos='+r.id+'&step=fml';
+        else if (k==='overs') location.hash = '#/ad-assist?dos='+r.id+'&step=overs';
+        else if (k==='rapport') location.hash = '#/ad-assist?dos='+r.id+'&step=rapport';
+        else alert('Demo: '+k+' is nog niet uitgewerkt.');
+      });
+    });
+  }
+// Placeholder pages --------------------------------------------------------
+  function renderPlaceholder(title){
+    $('#view').innerHTML = $('#tpl-placeholder').innerHTML;
+    $('#ph-title').textContent = title;
+  }
+
+  // AD-assist flow (simplified integration) ---------------------------------
+  const DemoAD = {
+    employees: [
+      {id: 9000, naam: "Jan Jansen",   geboortedatum:"1984-09-12", adres:"Voorbeeldstraat 1, 1234 AB Utrecht",    email:"jan.jansen@example.com",   functie:"Engineer",          uren:40, fte:1},
+      {id: 9001, naam: "Maria de Vries", geboortedatum:"1990-03-08", adres:"Demolaan 5, 5678 CD Rotterdam",       email:"maria.devries@example.com", functie:"Pedagogisch professional", uren:36, fte:0.9}
+    ],
+    dossiers: [
+      {id: 99001, empId: 9000, type:"Arbeidsdeskundig onderzoek", firstSick:"2025-08-20"},
+      {id: 99002, empId: 9001, type:"Arbeidsdeskundig onderzoek", firstSick:"2025-08-13"}
+    ],
+    fml: [
+      {id:"1.8", rubriek:"1. Persoonlijk functioneren", titel:"Specifieke voorwaarden persoonlijk functioneren", niveau:["kan niet","beperkt","zeer beperkt"]},
+      {id:"2.8", rubriek:"2. Sociaal functioneren", titel:"Omgaan met conflicten", niveau:["beperkt"]},
+      {id:"5.9", rubriek:"5. Statische houdingen", titel:"Afwisseling van houding", niveau:["beperkt"]},
+      {id:"6.4", rubriek:"6. Werktijden", titel:"Overige beperkingen werktijden", niveau:["opbouw"]}
+    ],
+    kfb:[
+      {id:"K1", label:"Werken met deadlines/piekbelasting"},
+      {id:"K3", label:"Regelmatig staan/lopen"},
+      {id:"K4", label:"Tillen/dragen >10 kg"}
+    ],
+    hoofdtaken:[
+      {id:"H1", naam:"Ontwerp & specificeren", pct:30},
+      {id:"H2", naam:"Programmeren & testen", pct:50},
+      {id:"H3", naam:"Documentatie & overleg", pct:20}
+    ]
+  };
+
+  function renderAdAssist(){
+    const host = $('#view'); host.innerHTML = $('#tpl-ad-assist').innerHTML;
+
+    // Simple steps
+    const steps = [
+      {key:"dossier", label:"Dossier"},
+      {key:"fml", label:"FML rubrieken"},
+      {key:"functie", label:"Functiebelasting"},
+      {key:"overs", label:"Overschrijdingen"},
+      {key:"advies", label:"Advies"},
+      {key:"rapport", label:"Rapport"}
+    ];
+    const UL = $('#adSteps');
+    steps.forEach((s,i)=>{
+      const li = el(`<li class="ad-step" data-step="${s.key}"><span class="nr">${i+1}</span><span class="t">${s.label}</span></li>`);
+      li.addEventListener('click', ()=>show(s.key));
+      UL.appendChild(li);
+    });
+    function show(key){
+      $$('.ad-section').forEach(n=>n.classList.add('ad-hidden'));
+      $(`.ad-section[data-step="${key}"]`).classList.remove('ad-hidden');
+      $$('.ad-step').forEach(n=>n.classList.remove('active'));
+      $(`.ad-step[data-step="${key}"]`).classList.add('active');
+    }
+    const stepParam = new URLSearchParams((location.hash.split('?')[1]||'')); const s = stepParam.get('step'); show(s||'dossier');
+
+    // Extract dossier id from hash
+    const params = new URLSearchParams((location.hash.split('?')[1]||''));
+    const dosId = Number(params.get('dos')||'99001');
+    $('#adDosLabel').textContent = `#${dosId}`;
+
+    // Populate selects
+    $('#adEmp').innerHTML = DemoAD.employees.map(e=>`<option value="${e.id}">${e.naam}</option>`).join('');
+    $('#adDos').innerHTML = DemoAD.dossiers.map(d=>`<option value="${d.id}">${d.type} #${d.id}</option>`).join('');
+
+    // Select the employee based on dossier
+    const selDos = DemoAD.dossiers.find(d=>d.id===dosId) || DemoAD.dossiers[0];
+    $('#adDos').value = selDos.id;
+    $('#adEmp').value = selDos.empId;
+
+    function hydrateEmp(){
+      const e = DemoAD.employees.find(x=>x.id===Number($('#adEmp').value));
+      if (!e) return;
+      $('#adFunctie').value = e.functie; $('#adUren').value = e.uren; $('#adFTE').value = e.fte;
+    }
+    hydrateEmp();
+    $('#adEmp').addEventListener('change', hydrateEmp);
+
+    // FML
+    const FMLState = []; // {id,niveau,note}
+    function renderFML(){
+      const host = $('#adFmlGrid'); host.innerHTML = '';
+      DemoAD.fml.forEach(item=>{
+        const sel = FMLState.find(f=>f.id===item.id) || {niveau:"", note:""};
+        const card = el(`<div class="ad-card">
+          <div style="font-weight:700">${item.id} — ${item.rubriek}</div>
+          <div>${item.titel}</div>
+          <div class="ad-two" style="margin-top:8px">
+            <div class="third">
+              <select data-id="${item.id}" class="fml-level">
+                <option value=""></option>
+                ${(item.niveau||[]).map(n=>`<option ${n===sel.niveau?'selected':''}>${n}</option>`).join('')}
+              </select>
+            </div>
+            <div class="third"><input data-id="${item.id}" class="fml-note" placeholder="Opmerking" value="${sel.note||''}"></div>
+          </div>
+        </div>`);
+        host.appendChild(card);
+      });
+      $$('.fml-level').forEach(s=>s.addEventListener('change', onFmlChange));
+      $$('.fml-note').forEach(i=>i.addEventListener('input', onFmlChange));
+    }
+    function onFmlChange(e){
+      const id = e.target.getAttribute('data-id');
+      const level = ($(`select.fml-level[data-id="${id}"]`)||{}).value||"";
+      const note = ($(`input.fml-note[data-id="${id}"]`)||{}).value||"";
+      const idx = FMLState.findIndex(x=>x.id===id);
+      if (level || note){
+        if (idx>=0) FMLState[idx] = {id, niveau:level, note}; else FMLState.push({id, niveau:level, note});
+      } else if (idx>=0){ FMLState.splice(idx,1); }
+      computeOvers();
+    }
+    $('#adFmlImport').addEventListener('click', renderFML);
+    $('#adFmlClear').addEventListener('click', ()=>{FMLState.length=0; renderFML(); computeOvers();});
+    renderFML();
+
+    // Functiebelasting
+    const Htaken = DemoAD.hoofdtaken.map(h=>({...h}));
+    function renderHoofdtaken(){
+      const host = $('#adHoofdtaken'); host.innerHTML = '';
+      Htaken.forEach(h=>{
+        const r = el(`<div class="ad-card">
+          <div class="ad-two">
+            <div class="full"><strong>${h.naam}</strong></div>
+            <div class="third"><input type="range" min="0" max="100" step="1" value="${h.pct}" data-id="${h.id}" class="htk"></div>
+            <div class="third"><input type="number" min="0" max="100" value="${h.pct}" data-id="${h.id}" class="htk-n"></div>
+            <div class="third ad-help">%</div>
+          </div>
+        </div>`);
+        host.appendChild(r);
+      });
+      const onInput = (e)=>{
+        const id = e.target.getAttribute('data-id');
+        const v = Math.max(0,Math.min(100,Number(e.target.value||0)));
+        const obj = Htaken.find(x=>x.id===id); if (obj) obj.pct=v;
+        $$('.htk[data-id="'+id+'"]').forEach(n=>{ if(n!==e.target) n.value=v; });
+        $$('.htk-n[data-id="'+id+'"]').forEach(n=>{ if(n!==e.target) n.value=v; });
+      };
+      $$('.htk,.htk-n').forEach(i=>i.addEventListener('input', onInput));
+    }
+    renderHoofdtaken();
+
+    const KSet = new Set();
+    function renderKFB(){
+      const host = $('#adKFB'); host.innerHTML = '';
+      DemoAD.kfb.forEach(k=>{
+        const c = el(`<label class="ad-card" style="display:flex;gap:10px;align-items:center">
+          <input type="checkbox" class="kfb" data-id="${k.id}"> ${k.label}
+        </label>`);
+        host.appendChild(c);
+      });
+      $$('.kfb').forEach(chk=>chk.addEventListener('change', e=>{
+        const id = e.target.getAttribute('data-id');
+        if (e.target.checked) KSet.add(id); else KSet.delete(id);
+        computeOvers();
+      }));
+    }
+    renderKFB();
+
+    function computeOvers(){
+      const map = new Map(FMLState.map(x=>[x.id,x]));
+      const links = [
+        {fml:"1.8", kIds:["K1"]},
+        {fml:"5.9", kIds:["K3"]},
+        {fml:"4.13", kIds:["K4"]}
+      ];
+      const TB = $('#adOversBody'); TB.innerHTML = '';
+      links.forEach(l=>{
+        if (!map.has(l.fml)) return;
+        const hit = l.kIds.some(k=>KSet.has(k)); if (!hit) return;
+        const fdef = DemoAD.fml.find(i=>i.id===l.fml);
+        const burden = l.kIds.filter(k=>KSet.has(k)).map(k=>DemoAD.kfb.find(x=>x.id===k)?.label).filter(Boolean).join(', ');
+        const row = el(`<tr><td>${l.fml} ${fdef.titel}</td><td>${map.get(l.fml).niveau||''}</td><td>${burden}</td><td>${map.get(l.fml).note||''}</td></tr>`);
+        TB.appendChild(row);
+      });
+    }
+
+    // Rapport preview/export
+    function buildHTML(){
+      const e = DemoAD.employees.find(x=>x.id===Number($('#adEmp').value))||{};
+      return `
+      <style>body{font:14px/1.45 system-ui,Segoe UI,Roboto}.tbl{width:100%;border-collapse:collapse}.tbl td,.tbl th{padding:6px;border-bottom:1px solid #e5e7eb}</style>
+      <h1>Arbeidsdeskundig Rapport (Demo)</h1>
+      <p>Werknemer: <strong>${e.naam||'—'}</strong>, Functie: <strong>${$('#adFunctie').value||'—'}</strong></p>
+      <h2>FML</h2>
+      <table class="tbl">${FMLState.map(f=>`<tr><td>${f.id}</td><td>${f.niveau}</td><td>${f.note||''}</td></tr>`).join('')}</table>`;
+    }
+    $('#adPreview').addEventListener('click', ()=>{
+      const box = $('#adRapportPreview'); box.classList.remove('ad-hidden'); box.innerHTML = buildHTML();
+    });
+    $('#adExportHTML').addEventListener('click', ()=>{
+      const blob = new Blob([buildHTML()],{type:'text/html'});
+      const url = URL.createObjectURL(blob); const a = document.createElement('a');
+      a.href=url; a.download='AD-rapport-demo.html'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    // Save (demo)
+    $('#adSave').addEventListener('click', ()=>{
+      alert('Opgeslagen (demo): zie console voor payload.');
+      console.log('payload', {
+        dossier: $('#adDos').value, employee: $('#adEmp').value,
+        fml: FMLState, hoofdtaken: Htaken, kfb: Array.from(KSet)
+      });
+    });
+  }
+
+  // Start
+  if (!location.hash) location.hash = '#/dossiers';
+  route();
+  </script>
+
+
+<!-- VERDIEPING MODULE (Kenmerkende functiebelasting) v2 -->
+<script>
+(function(){
+  // Dataset met bekende aspecten + zoekwoorden (synoniemen);
+  // fallback 'algemeen' wordt gebruikt voor nieuwe/ongekende items.
+  const HULPMIDDEL = {
+    "Deadlines en productiepieken": {
+      factor: "Werkstress",
+      synonyms: ["deadline","deadlines","piek","piekbelasting","productiepieken","opleverdatum"],
+      definitie: "Werken naar strikte oplevertijden of tijdelijke pieken die duidelijk hogere inzet verlangen.",
+      beschrijf: [
+        "Aard: bron/oorzaak, betrokken taken, verzwarende factoren, afbreukrisico.",
+        "Mate: omvang (taken/% van tijd) waarin deadlines/pieken spelen.",
+        "Frequentie: hoe vaak per uur/dag/week; duur per piek."
+      ],
+      vragen: [
+        "Wat veroorzaakt de deadline/piek en hoe lang duurt deze?",
+        "Welke taken/rollen zijn geraakt?",
+        "Welke verzwarende factoren spelen (storingen, hoog tempo, onvoorspelbaarheid)?",
+        "Wat is het afbreukrisico?"
+      ]
+    },
+    "Regelmatig staan/lopen": {
+      factor: "Fysiek – benen/voortbewegen",
+      synonyms: ["staan","lopen","loop","sta","staloop","loopwerk","statisch","wandel"],
+      definitie: "Delen van de dag staande en/of lopend werken, eventueel met beperkte afwisseling.",
+      beschrijf: [
+        "Aard: soorten sta-/loopactiviteiten, ondergrond/afstanden, houding, afwisseling/mogelijkheid tot zitten.",
+        "Mate: totale duur in minuten/uren en percentage van de werkdag.",
+        "Frequentie: overgangen zitten–staan–lopen per uur/dag; traplopen."
+      ],
+      vragen: [
+        "Gemiddelde loopafstand (route/cycli) en sta-duur aaneengesloten?",
+        "Kan afgewisseld worden met zitten of hulpmiddelen?",
+        "Zijn er verzwarende factoren (traplopen, bukken, knielen)?"
+      ]
+    },
+    "Tillen/dragen >10 kg": {
+      factor: "Fysiek – armen/lasten",
+      synonyms: ["tillen","dragen","hef","gewicht","kg","heffen","tilwerk"],
+      definitie: "Handmatig tillen en/of dragen van lasten (hier demo-grenswaarde >10 kg).",
+      beschrijf: [
+        "Aard: last (vorm/greep), reikhoogte, afstand/route; hulpmiddelen; solo of teamtil.",
+        "Mate: massa (min/max), duur per tilactie en % van de tijd.",
+        "Frequentie: tillaantal per uur/dag/week."
+      ],
+      vragen: [
+        "Wat is het gewicht (min/max) en hoe vaak komt dat voor?",
+        "Op welke hoogten wordt getild; wordt er gedraaid/gebogen?",
+        "Zijn er hulpmiddelen of organisatorische maatregelen beschikbaar?"
+      ]
+    }
+  };
+
+  // Fallback sjabloon
+  function makeGeneric(label){
+    return {
+      factor: "Algemeen",
+      synonyms: [],
+      definitie: "Aspect nieuw/ongekend in dataset. Beschrijf volgens het hulpmiddel: aard, mate en frequentie, en gebruik de checklist-vragen die passen.",
+      beschrijf: [
+        "Aard: context, verzwarende aspecten en afbreukrisico.",
+        "Mate: procentuele belasting en/of duur.",
+        "Frequentie: per uur/dag/week."
+      ],
+      vragen: [
+        "Waar en bij welke taken komt dit aspect voor?",
+        "Welke verzwarende omstandigheden spelen mee?",
+        "Wat is de duur en hoe vaak treedt het op?"
+      ],
+      __generic__: true,
+      __label__: label
+    };
+  }
+
+  // Opslagbuffer voor rapportage
+  const VR_KEY = 'vr_state';
+  function getVR(){ try{return JSON.parse(localStorage.getItem(VR_KEY)||'[]')}catch(e){return []} }
+  function setVR(arr){ localStorage.setItem(VR_KEY, JSON.stringify(arr||[])); }
+
+  // Utilities
+  function normalize(s){ return (s||'').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,''); }
+  function matchAspect(label){
+    const t = normalize(label);
+    for (const [name, obj] of Object.entries(HULPMIDDEL)){
+      if (t.includes(normalize(name))) return {name, data:obj};
+      if ((obj.synonyms||[]).some(sw => t.includes(normalize(sw)))) return {name, data:obj};
+    }
+    return {name: label, data: makeGeneric(label)};
+  }
+
+  function openVerdiepingByLabel(label){
+    const found = matchAspect(label);
+    openVerdieping(found.name, found.data);
+  }
+
+  // UI helpers
+  function modal(html, title){
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.35);display:grid;place-items:center;padding:20px';
+    wrap.innerHTML = '<div class="card" style="max-width:860px;width:100%;max-height:90vh;overflow:auto">'+
+      '<div class="head"><strong>'+ (title||'Verdieping') +'</strong><button class="btn ghost" id="v-close">✕</button></div>'+
+      '<div class="body">'+html+'</div></div>';
+    document.body.appendChild(wrap);
+    wrap.addEventListener('click', (e)=>{ if(e.target===wrap) wrap.remove(); });
+    wrap.querySelector('#v-close').addEventListener('click', ()=>wrap.remove());
+    return wrap;
+  }
+
+  function openVerdieping(name, d){
+    const formId = 'vrf_'+Math.random().toString(36).slice(2,7);
+    const html = `
+      <div class="ad-two">
+        <div class="full">
+          <div class="pill"><strong>${name}</strong><span class="muted"> · Factor: ${d.factor}</span></div>
+        </div>
+        <div class="full">
+          <h4>Definitie</h4>
+          <p>${d.definitie}</p>
+        </div>
+        <div class="half">
+          <h4>Beschrijving (aard · mate · frequentie)</h4>
+          <ul>${(d.beschrijf||[]).map(x=>`<li>${x}</li>`).join('')}</ul>
+        </div>
+        <div class="half">
+          <h4>Beeldvorming – vragen</h4>
+          <ul>${(d.vragen||[]).map(x=>`<li>${x}</li>`).join('')}</ul>
+        </div>
+        <div class="full">
+          <label class="muted">Eigen notities (komen in rapportage)</label>
+          <textarea id="${formId}_note" style="width:100%;height:110px;border:1px solid #e5e7eb;border-radius:10px;padding:.5rem"></textarea>
+        </div>
+        <div class="full" style="display:flex;gap:8px;justify-content:flex-end">
+          <label class="pill"><input type="checkbox" id="${formId}_rap" checked> Opnemen in Rapport</label>
+          <label class="pill"><input type="checkbox" id="${formId}_adv" checked> Opnemen in Tussentijds advies</label>
+          <button class="btn" id="${formId}_save">Gebruik in rapport</button>
+        </div>
+      </div>`;
+    const m = modal(html, 'Verdieping – '+name);
+    m.querySelector('#'+formId+'_save').addEventListener('click', ()=>{
+      const arr = getVR();
+      arr.push({
+        aspect: name,
+        factor: d.factor,
+        definitie: d.definitie,
+        beschrijf: d.beschrijf||[],
+        vragen: d.vragen||[],
+        note: (m.querySelector('#'+formId+'_note').value||'').trim(),
+        inRapport: m.querySelector('#'+formId+'_rap').checked,
+        inAdvies: m.querySelector('#'+formId+'_adv').checked,
+        ts: Date.now()
+      });
+      setVR(arr);
+      m.remove();
+      alert('Toegevoegd aan rapportage.');
+    });
+  }
+
+  // Button binder that also works for dynamic changes
+  function bindButtons(){
+    const host = document.querySelector('#adKFB');
+    if(!host) return;
+    host.querySelectorAll('label.ad-card').forEach(card => {
+      if (card.getAttribute('data-vr-bound')==='1') return;
+      card.setAttribute('data-vr-bound','1');
+      // label text
+      const text = card.textContent.trim();
+      const btn = document.createElement('button');
+      btn.className = 'btn small';
+      btn.textContent = 'Verdieping';
+      btn.style.marginLeft = 'auto';
+      btn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); openVerdiepingByLabel(text); });
+      // ensure layout
+      card.style.display='flex'; card.style.alignItems='center'; card.style.justifyContent='space-between';
+      card.appendChild(btn);
+    });
+  }
+
+  // Observe changes so new/gewijzigde vormen automatisch knoppen krijgen
+  const observer = new MutationObserver(bindButtons);
+  function watch(){
+    const host = document.querySelector('#adKFB');
+    if(!host) return;
+    observer.observe(host, {childList:true, subtree:true});
+    bindButtons();
+  }
+
+  // Hook na renderAdAssist
+  const _orig = window.renderAdAssist;
+  if (typeof _orig === 'function'){
+    window.renderAdAssist = function(){
+      _orig.apply(this, arguments);
+      watch();
+      extendRapportExport();
+    };
+  } else {
+    // fallback: probeer na load
+    document.addEventListener('DOMContentLoaded', watch);
+  }
+
+  // Voeg verdieping toe aan rapport-preview en export
+  function extendRapportExport(){
+    const prev = document.getElementById('adPreview');
+    if(prev && !prev.__vrPatch){
+      prev.__vrPatch = true;
+      const old = prev.onclick || function(){};
+      prev.onclick = function(){
+        try{ old(); }catch(e){}
+        const box = document.getElementById('adRapportPreview');
+        if(!box) return;
+        const arr = getVR();
+        if(!arr.length) return;
+        const html = `<h2>Kenmerkende functiebelasting – verdieping</h2>`+
+          arr.filter(x=>x.inRapport).map(x=>`<h3>${x.aspect} <small class="muted">(${x.factor})</small></h3>
+          <p><em>Definitie</em>: ${x.definitie}</p>${x.note?`<p><em>Toelichting</em>: ${escapeHtml(x.note)}</p>`:''}`).join('');
+        const ins = document.createElement('div'); ins.innerHTML = html; box.appendChild(ins);
+      };
+    }
+  }
+
+  function escapeHtml(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+})();
+</script>
+
+
+</body>
+</html>

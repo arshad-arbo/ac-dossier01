@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AC‑Dossier • Keuringsdossiers (Werkgever)</title>
+  <style>
+    :root{
+      --primary:#ec641a; --teal:#79c6c0; --accent:#85cee4; --slate:#686c7c; --ink:#4c505a;
+      --surface:#f7f7f7; --ring:1px solid #e5e7eb; --shadow:0 12px 34px rgba(0,0,0,.08);
+      --shadow-lg:0 22px 55px rgba(0,0,0,.16);
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;background:var(--surface);color:#1f2937;font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
+    header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid #e5e7eb}
+    .topbar{display:flex;align-items:center;gap:16px;padding:12px 18px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}.brand-dot{width:28px;height:28px;border-radius:7px;background:#ec641a}
+    .container{max-width:1100px;margin:22px auto;padding:0 16px}
+    .card{background:#fff;border-radius:16px;box-shadow:var(--shadow);border:var(--ring);padding:16px}
+    h2{margin:.2rem 0 .6rem;color:#4c505a} .muted{color:#6b7280}
+    .layout{display:grid;grid-template-columns:1.1fr .9fr;gap:16px} @media(max-width:980px){.layout{grid-template-columns:1fr}}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:12px;border:1px solid #e5e7eb;background:#fff;cursor:pointer}
+
+    /* Right-aligned tools above tiles */
+    .row-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .tools-top{display:flex;gap:8px}
+
+    /* STACK (done steps) */
+    .stack-wrap{position:relative;min-height:260px}
+    .stack-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .stack{position:relative;height:260px;perspective:1200px;overflow:visible}
+    .card-mini{
+      position:absolute;left:50%;top:50%;transform-style:preserve-3d;
+      width:64%;max-width:440px;min-height:70px;translate:-50% -50%;
+      background:#fff;border-radius:14px;border:1px solid #eef2f7;
+      box-shadow:0 8px 20px rgba(17,24,39,.10);
+      padding:10px 12px;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;
+      transition:transform .3s ease, box-shadow .3s ease, filter .3s ease, opacity .3s ease;
+    }
+    .card-mini .badge{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:#fff3eb;border:1px solid #ffd9c3;color:#ec641a;font-weight:800}
+    .card-mini .title{font-weight:700} .card-mini .desc{color:#6b7280;font-size:.92rem}
+    .card-mini .state{font-size:.82rem;color:#10b981}
+
+    /* Offsets for positions 0..6 (z-index increases with idx so newer card on top) */
+    .stack .card-mini{ transform: translate3d( calc(-50% + var(--dx,0px)), calc(-50% + var(--dy,0px)), 0) rotateZ(var(--rot, -1deg)); }
+    .stack .card-mini[data-pos="0"]{ --dx:-2px;  --dy:-8px;  --rot:-2deg;  z-index:10 }
+    .stack .card-mini[data-pos="1"]{ --dx:4px;   --dy:-1px;  --rot:1deg;   z-index:15 }
+    .stack .card-mini[data-pos="2"]{ --dx:-8px;  --dy:6px;   --rot:-1.5deg;z-index:20 }
+    .stack .card-mini[data-pos="3"]{ --dx:10px;  --dy:13px;  --rot:2deg;   z-index:25 }
+    .stack .card-mini[data-pos="4"]{ --dx:-12px; --dy:20px;  --rot:-2.2deg;z-index:30 }
+    .stack .card-mini[data-pos="5"]{ --dx:14px;  --dy:27px;  --rot:1.8deg; z-index:35 }
+    .stack .card-mini[data-pos="6"]{ --dx:-16px; --dy:34px;  --rot:-1.4deg;z-index:40 }
+
+    /* On hover: fan open */
+    .stack:hover .card-mini{ box-shadow:var(--shadow-lg) }
+    .stack:hover .card-mini[data-pos="0"]{ transform:translate3d(-70%, -120%, 0) rotateZ(-7deg) }
+    .stack:hover .card-mini[data-pos="1"]{ transform:translate3d(-58%, -45%, 0) rotateZ(-3deg) }
+    .stack:hover .card-mini[data-pos="2"]{ transform:translate3d(-49%,  20%, 0) rotateZ(0deg) }
+    .stack:hover .card-mini[data-pos="3"]{ transform:translate3d(-39%,  85%, 0) rotateZ(3deg) }
+    .stack:hover .card-mini[data-pos="4"]{ transform:translate3d(-28%, 150%, 0) rotateZ(6deg) }
+    .stack:hover .card-mini[data-pos="5"]{ transform:translate3d(-18%, 210%, 0) rotateZ(9deg) }
+    .stack:hover .card-mini[data-pos="6"]{ transform:translate3d(-8%,  260%, 0) rotateZ(12deg) }
+
+    /* PENDING tiles */
+    .tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px} @media(max-width:760px){.tiles{grid-template-columns:1fr}}
+    .tile{border:1px solid #eef2f7;border-radius:16px;padding:16px;background:#fff;box-shadow:0 12px 24px rgba(17,24,39,.08);display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;transition:transform .15s ease, box-shadow .15s ease,border-color .15s ease}
+    .tile:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:#e3e8ee}
+    .tile .badge{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#fff5ee;border:1px solid #ffc7a3;color:#ec641a;font-weight:800}
+    .tile .title{font-weight:800} .tile .desc{color:#6b7280;margin:.2rem 0 .3rem}
+    .tile .meta{font-size:.84rem;color:#64748b}
+    .tile.current{background:#fffaf7;border-color:#ffc7a3}
+    .tile.locked{opacity:.65;cursor:not-allowed}
+
+    .pill{display:inline-block;padding:.1rem .5rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:.78rem}
+    .pill.current{background:#fff1e9;border-color:#ffc7a3;color:#b45309}
+    .pill.locked{background:#f1f5f9;border-color:#e2e8f0;color:#64748b}
+
+    .legend{display:flex;gap:8px;flex-wrap:wrap;font-size:.86rem}
+    .legend .k{display:inline-flex;gap:6px;align-items:center}
+    .dot{width:10px;height:10px;border-radius:50%}
+    .d-done{background:#10b981}.d-cur{background:#ec641a}.d-lock{background:#94a3b8}
+  </style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <span class="brand"><span class="brand-dot"></span><span>AC‑Dossier <small style="color:#686c7c">werkgever</small></span></span>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn" onclick="location.href='AC-dossier-werkgever-landingsscherm-LINKED.html'">Home</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="card">
+    <h2>Keuringsdossiers – stappen & voortgang</h2>
+    <div class="muted" style="margin:.4rem 0 1rem">
+      Onderstaand ziet u de stappen van intake tot rapportage. De grijze tegels zijn nog niet beschikbaar. De actuele stap is gemarkeerd. 
+      Afgeronde stappen schuiven automatisch in de <i>stapel</i> links; onderop ziet u stap 1, daarop stap 2, enzovoort (nieuwste bovenop).
+    </div>
+
+    <div class="legend" style="margin-bottom:8px">
+      <span class="k"><span class="dot d-done"></span>afgerond</span>
+      <span class="k"><span class="dot d-cur"></span>actueel</span>
+      <span class="k"><span class="dot d-lock"></span>nog niet beschikbaar</span>
+    </div>
+
+    <div class="layout">
+      <div class="card" style="background:#fffaf7">
+        <div class="stack-title"><strong>Afgeronde stappen</strong><span class="pill">stapel (hover om in te kijken)</span></div>
+        <div id="stack" class="stack"></div>
+      </div>
+
+      <div class="card">
+        <div class="row-head">
+          <strong>Nog te doen</strong>
+          <div class="tools-top">
+            <button class="btn" onclick="location.href='AC-dossier-werkgever-landingsscherm-LINKED.html'">Vorige</button>
+            <button class="btn" onclick="location.href='AC-dossier-werkgever-landingsscherm-LINKED.html'">Home</button>
+          </div>
+        </div>
+        <div id="tiles" class="tiles" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  const STEPS = [
+    {id:1,  title:"Uitvoering RI&E", who:"Werkgever/Preventieadviseur"},
+    {id:2,  title:"Toetsing RI&E", who:"Arbodienst/Deskundige"},
+    {id:3,  title:"Medische vertaling beroepsgebonden risico's naar medische intake (bedrijfsarts)", who:"Bedrijfsarts"},
+    {id:4,  title:"Initieel voorstel PAGO‑inhoud", who:"Arbodienst",href:"ac-scherm4-eerste-financieel-voorstel_v11.html"},
+    {id:5,  title:"Offerte met prijs keuring naar type functionaris", who:"Arbodienst", href:"ac-werkgeversportaal-definitief-voorstel_v3.html"},
+    {id:6,  title:"Werkgever kiest locatie (werkadres of Arbo Concern)", who:"Werkgever", href:"locatiekeuze.html"},
+    {id:7,  title:"Interne communicatie + tijdelijk inlogaccount voor werknemerportaal", who:"Werkgever", href:"communicatie-werknemers_v3.html"},
+    {id:8,  title:"Werknemer kiest juiste functiegroep", who:"Werknemer"},
+    {id:9,  title:"Werknemer ziet PAGO‑inhoud en geeft voorkeur deelname", who:"Werknemer"},
+    {id:10, title:"Definitieve PAGO‑prijs o.b.v. bevestigde deelnemers + akkoord (DocuSign)", who:"Werkgever", href:"docusign.html"},
+    {id:11, title:"Werknemer start invullen vragenlijsten", who:"Werknemer", href:"mijn_vragenlijsten.html"},
+    {id:12, title:"Start plannen fysieke keuring", who:"Werknemer/Planner", href:"planning.html"},
+    {id:13, title:"Uitvoer keuring", who:"Arbodienst/Verpleegkundige"},
+    {id:14, title:"Keuringsgesprek met de keuringsarts", who:"Keuringsarts"},
+    {id:15, title:"Cliënt‑ (groeps)‑rapportage", who:"Arbodienst/Keuringsarts"}
+  ];
+
+  const KEY = "ac_employer_journey_state_v2";
+
+  function defaultState(){
+  // Demo: t/m stap 3 afgerond; 4 & 5 nog te doen; stap 6 actueel
+  const st={}; for(let i=1;i<=15;i++) st[i]='locked';
+  for(let i=1;i<=3;i++) st[i]='done';
+  st[4]='locked';
+  st[5]='locked';
+  st[6]='current';
+  return st;
+}
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      return raw ? JSON.parse(raw) : defaultState();
+    }catch(e){ return defaultState(); }
+  }
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]); }); }
+
+  function render(){
+    const st = loadState();
+    const done = Object.keys(st).filter(k=>st[k]==='done').map(Number).sort((a,b)=>a-b);
+    const pending = Object.keys(st).filter(k=>st[k]!=='done').map(Number).sort((a,b)=>a-b);
+
+    renderStack(done);
+    renderTiles(pending, st);
+  }
+
+  // Strict chronological stack: 1 under, then 2, etc.
+  function renderStack(doneIds){
+    const root = document.getElementById('stack'); root.innerHTML='';
+    if(!doneIds.length){
+      root.innerHTML = '<div class="muted" style="padding:10px">Er zijn nog geen stappen afgerond.</div>';
+      return;
+    }
+    const n = Math.min(7, doneIds.length);
+    const subset = doneIds.slice(-n); // ascending order preserved
+    subset.forEach((id, idx)=>{
+      const s = STEPS.find(x=>x.id===id);
+      const el = document.createElement('div');
+      el.className='card-mini';
+      el.setAttribute('data-pos', String(idx)); // z-index follows idx
+      el.innerHTML = '<div class="badge">'+id+'</div><div><div class="title">'+escapeHtml(s.title)+'</div><div class="desc">'+escapeHtml(s.who||'')+'</div><div class="state">✔️ afgerond</div></div>';
+      root.appendChild(el);
+    });
+  }
+
+  function renderTiles(ids, st){
+    const root = document.getElementById('tiles'); root.innerHTML='';
+    ids.forEach(function(id){
+      const s = STEPS.find(function(x){return x.id===id;});
+      if(!s) return;
+      if(st[id]==='done') return;
+      const cur = st[id]==='current';
+const clickable = !!s.href && st[id] !== 'done';         // klikbaar zodra er een href is (behalve als done)
+const cls = 'tile ' + (cur ? 'current' : (clickable ? '' : 'locked'));
+const href = clickable ? s.href : null;
+
+const div = document.createElement('div');
+div.className = cls;
+div.setAttribute('role','button');
+div.setAttribute('tabindex','0');
+
+div.innerHTML =
+  '<div class="badge">'+id+'</div>'+
+  '<div>'+
+    '<div class="title">'+escapeHtml(s.title)+'</div>'+
+    '<div class="desc">Verantwoordelijk: '+escapeHtml(s.who||'-')+'</div>'+
+    '<div class="meta">'+
+      '<span class="pill '+(cur?'current':'')+'">'+(cur?'actueel':(clickable?'beschikbaar':'nog niet beschikbaar'))+'</span>'+
+      (href?' • klik om te openen':'')+
+    '</div>'+
+  '</div>';
+
+if (href) {
+  div.style.cursor = 'pointer';
+  div.addEventListener('click', () => { location.href = href; });
+  div.addEventListener('keypress', (e) => { if (e.key === 'Enter') location.href = href; });
+}
+
+      root.appendChild(div);
+    });
+  }
+
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', render); } else { render(); }
+})();</script>
+</body>
+</html>

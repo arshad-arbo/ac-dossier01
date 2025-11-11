@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AC-Dossier • Keuringsvoorstel v2</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --primary:#ec641a;
+    --teal:#79c6c0;
+    --accent:#85cee4;
+    --slate:#686c7c;
+    --ink:#4c505a;
+    --steel:#69a1b1;
+    --surface:#f7f7f7;
+    --ring:1px solid #e5e7eb;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--surface);color:#1f2937;
+    font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial}
+  a{color:var(--steel);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid #e5e7eb}
+  .topbar{display:flex;align-items:center;gap:16px;padding:12px 18px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+  .brand-bullet{width:28px;height:28px;border-radius:7px;background:var(--primary);
+    display:grid;place-items:center;color:#fff;font-weight:800}
+  .brand small{font-weight:600;color:var(--slate)}
+  .container{max-width:1180px;margin:20px auto;padding:0 16px}
+  .card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:var(--ring);padding:16px}
+  .muted{color:#6b7280}
+  .btn{display:inline-flex;align-items:center;gap:.55rem;padding:.55rem .9rem;border-radius:12px;border:1px solid #e5e7eb;background:#fff;color:#111;cursor:pointer}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn.small{padding:.35rem .6rem;border-radius:10px;font-size:.9rem}
+  .btn.icon{width:40px;height:40px;justify-content:center}
+  .btn.block{width:100%}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--primary)}
+  .chip{display:inline-flex;align-items:center;gap:.4rem;padding:.2rem .6rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  input,select,textarea{width:100%;padding:.55rem .7rem;border-radius:10px;border:1px solid #e5e7eb}
+  textarea{resize:vertical;font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial}
+  h1,h2,h3{color:var(--ink);margin:.2rem 0 .6rem}
+  .grid{display:grid;grid-template-columns:1fr auto 1fr;gap:16px}
+  @media(max-width:980px){.grid{grid-template-columns:1fr;}.mid{display:flex;gap:8px} .mid .btn{flex:1}}
+  .list{border:1px dashed #cbd5e1;border-radius:12px;min-height:320px;background:#fafafa;overflow:auto}
+  .list header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border-bottom:1px solid #eef2f7;background:#fff;border-radius:12px 12px 0 0}
+  .list .body{padding:8px}
+  .item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px;cursor:grab;position:relative}
+  .item .meta{color:#64748b;font-size:.9rem}
+  .item[aria-selected="true"]{outline:2px solid var(--accent);outline-offset:2px}
+  .item .badge{font-size:.75rem;padding:.15rem .45rem;border-radius:999px;border:1px solid #e5e7eb;background:#f8fafc;color:#334155}
+  .item.mtrx{border-left:6px solid var(--accent)}
+  .item.rie{border-left:6px solid var(--teal); background:linear-gradient(90deg, rgba(121,198,192,.10), transparent 60%)}
+  .item.man{border-left:6px solid #cbd5e1}
+  .item.hint-rie::after{content:'RI&E+';position:absolute;right:10px;top:-9px;background:#ecfeff;color:#0e7490;border:1px solid #cffafe;padding:.1rem .35rem;border-radius:999px;font-size:.7rem}
+  .drop-hover{outline:2px dashed var(--primary);outline-offset:3px}
+  .risks{background:#fff7ed;border:1px solid #fde1cc;color:#7a3b0c;border-radius:12px;padding:10px}
+  .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .foot{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:16px}
+  .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:.85rem;background:#f3f4f6;border:1px solid #e5e7eb;border-bottom-width:2px;border-radius:6px;padding:.05rem .35rem}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:.2rem .6rem;border-radius:999px;background:#eef2ff;color:#1e3a8a}
+  .note{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;padding:8px}
+  .ok{background:var(--teal);color:#063a35;border-color:var(--teal)}
+  .warn{background:#fff5f0;color:#7a3b0c;border-color:#fed7aa}
+  .legend .chip{background:#fff}
+  .status{font-size:.9rem;color:#64748b;min-height:1.4em}
+  .status.info{color:#0369a1}
+  .status.ok{color:#047857}
+  .status.warn{color:#b45309}
+  .status.err{color:#b91c1c}
+</style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand"><span class="brand-bullet" aria-hidden>AC</span><span>AC-Dossier <small>prototype</small></span></div>
+      <div style="margin-left:auto" class="toolbar">
+        <a class="btn" href="takenmodule.html">Home</a>
+        <button class="btn" onclick="history.back()">Vorige</button>
+        <select id="roleSel" class="btn" title="Rol (demo)">
+          <option value="keuringsarts">Keuringsarts</option>
+          <option value="bedrijfsarts">Bedrijfsarts</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <div class="toolbar" style="justify-content:space-between">
+        <div class="toolbar" style="flex-wrap:wrap">
+          <h2 style="margin:0">Samenstellen keuringsvoorstel</h2>
+          <span class="chip">Voor werknemer: <strong id="empName">—</strong></span>
+          <span class="chip">BSN: <span id="empBSN">—</span></span>
+          <span class="chip">Functie: <span id="empRole">—</span></span>
+        </div>
+        <div class="toolbar">
+          <span class="chip">Voorstel-ID: <span id="propId">—</span></span>
+          <span class="chip">Status: <span id="propStatus">concept (keuringsarts)</span></span>
+        </div>
+      </div>
+
+      <!-- Zoek / open dossier -->
+      <div class="card note mt">
+        <div class="toolbar" style="justify-content:space-between">
+          <div class="toolbar" style="flex-wrap:wrap">
+            <strong>Werknemer zoeken (achternaam + geboortedatum of BSN)</strong>
+            <input id="qLast" placeholder="Achternaam" style="max-width:180px">
+            <input id="qDob" placeholder="Geboortedatum (YYYY-MM-DD)" style="max-width:200px">
+            <span class="muted">of</span>
+            <input id="qBsn" placeholder="BSN" style="max-width:140px">
+            <button class="btn" id="btnFind">Zoek / Open</button>
+          </div>
+          <div class="toolbar">
+            <button class="btn" id="btnNew">+ Nieuw voorstel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI upload -->
+      <div class="card note mt" id="aiUpload">
+        <div class="toolbar" style="justify-content:space-between;align-items:flex-start">
+          <div class="toolbar" style="flex-wrap:wrap">
+            <strong>Upload geanonimiseerde versie</strong>
+            <button class="btn" id="btnUpload" type="button">Bestand kiezen…</button>
+            <input type="file" id="fileUpload" accept=".txt,.json,.csv,.md,.pdf,.doc,.docx" style="display:none">
+          </div>
+          <span id="uploadStatus" class="status">Nog geen upload uitgevoerd.</span>
+        </div>
+        <div class="muted">Na het uploaden analyseert de AI-assistent het document en wordt het voorstel automatisch bijgewerkt.</div>
+      </div>
+
+      <!-- RIE risico's -->
+      <div class="mt risks" id="rieBox">
+        <div class="toolbar" style="justify-content:space-between">
+          <strong>RI&amp;E risico's voor <span id="rieFunctie">—</span></strong>
+          <span class="muted">Geleverd door scraping per functie (demo)</span>
+        </div>
+        <div id="rieChips" class="chips mt"></div>
+      </div>
+
+      <!-- Legenda -->
+      <div class="legend toolbar" style="margin-top:10px">
+        <span class="muted">Legenda:</span>
+        <span class="chip"><span style="width:10px;height:10px;background:var(--accent);display:inline-block;border-radius:2px"></span> Matrix</span>
+        <span class="chip"><span style="width:10px;height:10px;background:var(--teal);display:inline-block;border-radius:2px"></span> RI&amp;E +</span>
+        <span class="chip"><span style="width:10px;height:10px;background:#cbd5e1;display:inline-block;border-radius:2px"></span> Handmatig</span>
+      </div>
+
+      <!-- Dual column + mid buttons -->
+      <div class="grid mt" id="dual">
+        <!-- LEFT -->
+        <section class="list" aria-labelledby="lbl-links" aria-describedby="help-links">
+          <header>
+            <div class="toolbar" style="flex-wrap:wrap">
+              <strong id="lbl-links">Beschikbare keuringsactiviteiten</strong>
+              <span class="muted" id="help-links">Sleep naar rechts of selecteer en gebruik <span class="kbd">→</span>/<span class="kbd">←</span></span>
+            </div>
+            <div class="toolbar">
+              <input id="searchLeft" placeholder="Filter… (bijv. bloed, visus)" style="max-width:220px">
+            </div>
+          </header>
+          <div class="body" id="leftList" role="listbox" aria-multiselectable="false"></div>
+        </section>
+
+        <!-- MID buttons -->
+        <div class="mid" style="display:grid;gap:8px;align-content:center">
+          <button id="mvOneRight" class="btn icon" title="> naar voorstel">→</button>
+          <button id="mvAllRight" class="btn icon" title="» alles naar voorstel">»</button>
+          <button id="mvOneLeft" class="btn icon" title="< terug">←</button>
+          <button id="mvAllLeft" class="btn icon" title="« alles terug">«</button>
+        </div>
+
+        <!-- RIGHT -->
+        <section class="list" aria-labelledby="lbl-rechts">
+          <header>
+            <div class="toolbar" style="flex-wrap:wrap"><strong id="lbl-rechts">Keuringsvoorstel</strong>
+              <span class="chip ok hidden" id="accNote">Geaccordeerd</span>
+            </div>
+            <div class="toolbar">
+              <button class="btn small" id="btnAcc">Voorstel accorderen</button>
+              <button class="btn small" id="btnClear">Leegmaken</button>
+            </div>
+          </header>
+          <div class="body" id="rightList" role="listbox"></div>
+        </section>
+      </div>
+
+      <!-- Notitie -->
+      <div class="mt">
+        <label for="note"><strong>Notitie bij het voorstel</strong> <span class="muted">(waarom wijkt dit af van het initieel voorstel?)</span></label>
+        <textarea id="note" rows="4" placeholder="Toelichting voor dossier en bedrijfsarts…"></textarea>
+      </div>
+
+      <!-- Bottom actions -->
+      <div class="foot">
+        <div class="toolbar">
+          <a class="btn" href="takenmodule.html">Home</a>
+          <button class="btn" onclick="history.back()">Vorige</button>
+        </div>
+        <div class="toolbar">
+          <button class="btn" id="btnSave">Wijzigingen opslaan</button>
+          <button class="btn primary" id="btnSubmit">Keuringsvoorstel gereed maken voor de bedrijfsarts</button>
+        </div>
+      </div>
+
+      <div class="muted mt">Tip: gebruik <span class="kbd">Tab</span> + <span class="kbd">Enter</span> om snel te navigeren; items bewegen met <span class="kbd">←</span>/<span class="kbd">→</span>.</div>
+    </div>
+
+    <!-- Dev/log export -->
+    <div class="card mt">
+      <div class="toolbar" style="justify-content:space-between">
+        <div class="toolbar"><strong>Datawarehouse log (demo)</strong><span class="muted">Wijzigingen door artsen worden hier opgeslagen voor latere analyse.</span></div>
+        <div class="toolbar">
+          <button class="btn" id="btnExport">Export log (JSON)</button>
+          <button class="btn" id="btnReset">Reset demo-data</button>
+        </div>
+      </div>
+      <pre id="log" class="note" style="max-height:240px;overflow:auto"></pre>
+    </div>
+  </main>
+
+<script>
+/* ==================== Demo state & helpers ==================== */
+const ALL_ACTIVITIES = [
+  {id:'audiometrie', label:'Audiometrie'},
+  {id:'bloed', label:'Bloedonderzoek'},
+  {id:'ecg', label:'ECG'},
+  {id:'spiro', label:'Spirometrie'},
+  {id:'urine', label:'Urine (dipstick)'},
+  {id:'visus', label:'Visus'},
+  {id:'ergo', label:'Ergometrie'},
+  {id:'narcotica', label:'Narcotica (urine)'},
+  {id:'vaccinatie', label:'Vaccinatie (indien nodig)'},
+  {id:'hb', label:'Hb (vingerprik)'},
+  {id:'glucose', label:'Glucose'},
+  {id:'cholesterol', label:'Cholesterol'},
+  {id:'bmi', label:'BMI / lengte / gewicht'},
+  {id:'bloeddruk', label:'Bloeddruk'},
+  {id:'gehoor', label:'Gehoor (screening)'},
+  {id:'oog', label:'Oog / kleurenzien'}
+];
+const MATRIX = {
+  'Monteur mechaniek': ['bloeddruk','bmi','visus','gehoor','audiometrie','spiro','urine'],
+  'Vrachtwagenchauffeur': ['bloeddruk','bmi','visus','gehoor','ecg','urine'],
+  'Laborant': ['bloed','urine','vaccinatie','bmi','bloeddruk','glucose']
+};
+// Heuristiek: extra keuringstappen o.b.v. risico -> activiteiten
+const RISK2ACT = {
+  'Geluid': ['audiometrie','gehoor'],
+  'Lasrook': ['spiro','bloed'],
+  'Trillingen': ['ecg'],
+  'Valgevaar': ['visus'],
+  'Biologische': ['vaccinatie'],
+  'Chemicaliën': ['bloed','urine'],
+  'Nachtwerk': ['ecg'],
+  'Verkeersrisico': ['visus','urine'],
+};
+const RIE = {
+  'Monteur mechaniek': ['Fysieke belasting (tillen/duwen)','Geluid >80 dB(A)','Lasrook / dampen','Klimaat (kou/hitte)','Trillingen','Valgevaar'],
+  'Vrachtwagenchauffeur': ['Langdurig zitten','Werkdruk / tijdsdruk','Verkeersrisico','Trillingen','Nachtwerk'],
+  'Laborant': ['Blootstelling aan chemicaliën','Biologische agentia','Prikinstrumenten','Persoonlijke beschermingsmiddelen']
+};
+const EMPLOYEE_FIXTURES = [
+  {last:'Jansen', dob:'1982-04-11', bsn:'123456782', role:'Monteur mechaniek', name:'A. Jansen'},
+  {last:'De Vries', dob:'1991-09-03', bsn:'987654329', role:'Vrachtwagenchauffeur', name:'B. de Vries'},
+  {last:'Bakker', dob:'1989-12-22', bsn:'111222333', role:'Laborant', name:'C. Bakker'}
+];
+
+const state = {
+  role: 'keuringsarts',
+  proposalId: null,
+  employee: null,
+  proposal: [],      // [{id, source:'matrix'|'rie'|'manual'}]
+  baseProposalIds: [],
+  acc: false,
+  note: ''
+};
+
+const uploadStatusEl = () => qsel('#uploadStatus');
+
+function setUploadStatus(message, tone='info'){
+  const el = uploadStatusEl();
+  if(!el) return;
+  el.textContent = message;
+  el.className = 'status '+(tone||'');
+}
+
+function uid(){ return 'KP-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8).toUpperCase(); }
+function qsel(sel){return document.querySelector(sel)}
+
+function saveToLocal(){
+  const key = 'kp.'+state.proposalId;
+  const rec = {
+    id: state.proposalId,
+    employee: state.employee,
+    proposal: state.proposal,
+    baseProposalIds: state.baseProposalIds,
+    note: state.note,
+    status: qsel('#propStatus').textContent,
+    when: new Date().toISOString()
+  };
+  localStorage.setItem(key, JSON.stringify(rec));
+}
+function loadFromLocal(id){
+  const rec = JSON.parse(localStorage.getItem('kp.'+id)||'null');
+  return rec;
+}
+
+function logDW(entry){
+  const L = JSON.parse(localStorage.getItem('dwLog')||'[]');
+  L.unshift({when:new Date().toISOString(), ...entry});
+  localStorage.setItem('dwLog', JSON.stringify(L));
+  renderLog();
+}
+
+function renderLog(){
+  const L = JSON.parse(localStorage.getItem('dwLog')||'[]');
+  const out = L.map(x => JSON.stringify(x,null,2)).join("\\n");
+  qsel('#log').textContent = out || '—';
+}
+
+function syncHeader(){
+  qsel('#empName').textContent = state.employee?.name || '—';
+  qsel('#empBSN').textContent = state.employee?.bsn || '—';
+  qsel('#empRole').textContent = state.employee?.role || '—';
+  qsel('#propId').textContent = state.proposalId || '—';
+  qsel('#rieFunctie').textContent = state.employee?.role || '—';
+  const chips = qsel('#rieChips'); chips.innerHTML = '';
+  (RIE[state.employee?.role]||[]).forEach(txt => {
+    const el = document.createElement('span'); el.className='chip warn'; el.textContent = txt; chips.appendChild(el);
+  });
+}
+
+function extrasFromRisks(role){
+  const risks = (RIE[role]||[]).join(' ');
+  const ids = new Set();
+  Object.entries(RISK2ACT).forEach(([kw, acts])=>{
+    if(risks.toLowerCase().includes(kw.toLowerCase())) acts.forEach(a=>ids.add(a));
+  });
+  return Array.from(ids);
+}
+
+function initNewProposal(withEmployee){
+  state.proposalId = uid();
+  state.proposal = [];
+  state.baseProposalIds = [];
+  state.acc = false; state.note='';
+  if(withEmployee){
+    state.employee = withEmployee;
+    const base = MATRIX[withEmployee.role] || [];
+    const extra = extrasFromRisks(withEmployee.role).filter(id=>!base.includes(id));
+    const fromMatrix = base.map(id=>({id, source:'matrix'}));
+    const fromRie = extra.map(id=>({id, source:'rie'}));
+    state.proposal = [...fromMatrix, ...fromRie];
+    state.baseProposalIds = state.proposal.map(x=>x.id);
+  }
+  qsel('#note').value = '';
+  qsel('#accNote').classList.add('hidden');
+  qsel('#propStatus').textContent = 'concept ('+state.role+')';
+  syncHeader();
+  renderLists();
+  logDW({action:'new_proposal', role:state.role, proposalId:state.proposalId, employee:state.employee});
+  saveToLocal();
+}
+
+/* ==================== UI: lists ==================== */
+function elItem(obj, selected=false, hintRie=false){
+  // obj may be activity object ({id,label}) OR proposal entry ({id,source})
+  const id = obj.id;
+  const a = ALL_ACTIVITIES.find(x=>x.id===id);
+  const el = document.createElement('div');
+  const src = obj.source||null;
+  el.className='item'+(src?(' '+(src==='matrix'?'mtrx':src==='rie'?'rie':'man')):'');
+  if(hintRie) el.classList.add('hint-rie');
+  el.setAttribute('draggable','true');
+  el.dataset.id=id; el.dataset.source=src||'';
+  el.innerHTML = '<span>'+a.label+'</span><span class="meta">#'+id+(src?(' · '+src):'')+'</span>';
+  el.setAttribute('role','option'); el.setAttribute('aria-selected', selected?'true':'false');
+  return el;
+}
+function renderLists(){
+  // left = ALL minus proposal ids
+  const leftHost = qsel('#leftList'); leftHost.innerHTML='';
+  const rightHost = qsel('#rightList'); rightHost.innerHTML='';
+  const filter = qsel('#searchLeft').value?.toLowerCase()||'';
+  const rightIds = new Set(state.proposal.map(p=>p.id));
+  // mark which ones are recommended by RIE but not yet selected
+  const rieRecs = new Set(extrasFromRisks(state.employee?.role||''));
+  ALL_ACTIVITIES
+    .filter(a => !rightIds.has(a.id))
+    .filter(a => a.label.toLowerCase().includes(filter) || a.id.includes(filter))
+    .forEach(a => leftHost.appendChild(elItem(a, false, rieRecs.has(a.id))));
+  state.proposal.forEach(p => rightHost.appendChild(elItem(p)));
+  bindDnD();
+}
+
+function move(id, toRight){
+  const idx = state.proposal.findIndex(p=>p.id===id);
+  if(toRight && idx===-1){
+    // Add as manual unless it is a recommended RIE extra
+    const src = extrasFromRisks(state.employee?.role||'').includes(id) ? 'rie' : 'manual';
+    state.proposal.push({id, source: src});
+  }
+  if(!toRight && idx!==-1){ state.proposal.splice(idx,1); }
+  renderLists();
+}
+
+function bindDnD(){
+  const left = qsel('#leftList');
+  const right = qsel('#rightList');
+  function dragListeners(host, toRight){
+    host.querySelectorAll('.item').forEach(it=>{
+      it.addEventListener('click', ()=>{
+        host.querySelectorAll('.item[aria-selected="true"]').forEach(x=>x.setAttribute('aria-selected','false'));
+        it.setAttribute('aria-selected','true');
+        host.dataset.sel = it.dataset.id;
+      });
+      it.addEventListener('dragstart', e=>{
+        e.dataTransfer.setData('text/plain', it.dataset.id);
+        e.dataTransfer.effectAllowed='move';
+      });
+      it.addEventListener('keydown', e=>{
+        if(e.key==='ArrowRight'){ e.preventDefault(); move(it.dataset.id,true); }
+        if(e.key==='ArrowLeft'){ e.preventDefault(); move(it.dataset.id,false); }
+      });
+    });
+  }
+  function dropListeners(host, toRight){
+    host.addEventListener('dragover', e=>{ e.preventDefault(); host.classList.add('drop-hover'); });
+    host.addEventListener('dragleave', ()=>host.classList.remove('drop-hover'));
+    host.addEventListener('drop', e=>{
+      e.preventDefault(); host.classList.remove('drop-hover');
+      const id = e.dataTransfer.getData('text/plain'); move(id, toRight);
+    });
+    host.addEventListener('keydown', e=>{
+      if(e.key==='ArrowRight' && host.dataset.sel){ move(host.dataset.sel, true); }
+      if(e.key==='ArrowLeft' && host.dataset.sel){ move(host.dataset.sel, false); }
+    });
+  }
+  dragListeners(left,false); dragListeners(right,true);
+  dropListeners(left,false); dropListeners(right,true);
+}
+
+/* ==================== Mid buttons ==================== */
+qsel('#mvOneRight').addEventListener('click', ()=>{
+  const id = qsel('#leftList').dataset.sel;
+  if(id) move(id,true);
+});
+qsel('#mvAllRight').addEventListener('click', ()=>{
+  qsel('#leftList').querySelectorAll('.item').forEach(it=>move(it.dataset.id,true));
+});
+qsel('#mvOneLeft').addEventListener('click', ()=>{
+  const id = qsel('#rightList').dataset.sel || (qsel('#rightList .item')?.dataset.id);
+  if(id) move(id,false);
+});
+qsel('#mvAllLeft').addEventListener('click', ()=>{
+  [...state.proposal].forEach(p=>move(p.id,false));
+});
+
+/* ==================== Actions ==================== */
+qsel('#searchLeft').addEventListener('input', renderLists);
+
+qsel('#btnAcc').addEventListener('click', ()=>{
+  state.acc = true;
+  qsel('#accNote').classList.remove('hidden');
+  logDW({action:'proposal_approved', role:state.role, proposalId:state.proposalId});
+});
+
+qsel('#btnClear').addEventListener('click', ()=>{
+  if(confirm('Keuringsvoorstel leegmaken?')){
+    state.proposal = [];
+    renderLists();
+  }
+});
+
+qsel('#btnSave').addEventListener('click', ()=>{
+  state.note = qsel('#note').value||'';
+  if(state.role==='bedrijfsarts' && !window._baWarned){
+    window._baWarned = true;
+    alert('Let op: uw wijzigingen worden gedocumenteerd voor latere analyse.');
+  }
+  const currIds = state.proposal.map(p=>p.id);
+  const add = currIds.filter(x=>!state.baseProposalIds.includes(x));
+  const rem = state.baseProposalIds.filter(x=>!currIds.includes(x));
+  logDW({action:'save', role:state.role, proposalId:state.proposalId, add, remove:rem, note: state.note});
+  saveToLocal();
+  alert('Wijzigingen opgeslagen.');
+});
+
+qsel('#btnSubmit').addEventListener('click', () => {
+    // keep existing bookkeeping
+    state.note = qsel('#note').value || '';
+    if (state.role === 'keuringsarts') {
+      qsel('#propStatus').textContent = 'wachten op bedrijfsarts';
+      logDW({ action: 'submitted_to_ba', proposalId: state.proposalId, by: 'keuringsarts' });
+      saveToLocal();
+    } else {
+      qsel('#propStatus').textContent = 'definitief (bedrijfsarts)';
+      logDW({ action: 'finalized_by_ba', proposalId: state.proposalId });
+      saveToLocal();
+    }
+
+    // 👉 navigate to the matrix screen (NEW TAB). 
+    // If you prefer same tab: use window.location.href instead of window.open.
+    const params = new URLSearchParams({
+      proposalId: state.proposalId || '',
+      bsn: (state.employee && state.employee.bsn) || ''
+    });
+    window.open('matrix_web_standalone.html?' + params.toString(), '_blank'); // open in new tab
+  });
+
+qsel('#roleSel').addEventListener('change', (e)=>{
+  state.role = e.target.value;
+  qsel('#propStatus').textContent = 'concept ('+state.role+')';
+});
+
+qsel('#btnExport').addEventListener('click', ()=>{
+  const blob = new Blob([localStorage.getItem('dwLog')||'[]'], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'dwLog-demo.json'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+qsel('#btnReset').addEventListener('click', ()=>{
+  if(confirm('Alle demo-data verwijderen?')){
+    Object.keys(localStorage).filter(k=>k.startsWith('kp.')||k==='dwLog').forEach(k=>localStorage.removeItem(k));
+    renderLog();
+    alert('Local demo-data gewist.');
+  }
+});
+
+qsel('#btnFind').addEventListener('click', ()=>{
+  const last = qsel('#qLast').value.trim();
+  const dob = qsel('#qDob').value.trim();
+  const bsn = qsel('#qBsn').value.trim();
+  openByIdentity({last,dob,bsn});
+});
+
+qsel('#btnNew').addEventListener('click', ()=>{
+  const emp = state.employee || EMPLOYEE_FIXTURES[0];
+  initNewProposal(emp);
+});
+
+/* ==================== AI upload ==================== */
+const uploadBtn = qsel('#btnUpload');
+const uploadInput = qsel('#fileUpload');
+
+if(uploadBtn && uploadInput){
+  uploadBtn.addEventListener('click', ()=> uploadInput.click());
+  uploadInput.addEventListener('change', handleUploadFile, { passive: true });
+}
+
+async function handleUploadFile(ev){
+  const file = ev.target.files?.[0];
+  if(!file) return;
+
+  setUploadStatus('Bestand wordt geanalyseerd…', 'info');
+
+  try{
+    const text = await file.text();
+    const resp = await fetch('/api/ai/keuringsvoorstel/analyse', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ filename:file.name, content:text })
+    });
+
+    const payload = await resp.json().catch(()=>null);
+    if(!resp.ok || !payload?.ok){
+      throw new Error(payload?.error || ('Serverfout ('+resp.status+')'));
+    }
+
+    applyAgentResult(payload.agent||{}, file.name);
+  }catch(err){
+    console.error('AI upload mislukt', err);
+    alert('Analyse mislukt: '+err.message);
+    setUploadStatus('Analyse mislukt. Probeer het opnieuw met een ander bestand.', 'err');
+  }finally{
+    ev.target.value = '';
+  }
+}
+
+function applyAgentResult(agent={}, filename=''){
+  if(!agent || typeof agent !== 'object'){
+    setUploadStatus('Geen geldig resultaat van de AI-assistent ontvangen.', 'err');
+    return;
+  }
+
+  const activities = Array.isArray(agent.activities) ? agent.activities : [];
+  const warnings = Array.isArray(agent.warnings) ? agent.warnings : [];
+  const summary = agent.summary || '';
+
+  if(!activities.length){
+    setUploadStatus(summary || 'Geen activiteiten herkend in het bestand.', warnings.length ? 'warn' : 'info');
+    if(warnings.length){
+      alert('AI-assistent: '+warnings.join('\n'));
+    }
+    return;
+  }
+
+  state.proposal = activities.map(item => ({
+    id: item.id,
+    source: item.source || 'ai'
+  }));
+  state.baseProposalIds = state.proposal.map(x=>x.id);
+
+  if(agent.employee){
+    const current = state.employee || {};
+    state.employee = {
+      ...current,
+      ...['name','bsn','role'].reduce((acc,key)=>{
+        if(agent.employee[key]) acc[key] = agent.employee[key];
+        return acc;
+      }, {})
+    };
+  }
+
+  if(agent.note){
+    state.note = agent.note;
+    qsel('#note').value = agent.note;
+  }
+
+  state.acc = false;
+  qsel('#accNote').classList.add('hidden');
+  state.proposalId = state.proposalId || uid();
+
+  syncHeader();
+  renderLists();
+  saveToLocal();
+
+  logDW({
+    action:'agent_upload',
+    role:state.role,
+    proposalId:state.proposalId,
+    filename: filename || agent.filename || null,
+    activities: state.proposal.map(p=>p.id),
+    summary
+  });
+
+  const statusTone = warnings.length ? 'warn' : 'ok';
+  const statusText = [summary, warnings.join(' ')].filter(Boolean).join(' ');
+  setUploadStatus(statusText || 'Analyse afgerond.', statusTone);
+
+  if(summary || warnings.length){
+    alert(['AI-analyse afgerond.', summary, warnings.join('\n')].filter(Boolean).join('\n'));
+  }
+}
+
+function openByIdentity({last, dob, bsn}){
+  let emp = null;
+  if(bsn) emp = EMPLOYEE_FIXTURES.find(e=>e.bsn===bsn);
+  else if(last && dob) emp = EMPLOYEE_FIXTURES.find(e=>e.last.toLowerCase()===last.toLowerCase() && e.dob===dob);
+  if(!emp){ alert('Geen werknemer gevonden in demo-set.'); return; }
+  state.employee = emp;
+  const existingKey = Object.keys(localStorage).find(k=>k.startsWith('kp.') && (JSON.parse(localStorage.getItem(k)||'{}').employee?.bsn===emp.bsn));
+  if(existingKey){
+    const rec = JSON.parse(localStorage.getItem(existingKey));
+    state.proposalId = rec.id; state.proposal = rec.proposal||[]; state.baseProposalIds = rec.baseProposalIds||[];
+    state.note = rec.note||''; qsel('#note').value = state.note;
+    qsel('#propStatus').textContent = rec.status||'concept';
+    qsel('#accNote').classList.toggle('hidden', !rec.acc);
+    syncHeader(); renderLists(); renderLog();
+    alert('Bestaand voorstel geopend: '+state.proposalId);
+  }else{
+    initNewProposal(emp);
+  }
+}
+
+/* ==================== Boot ==================== */
+(function boot(){
+  // URL params: ?bsn=...&role=... to deep-link from takenmodule
+  const params = new URLSearchParams(location.search);
+  const role = params.get('role'); if(role) { state.role = role; qsel('#roleSel').value = role; }
+  const bsn = params.get('bsn');
+  if(bsn){
+    openByIdentity({bsn})
+  }else{
+    initNewProposal(EMPLOYEE_FIXTURES[0]);
+  }
+  renderLog();
+})();
+</script>
+</body>
+</html>

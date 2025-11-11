@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Groepsrapport PMO – Werkgever & Populatiebreed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --white:#ffffff; --brand:#ec641a; --teal:#79c6c0; --sky:#85cee4; --slate:#686c7c; --graphite:#4c505a; --steel:#69a1b1; --pale:#f7f7f7;
+    }
+    html,body{height:100%;}
+    body{margin:0;font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; background:var(--pale); color:var(--graphite);} 
+    .container{max-width:1200px;margin:0 auto;padding:16px;}
+    header{position:sticky;top:0;backdrop-filter:saturate(1.2) blur(6px); background:rgba(255,255,255,.9); border-bottom:1px solid #eee; z-index:20}
+    h1{margin:0; padding:12px 0; font-weight:700; color:var(--brand)}
+    .card{background:#fff;border:1px solid #e6e8ec;border-radius:16px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+    .grid{display:grid; gap:16px}
+    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .btn{appearance:none; border:1px solid var(--brand); color:var(--brand); background:#fff; padding:10px 14px; border-radius:12px; font-weight:600; cursor:pointer}
+    .btn.primary{background:var(--brand); color:#fff}
+    .btn:disabled{opacity:.6; cursor:default}
+    select,input[type="date"],textarea{border:1px solid #d6d9df; border-radius:10px; padding:10px 12px; font:inherit; width:100%}
+    label{font-size:.9rem; font-weight:600}
+    textarea{min-height:110px}
+    .muted{color:#6b7280; font-size:.85rem}
+    .title{font-size:1.15rem; font-weight:700}
+    .subtitle{font-size:.85rem; color:var(--steel)}
+    .section-title{display:flex; align-items:baseline; justify-content:space-between}
+    .hidden{display:none}
+    .chip{padding:6px 10px; border:1px solid #ccd; border-radius:999px; font-size:.85rem; background:#fff; cursor:pointer}
+    .chip.active{background:var(--brand); color:#fff; border-color:var(--brand)}
+    .notice{border:1px dashed #cfd4dc; color:#6b7280; padding:14px; border-radius:12px; text-align:center}
+    .divider{height:1px; background:#eee}
+    .kpi{display:flex; gap:12px; align-items:center}
+    .kpi .dot{width:10px; height:10px; border-radius:50%; background:var(--brand)}
+    footer{color:#6b7280; font-size:.8rem;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container row" style="justify-content:space-between;">
+      <div>
+        <h1>Groepsrapport PMO</h1>
+        <div class="muted">Conceptscherm – elementen: Visus, Gewicht (BMI), Bloeddruk, Cholesterol, Glucose, Roken, Mentale & Fysieke klachten, Trends.</div>
+      </div>
+      <div class="row">
+        <label for="roleSelect">Rol</label>
+        <select id="roleSelect">
+          <option value="werkgever">Werkgever</option>
+          <option value="arts">Keuringsarts</option>
+          <option value="admin">Beheerder</option>
+        </select>
+        <label class="row muted" id="scopeAllWrap"><input type="checkbox" id="scopeAll"/> Populatiebreed</label>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Filters -->
+    <section class="card grid grid-3" id="filters">
+      <!-- Werkgever & scope -->
+      <div>
+        <label for="werkgeverSelect">Werkgever</label>
+        <select id="werkgeverSelect"></select>
+        <div class="muted" id="scopeHint" style="margin-top:6px"></div>
+      </div>
+      <!-- Opleiding & Branche -->
+      <div>
+        <div class="grid" style="gap:8px">
+          <div>
+            <label for="opleidingSelect">Opleidingsniveau</label>
+            <select id="opleidingSelect">
+              <option value="">Alle</option>
+              <option>VMBO</option>
+              <option>MBO</option>
+              <option>HBO</option>
+              <option>WO</option>
+              <option>Overig</option>
+            </select>
+          </div>
+          <div>
+            <label for="brancheSelect">Branche</label>
+            <select id="brancheSelect"><option value="">Alle</option></select>
+          </div>
+        </div>
+      </div>
+      <!-- Periode & Cohort -->
+      <div>
+        <label>Periode</label>
+        <div class="row" style="margin:6px 0 8px">
+          <button class="chip" data-periode="maand">maand</button>
+          <button class="chip" data-periode="kwartaal">kwartaal</button>
+          <button class="chip" data-periode="halfjaar">halfjaar</button>
+          <button class="chip active" data-periode="jaar">jaar</button>
+          <button class="chip" data-periode="eigen">eigen</button>
+        </div>
+        <div id="customRange" class="row hidden">
+          <input type="date" id="dateStart"> tot <input type="date" id="dateEnd">
+        </div>
+        <label class="row muted" style="margin-top:6px"><input type="checkbox" id="cohortToggle"> Longitudinaal cohort (vaste deelnemers obv baseline)</label>
+      </div>
+    </section>
+
+    <div id="privacyMsg" class="muted" style="margin:10px 2px"></div>
+
+    <!-- Rapportsecties -->
+    <section id="reportContent" class="grid grid-2">
+      <!-- Visus -->
+      <div class="card">
+        <div class="section-title"><div class="title">1. Visus – Veraf & dichtbij</div><div class="subtitle">Niet werkgerelateerd</div></div>
+        <div class="grid grid-2">
+          <div>
+            <canvas id="chartVisusVeraf" height="220"></canvas>
+          </div>
+          <div>
+            <canvas id="chartVisusDichtbij" height="220"></canvas>
+          </div>
+        </div>
+        <label style="margin-top:8px; display:block">Bevindingen / Conclusies</label>
+        <textarea id="txtVisus" placeholder="Beschrijf hier de bevindingen t.a.v. visus. Bijvoorbeeld: percentage onvoldoende en eventuele verwijzingen."></textarea>
+      </div>
+
+      <!-- BMI -->
+      <div class="card">
+        <div class="section-title"><div class="title">1. Gewicht – BMI</div><div class="subtitle">Niet werkgerelateerd</div></div>
+        <canvas id="chartBMI" height="220"></canvas>
+        <label style="margin-top:8px; display:block">Bevindingen / Conclusies</label>
+        <textarea id="txtBMI"></textarea>
+      </div>
+
+      <!-- Bloeddruk -->
+      <div class="card">
+        <div class="section-title"><div class="title">1. Bloeddruk</div><div class="subtitle">Niet werkgerelateerd</div></div>
+        <canvas id="chartBloeddruk" height="220"></canvas>
+        <label style="margin-top:8px; display:block">Bevindingen / Conclusies</label>
+        <textarea id="txtBloeddruk" placeholder="Beschrijf hier de bevindingen t.a.v. bloeddruk (optimaal / verhoogd)."></textarea>
+      </div>
+
+      <!-- Cholesterol -->
+      <div class="card">
+        <div class="section-title"><div class="title">1. Cholesterol</div><div class="subtitle">Niet werkgerelateerd</div></div>
+        <canvas id="chartChol" height="220"></canvas>
+        <label style="margin-top:8px; display:block">Bevindingen / Conclusies</label>
+        <textarea id="txtChol"></textarea>
+      </div>
+
+      <!-- Glucose -->
+      <div class="card">
+        <div class="section-title"><div class="title">1. Glucose / Bloedsuiker</div><div class="subtitle">Niet werkgerelateerd</div></div>
+        <canvas id="chartGluc" height="220"></canvas>
+        <label style="margin-top:8px; display:block">Bevindingen / Conclusies</label>
+        <textarea id="txtGluc"></textarea>
+      </div>
+
+      <!-- Roken -->
+      <div class="card">
+        <div class="section-title"><div class="title">1. Roken</div><div class="subtitle">Leefstijl</div></div>
+        <canvas id="chartRoken" height="220"></canvas>
+        <label style="margin-top:8px; display:block">Bevindingen / Conclusies</label>
+        <textarea id="txtRoken"></textarea>
+      </div>
+
+      <!-- Mentale klachten -->
+      <div class="card">
+        <div class="section-title"><div class="title">2. Mentale klachten</div><div class="subtitle">Mogelijk werkgerelateerd</div></div>
+        <canvas id="chartMentale" height="260"></canvas>
+        <label style="margin-top:8px; display:block">Bevindingen / Conclusies</label>
+        <textarea id="txtMentale" placeholder="Beschrijf hier opvallende mentale klachten en mogelijke oorzaken/aanbevelingen (werkdruk, zorgverlof, flexwerken)."></textarea>
+      </div>
+
+      <!-- Fysieke klachten -->
+      <div class="card">
+        <div class="section-title"><div class="title">2. Fysieke klachten</div><div class="subtitle">Mogelijk werkgerelateerd</div></div>
+        <canvas id="chartFysieke" height="260"></canvas>
+        <label style="margin-top:8px; display:block">Bevindingen / Conclusies</label>
+        <textarea id="txtFysieke" placeholder="Beschrijf hier fysieke klachten en mogelijke relatie met functie/werkplek, incl. advies (hulpmiddelen, werkplekonderzoek, tiltrainingen)."></textarea>
+      </div>
+
+      <!-- Trends -->
+      <div class="card" style="grid-column:1/-1">
+        <div class="section-title"><div class="title">Longitudinale trend</div><div class="subtitle">% Overgewicht en % Rokers per kwartaal (cohortmodus fixeert deelnemers op baseline)</div></div>
+        <canvas id="chartTrends" height="260"></canvas>
+        <label style="margin-top:8px; display:block">Bevindingen / Conclusies</label>
+        <textarea id="txtTrends" placeholder="Beschrijf hier de trendanalyse en eventuele hypotheses voor vervolgonderzoek (longitudinale studie)."></textarea>
+      </div>
+
+      <!-- Samenvatting/advies -->
+      <div class="card" style="grid-column:1/-1">
+        <div class="title">Algemene beschouwing & advies</div>
+        <textarea id="txtAdvice" placeholder="Vrije tekst – samenvatting van belangrijkste uitkomsten en concrete aanbevelingen voor werkgever/personeel."></textarea>
+      </div>
+
+      <!-- Aandachtspunten -->
+      <div class="card" style="grid-column:1/-1">
+        <div class="title">Aandachtspunten</div>
+        <textarea id="txtAandacht" placeholder="Opsomming van aandachtspunten (rookbeleid, voeding, werkplekonderzoek, coaching, etc.)"></textarea>
+      </div>
+    </section>
+
+    <div class="row" style="margin-top:18px">
+      <button class="btn primary" id="btnDownloadPDF">Download conceptrapport (PDF)</button>
+      <a class="btn" id="linkCSV" download="groepsrapport-data.csv">Download data (CSV)</a>
+    </div>
+
+    <footer style="margin:18px 0">
+      NB: Resultaten zijn geaggregeerd uit individuele keuringsuitslagen. Populatiebreed rapporteren is alleen toegestaan voor keuringsarts en applicatiebeheerder. We tonen geen resultaten onder de minimale groepsgrootte.
+    </footer>
+  </main>
+
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <script>
+  // ---------- Types (commentaar) ----------
+  // KeuringUitslag = { persoonId, werkgeverId, werkgeverNaam, afdeling, branche, opleiding, geslacht, leeftijd, datum, metrics: { visusVeraf, visusDichtbij, bmi, systolic, diastolic, cholesterol, glucose, roker, mentale:{..}, fysieke:{..} } }
+
+  const COLORS = { brand:'#ec641a', teal:'#79c6c0', sky:'#85cee4', slate:'#686c7c', graphite:'#4c505a', steel:'#69a1b1', pale:'#f7f7f7' };
+  const MIN_GROEPSGROOTTE = 10;
+
+  // ---------- Mock data (vervang door API in productie) ----------
+  function makeMockData(){
+    const werkgevers = [ {id:'W1', naam:'Eigen Haard', branche:'Woningcorporatie'}, {id:'W2', naam:'Tech NV', branche:'IT'}, {id:'W3', naam:'Zorgpunt', branche:'Zorg'} ];
+    const opleidingen = ['VMBO','MBO','HBO','WO','Overig'];
+    const afdelingen = ['Wonen','Vastgoedbeheer','Bedrijfsvoering','Zakelijke Markten','Bestuurszaken/Overige/Ontwikkeling'];
+    const out=[]; const start=new Date(); start.setFullYear(start.getFullYear()-3);
+    for(let i=0;i<600;i++){
+      const w=werkgevers[Math.floor(Math.random()*werkgevers.length)];
+      const d=new Date(start.getTime()+Math.random()*1000*60*60*24*365*3);
+      const leeftijd=22+Math.floor(Math.random()*33);
+      const bmi=+(18+Math.random()*17).toFixed(1);
+      const systolic=100+Math.floor(Math.random()*60);
+      const diastolic=60+Math.floor(Math.random()*40);
+      const cholesterol=+(3.5+Math.random()*4).toFixed(1);
+      const glucose=+(4.5+Math.random()*4.5).toFixed(1);
+      out.push({
+        persoonId:`P${i}`,
+        werkgeverId:w.id, werkgeverNaam:w.naam, afdeling:afdelingen[Math.floor(Math.random()*afdelingen.length)],
+        branche:w.branche, opleiding:opleidingen[Math.floor(Math.random()*opleidingen.length)], geslacht:Math.random()>0.5?'M':'V', leeftijd,
+        datum:d.toISOString(),
+        metrics:{
+          visusVeraf:+(0.6+Math.random()*0.8).toFixed(1), visusDichtbij:+(0.6+Math.random()*0.8).toFixed(1),
+          bmi, systolic, diastolic, cholesterol, glucose, roker: Math.random()<0.18,
+          mentale:{ moe:Math.random()<0.38, concentratie:Math.random()<0.16, geheugen:Math.random()<0.14, hoofdpijn:Math.random()<0.16, nerveus:Math.random()<0.10, onderrug:Math.random()<0.22 },
+          fysieke:{ nekSchouder:Math.random()<0.28, rugBovenMidden:Math.random()<0.20, onderrug:Math.random()<0.30, knie:Math.random()<0.18, heupBovenbeen:Math.random()<0.14, handVinger:Math.random()<0.10, armElleboogPols:Math.random()<0.12 }
+        }
+      })
+    }
+    return out;
+  }
+  const DATA_ALL = makeMockData();
+
+  // ---------- Helpers ----------
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+  const pct = (n,d)=> d>0 ? Math.round((n/d)*100) : 0;
+  const inRange = (iso, start, end)=>{ const t=new Date(iso).getTime(); return t>=start.getTime() && t<=end.getTime(); };
+
+  function visusCategorie(v){ if(v===undefined) return 'Onbekend'; if(v>=1.0) return 'Goed (≥1.0)'; if(v>=0.8) return 'Voldoende (0.8–1.0)'; return 'Onvoldoende (<0.8)'; }
+  function bmiCategorie(b){ if(b===undefined) return 'Onbekend'; if(b<25) return 'Normaal (<25)'; if(b<30) return 'Overgewicht (25–30)'; return 'Obesitas (≥30)'; }
+  function bloeddrukCategorie(sys,dia){ if(sys==null||dia==null) return 'Onbekend'; if(dia<=80 && sys<=120) return 'Optimaal (~≤80/≤120)'; if(dia>=90||sys>=160) return 'Verhoogd (≥90/≥160)'; return 'Grens/Normaal'; }
+  function cholesterolCategorie(x){ if(x==null) return 'Onbekend'; if(x<5.0) return 'Ideaal (<5.0)'; if(x<=6.5) return 'Verhoogd (5.0–6.5)'; return 'Te hoog (>6.5)'; }
+  function glucoseCategorie(x){ if(x==null) return 'Onbekend'; if(x<=7) return 'Gezond (≤7)'; if(x<=8) return 'Verhoogd (7–8)'; return 'Te hoog (>8)'; }
+
+  // cohort baseline: deelnemers in eerste helft van periode
+  function bepaalCohort(records, start, end){ const s=new Set(); records.forEach(r=>{ if(inRange(r.datum,start,end)) s.add(r.persoonId); }); return s; }
+
+  // ---------- State ----------
+  let role = 'werkgever';
+  let scopeAll = false;
+  let periodeType = 'jaar';
+  let startDate = (()=>{ const d=new Date(); d.setFullYear(d.getFullYear()-1); return d; })();
+  let endDate = new Date();
+  let cohortAan = false;
+  let werkgeverId = null; // kiest init later
+  let opleiding = '';
+  let branche = '';
+
+  function initFilters(){
+    // Werkgevers vullen
+    const map = new Map();
+    DATA_ALL.forEach(r=> map.set(r.werkgeverId, r.werkgeverNaam||r.werkgeverId));
+    const werkgevers = Array.from(map.entries()).map(([id,naam])=>({id,naam}));
+    const sel = $('#werkgeverSelect');
+    sel.innerHTML = werkgevers.map(w=>`<option value="${w.id}">${w.naam}</option>`).join('');
+    werkgeverId = werkgevers[0]?.id || 'W1';
+
+    // Brancheopties
+    const branches = [...new Set(DATA_ALL.map(d=> d.branche).filter(Boolean))];
+    $('#brancheSelect').innerHTML = ['<option value="">Alle</option>', ...branches.map(b=>`<option>${b}</option>`)].join('');
+
+    // Periode chips
+    $$('.chip').forEach(btn=> btn.addEventListener('click',()=>{
+      $$('.chip').forEach(b=> b.classList.remove('active'));
+      btn.classList.add('active');
+      periodeType = btn.dataset.periode;
+      $('#customRange').classList.toggle('hidden', periodeType!=='eigen');
+      if(periodeType!=='eigen'){ // set start & end relative to now
+        const now = new Date(); endDate = new Date(now);
+        if(periodeType==='maand'){ startDate = new Date(now); startDate.setMonth(now.getMonth()-1); }
+        else if(periodeType==='kwartaal'){ startDate = new Date(now); startDate.setMonth(now.getMonth()-3); }
+        else if(periodeType==='halfjaar'){ startDate = new Date(now); startDate.setMonth(now.getMonth()-6); }
+        else { startDate = new Date(now); startDate.setFullYear(now.getFullYear()-1); }
+      }
+      renderAll();
+    }));
+
+    // Role & scope
+    $('#roleSelect').addEventListener('change', (e)=>{ role = e.target.value; $('#scopeAllWrap').classList.toggle('hidden', !(role==='arts'||role==='admin')); renderAll(); });
+    $('#scopeAll').addEventListener('change', (e)=>{ scopeAll = e.target.checked; renderAll(); });
+    $('#scopeAllWrap').classList.add('hidden');
+
+    // Selects
+    sel.addEventListener('change',(e)=>{ werkgeverId = e.target.value; renderAll(); });
+    $('#opleidingSelect').addEventListener('change',(e)=>{ opleiding = e.target.value; renderAll(); });
+    $('#brancheSelect').addEventListener('change',(e)=>{ branche = e.target.value; renderAll(); });
+
+    // Custom range
+    const iso = (d)=> d.toISOString().slice(0,10);
+    $('#dateStart').value = iso(startDate);
+    $('#dateEnd').value = iso(endDate);
+    $('#dateStart').addEventListener('change',(e)=>{ startDate = new Date(e.target.value); renderAll(); });
+    $('#dateEnd').addEventListener('change',(e)=>{ endDate = new Date(e.target.value); renderAll(); });
+
+    // Cohort
+    $('#cohortToggle').addEventListener('change', (e)=>{ cohortAan = e.target.checked; renderAll(); });
+
+    // Downloaders
+    $('#btnDownloadPDF').addEventListener('click', downloadPDF);
+
+    renderAll();
+  }
+
+  function currentFiltered(){
+    // Periode calc
+    let s = startDate; let e = endDate;
+    if(periodeType!=='eigen'){
+      const now = new Date(); e = new Date(now);
+      if(periodeType==='maand'){ s=new Date(now); s.setMonth(now.getMonth()-1); }
+      else if(periodeType==='kwartaal'){ s=new Date(now); s.setMonth(now.getMonth()-3); }
+      else if(periodeType==='halfjaar'){ s=new Date(now); s.setMonth(now.getMonth()-6); }
+      else { s=new Date(now); s.setFullYear(now.getFullYear()-1); }
+    }
+    const cohortStart = new Date(s);
+    const cohortEnd = new Date(s.getTime() + (e.getTime()-s.getTime())/2);
+    const cohortSet = cohortAan ? bepaalCohort(DATA_ALL, cohortStart, cohortEnd) : null;
+
+    return DATA_ALL.filter(r=>{
+      if(!(role==='arts'||role==='admin') || !scopeAll){ if(r.werkgeverId!==werkgeverId) return false; }
+      if(opleiding && r.opleiding!==opleiding) return false;
+      if(branche && r.branche!==branche) return false;
+      if(!inRange(r.datum, s, e)) return false;
+      if(cohortSet && !cohortSet.has(r.persoonId)) return false;
+      return true;
+    });
+  }
+
+  // ---------- Aggregaties ----------
+  function aggCounts(list, keyFn){
+    const m=new Map(); list.forEach(r=>{ const k=keyFn(r); m.set(k,(m.get(k)||0)+1); });
+    return Array.from(m.entries()).map(([name,value])=>({name, value}));
+  }
+
+  // ---------- Charts ----------
+  let charts={};
+  function ensureChart(id, cfg){ if(charts[id]){ charts[id].destroy(); } charts[id] = new Chart($('#'+id), cfg); }
+
+  function pieCfg(labels, values){
+    return { type:'pie', data:{ labels, datasets:[{ data:values, backgroundColor:[COLORS.brand, COLORS.teal, COLORS.sky, COLORS.steel, COLORS.slate] }] }, options:{ plugins:{ legend:{position:'bottom'} } } };
+  }
+  function barCfg(labels, values){
+    return { type:'bar', data:{ labels, datasets:[{ label:'Aantal', data:values, backgroundColor:COLORS.brand }] }, options:{ responsive:true, plugins:{ legend:{display:false}, tooltip:{enabled:true} }, scales:{ x:{ ticks:{ maxRotation:30, autoSkip:false } }, y:{ beginAtZero:true, precision:0 } } } };
+  }
+  function lineCfg(labels, serie1, serie2){
+    return { type:'line', data:{ labels, datasets:[{label:'Overgewicht (%)', data:serie1, borderColor:COLORS.brand, tension:.3}, {label:'Rokers (%)', data:serie2, borderColor:COLORS.teal, tension:.3}] }, options:{ responsive:true, plugins:{ legend:{position:'bottom'} }, scales:{ y:{ beginAtZero:true, ticks:{ callback:(v)=> v+'%' } } } } };
+  }
+
+  // ---------- Auto-samenvatting helper ----------
+  const sumLine = (label,pos,total)=> `${label}: ${pos} van ${total} (${pct(pos,total)}%).`;
+
+  function renderAll(){
+    const roleVal = role;
+    $('#scopeAllWrap').classList.toggle('hidden', !(roleVal==='arts'||roleVal==='admin'));
+    $('#scopeHint').textContent = (roleVal==='arts'||roleVal==='admin') && scopeAll ? 'Populatiebreed actief: resultaten over alle werkgevers.' : '';
+
+    const rows = currentFiltered();
+    const n = rows.length;
+    const privacyBlok = n < MIN_GROEPSGROOTTE;
+
+    $('#privacyMsg').textContent = privacyBlok ? `Privacybescherming actief: groepsgrootte < ${MIN_GROEPSGROOTTE}. Toon pas statistiek bij voldoende omvang.` : `Resultaten gebaseerd op ${n} individuele keuringsuitslagen in de geselecteerde scope en periode.`;
+
+    // Update CSV link
+    updateCSV(rows);
+
+    // Als privacy, toon plaatsvervangers
+    if(privacyBlok){
+      // leegmaken
+      Object.values(charts).forEach(ch=> ch && ch.destroy()); charts={};
+      document.querySelectorAll('canvas').forEach(c=>{ const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); });
+      return;
+    }
+
+    // VISUS
+    const visusVeraf = aggCounts(rows, r=> visusCategorie(r.metrics.visusVeraf));
+    const visusDichtbij = aggCounts(rows, r=> visusCategorie(r.metrics.visusDichtbij));
+    ensureChart('chartVisusVeraf', pieCfg(visusVeraf.map(x=>x.name), visusVeraf.map(x=>x.value)));
+    ensureChart('chartVisusDichtbij', pieCfg(visusDichtbij.map(x=>x.name), visusDichtbij.map(x=>x.value)));
+
+    // BMI
+    const bmiAgg = aggCounts(rows, r=> bmiCategorie(r.metrics.bmi));
+    ensureChart('chartBMI', pieCfg(bmiAgg.map(x=>x.name), bmiAgg.map(x=>x.value)));
+    const over = rows.filter(r=> (r.metrics.bmi||0)>=25).length;
+    const ob = rows.filter(r=> (r.metrics.bmi||0)>=30).length;
+    $('#txtBMI').value = `${sumLine('Overgewicht (≥25)', over, n)} ${sumLine('Obesitas (≥30)', ob, n)} Aanbevolen: stimuleren van bewegen/voeding en inzetten van leefstijlinterventies.`;
+
+    // Bloeddruk
+    const bdAgg = aggCounts(rows, r=> bloeddrukCategorie(r.metrics.systolic, r.metrics.diastolic));
+    ensureChart('chartBloeddruk', pieCfg(bdAgg.map(x=>x.name), bdAgg.map(x=>x.value)));
+
+    // Cholesterol
+    const cholAgg = aggCounts(rows, r=> cholesterolCategorie(r.metrics.cholesterol));
+    ensureChart('chartChol', pieCfg(cholAgg.map(x=>x.name), cholAgg.map(x=>x.value)));
+    const cholHoog = rows.filter(r=> (r.metrics.cholesterol||0) > 6.5).length;
+    $('#txtChol').value = `${sumLine('Te hoog cholesterol (>6.5 mmol/L)', cholHoog, n)} Advies: voedingsadvies, controle huisarts bij herhaalde verhoging.`;
+
+    // Glucose
+    const glucAgg = aggCounts(rows, r=> glucoseCategorie(r.metrics.glucose));
+    ensureChart('chartGluc', pieCfg(glucAgg.map(x=>x.name), glucAgg.map(x=>x.value)));
+    const glucHoog = rows.filter(r=> (r.metrics.glucose||0) > 8).length;
+    $('#txtGluc').value = `${sumLine('Te hoge glucose (>8 mmol/L)', glucHoog, n)} Advies: leefstijl/controle huisarts.`;
+
+    // Roken
+    const rokers = rows.filter(r=> r.metrics.roker).length; const niet = n - rokers;
+    ensureChart('chartRoken', pieCfg(['Rokers','Niet-rokers'], [rokers, niet]));
+    $('#txtRoken').value = `${sumLine('Rokers', rokers, n)} Advies: actief stoppen-met-roken beleid.`;
+
+    // Mentale klachten
+    const mentaleKeys = ['moe','concentratie','geheugen','hoofdpijn','nerveus','onderrug'];
+    const mentaleLabels = ['Vermoeidheid','Moeite met concentreren','Geheugenklachten','Zeurende hoofdpijn','Nerveuze klachten','Pijn onderrug (indicator spanning)'];
+    const mentaleCounts = mentaleKeys.map(k=> rows.reduce((acc,r)=> acc + (r.metrics.mentale?.[k] ? 1:0), 0));
+    ensureChart('chartMentale', barCfg(mentaleLabels, mentaleCounts));
+
+    // Fysieke klachten
+    const fysKeys = ['nekSchouder','rugBovenMidden','onderrug','knie','heupBovenbeen','handVinger','armElleboogPols'];
+    const fysLabels = ['Nek/Schouder','Rug boven/midden','Onderrug','Knie','Heup/Bovenbeen','Hand/Vinger','Arm/Elleboog/Pols'];
+    const fysCounts = fysKeys.map(k=> rows.reduce((acc,r)=> acc + (r.metrics.fysieke?.[k] ? 1:0), 0));
+    ensureChart('chartFysieke', barCfg(fysLabels, fysCounts));
+
+    // Trends per kwartaal
+    const grp = new Map();
+    rows.forEach(r=>{ const dt=new Date(r.datum); const key = `${dt.getFullYear()}-Q${Math.floor(dt.getMonth()/3)+1}`; const g = grp.get(key)||{count:0, overweight:0, rokers:0}; g.count++; if((r.metrics.bmi||0)>=25) g.overweight++; if(r.metrics.roker) g.rokers++; grp.set(key,g); });
+    const sorted = Array.from(grp.entries()).sort(([a],[b])=> a.localeCompare(b));
+    const labels = sorted.map(x=>x[0]);
+    const overweight = sorted.map(x=> pct(x[1].overweight, x[1].count));
+    const rokersPct = sorted.map(x=> pct(x[1].rokers, x[1].count));
+    ensureChart('chartTrends', lineCfg(labels, overweight, rokersPct));
+  }
+
+  function updateCSV(rows){
+    const n = rows.length; if(n<MIN_GROEPSGROOTTE){ $('#linkCSV').setAttribute('href', '#'); return; }
+    const lines = [];
+    lines.push('metric,category,count');
+    function pushAgg(name, arr){ arr.forEach(a=> lines.push(`${name},${a.name},${a.value}`)); }
+    pushAgg('VisusVeraf', aggCounts(rows, r=> visusCategorie(r.metrics.visusVeraf)));
+    pushAgg('VisusDichtbij', aggCounts(rows, r=> visusCategorie(r.metrics.visusDichtbij)));
+    pushAgg('BMI', aggCounts(rows, r=> bmiCategorie(r.metrics.bmi)));
+    pushAgg('Bloeddruk', aggCounts(rows, r=> bloeddrukCategorie(r.metrics.systolic, r.metrics.diastolic)));
+    pushAgg('Cholesterol', aggCounts(rows, r=> cholesterolCategorie(r.metrics.cholesterol)));
+    pushAgg('Glucose', aggCounts(rows, r=> glucoseCategorie(r.metrics.glucose)));
+    pushAgg('Roken', [{name:'Rokers', value: rows.filter(r=> r.metrics.roker).length}, {name:'Niet-rokers', value: rows.filter(r=> !r.metrics.roker).length}]);
+    const mentaleKeys = ['moe','concentratie','geheugen','hoofdpijn','nerveus','onderrug'];
+    const mentaleLabels = ['Vermoeidheid','Moeite met concentreren','Geheugenklachten','Zeurende hoofdpijn','Nerveuze klachten','Pijn onderrug'];
+    lines.push(...mentaleKeys.map((k,i)=> `Mentale,${mentaleLabels[i]},${rows.reduce((acc,r)=> acc+(r.metrics.mentale?.[k]?1:0),0)}`));
+    const fysKeys = ['nekSchouder','rugBovenMidden','onderrug','knie','heupBovenbeen','handVinger','armElleboogPols'];
+    const fysLabels = ['Nek/Schouder','Rug boven/midden','Onderrug','Knie','Heup/Bovenbeen','Hand/Vinger','Arm/Elleboog/Pols'];
+    lines.push(...fysKeys.map((k,i)=> `Fysieke,${fysLabels[i]},${rows.reduce((acc,r)=> acc+(r.metrics.fysieke?.[k]?1:0),0)}`));
+    const blob = new Blob([lines.join('
+')], {type:'text/csv'});
+    $('#linkCSV').href = URL.createObjectURL(blob);
+  }
+
+  async function downloadPDF(){
+    const { jsPDF } = window.jspdf;
+    const node = $('#reportContent');
+    const a4 = { w:210, h:297 };
+    const canvas = await html2canvas(node, {scale:2, useCORS:true, background:'#ffffff'});
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p','mm','a4');
+    const imgProps = { w: a4.w-20, h: (canvas.height/canvas.width)*(a4.w-20) };
+    let y=10; let page=1;
+    pdf.setProperties({ title:'Groepsrapport PMO – Concept' });
+    const addPageHeader=()=>{ pdf.setFontSize(12); pdf.setTextColor(0); pdf.text('Groepsrapport PMO – Concept', 10, 8); pdf.setDrawColor(230); pdf.line(10,9,200,9); };
+    addPageHeader();
+    // Slice image in vertical pieces if needed
+    const pageCanvas = document.createElement('canvas'); const ctx = pageCanvas.getContext('2d');
+    const ratio = (a4.w-20) / canvas.width; const pageHeightPx = (a4.h-20)/ratio; // pixels per page after scaling
+    for(let offset=0; offset<canvas.height; offset += pageHeightPx){
+      const sliceH = Math.min(pageHeightPx, canvas.height - offset);
+      pageCanvas.width = canvas.width; pageCanvas.height = sliceH;
+      ctx.drawImage(canvas, 0, offset, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+      const sliceData = pageCanvas.toDataURL('image/png');
+      pdf.addImage(sliceData, 'PNG', 10, y, imgProps.w, (sliceH/canvas.width)*imgProps.w);
+      if(offset + pageHeightPx < canvas.height){ pdf.addPage(); addPageHeader(); }
+    }
+    pdf.save('groepsrapport-concept.pdf');
+  }
+
+  // boot
+  window.addEventListener('DOMContentLoaded', initFilters);
+  </script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Individueel PMO-rapport – Concept</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.4.0/docx.umd.min.js"></script>
+  <style>
+    :root { --brand:#ec641a; --teal:#79c6c0; --sky:#85cee4; --slate:#686c7c; --graphite:#4c505a; --steel:#69a1b1; --pale:#f7f7f7; --ok:#10b981; --warn:#f59e0b; --err:#ef4444; }
+    *{box-sizing:border-box} body{margin:0;background:var(--pale);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--graphite)}
+    header{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.1) blur(6px);border-bottom:1px solid #eee;z-index:20}
+    .container{max-width:1100px;margin:0 auto;padding:14px} h1{margin:0;color:var(--brand)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap} .grid{display:grid;gap:14px}
+    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))} .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .card{background:#fff;border:1px solid #e6e8ec;border-radius:16px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+    .title{font-weight:700;font-size:1.1rem} .muted{color:#6b7280;font-size:.88rem} label{font-weight:600;font-size:.9rem}
+    input,select,textarea{width:100%;padding:10px 12px;border:1px solid #d6d9df;border-radius:10px;font:inherit} textarea{min-height:110px}
+    .btn{border:1px solid var(--brand);color:var(--brand);background:#fff;padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer}
+    .btn.primary{background:var(--brand);color:#fff} .chip{padding:4px 10px;border:1px solid #ccd;border-radius:999px;background:#fff;cursor:pointer;font-size:.85rem}
+    .chip.on{background:var(--brand);color:#fff;border-color:var(--brand)} .flag{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border-radius:999px;font-size:.85rem;border:1px solid #eee;background:#fff}
+    .flag.ok{border-color:#d1fae5;color:#065f46;background:#ecfdf5} .flag.warn{border-color:#fef3c7;color:#92400e;background:#fffbeb} .flag.err{border-color:#fee2e2;color:#991b1b;background:#fef2f2}
+    .pill{padding:2px 8px;border-radius:999px;background:#f1f5f9;font-size:.8rem} .section-title{display:flex;justify-content:space-between;align-items:baseline}
+    .savehint{font-size:.8rem;color:#6b7280} .divider{height:1px;background:#eee} .table{border-collapse:collapse;width:100%;font-size:.9rem}
+    .table th,.table td{border-bottom:1px solid #eee;padding:10px 8px;text-align:left} .badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#f3f4f6;font-size:.8rem}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container row" style="justify-content:space-between">
+      <div><h1>Individueel PMO-rapport</h1><div class="muted">Conceptscherm – sjabloon + flags</div></div>
+      <div class="row"><label for="role">Rol</label><select id="role"><option value="arts">Keuringsarts</option><option value="werknemer">Werknemer</option></select><button class="btn" id="btnSaveLocal">Opslaan (lokaal)</button></div>
+    </div>
+  </header>
+  <main class="container grid">
+    <section class="card grid grid-3">
+      <div><label>Naam werknemer</label><input id="inpNaam"/></div>
+      <div><label>Geboortedatum</label><input id="inpDOB" type="date"/></div>
+      <div><label>BSN (optioneel)</label><input id="inpBSN"/></div>
+      <div><label>Werkgever</label><input id="inpWerkgever"/></div>
+      <div><label>Keuringsdatum</label><input id="inpDatum" type="date"/></div>
+      <div><label>Soort medische test</label><select id="inpMedisch"><option>Basisset PMO</option><option>Uitgebreid PMO</option><option>Functiegericht</option></select></div>
+      <div><label>Soort verdiepende onderzoek</label><input id="inpVerdiepend"/></div>
+      <div style="grid-column:1/-1" class="savehint">Veldopzet conform sjabloon.</div>
+    </section>
+    <section class="card">
+      <div class="section-title"><div class="title">Kernuitslagen & automatische flags</div><div class="muted">Prefill voor <span class="pill">Keuringsarts</span></div></div>
+      <div class="grid grid-3" style="margin-top:6px">
+        <div><label>BMI</label><div class="row"><input id="inpBMI" type="number" step="0.1"/><span id="labBMI" class="pill"></span></div></div>
+        <div><label>Bloeddruk (SYS/DIA)</label><div class="row"><input id="inpSYS" type="number" step="1" style="max-width:120px"/>/<input id="inpDIA" type="number" step="1" style="max-width:120px"/><span id="labBD" class="pill"></span></div></div>
+        <div><label>Cholesterol</label><div class="row"><input id="inpChol" type="number" step="0.1"/><span id="labChol" class="pill"></span></div></div>
+        <div><label>Glucose</label><div class="row"><input id="inpGluc" type="number" step="0.1"/><span id="labGluc" class="pill"></span></div></div>
+        <div><label>Roken</label><select id="inpRoker"><option value="nee">Nee</option><option value="ja">Ja</option></select></div>
+        <div><label>Visus (veraf/dichtbij)</label><div class="row"><input id="inpVisusV" type="number" step="0.1" style="max-width:120px"/>/<input id="inpVisusD" type="number" step="0.1" style="max-width:120px"/><span id="labVisus" class="pill"></span></div></div>
+      </div>
+      <div class="divider" style="margin:10px 0"></div><div class="row" id="flagContainer"></div>
+      <div class="grid grid-2" style="margin-top:12px">
+        <div class="card"><div class="title">Radar risicoprofiel</div><canvas id="chartRadar" height="260"></canvas></div>
+        <div class="card"><div class="title">Verdeling classificaties</div><canvas id="chartBars" height="260"></canvas></div>
+      </div>
+    </section>
+    <section class="card grid grid-3">
+      <div><label>AUDIT-C</label><div class="row"><input id="inpAudit" type="number" step="1"/><select id="inpGeslacht"><option>man</option><option>vrouw</option></select><span id="labAudit" class="pill"></span></div><div class="muted">Mannen ≥5 / vrouwen ≥4 → flag</div></div>
+      <div><label>Stress-screener</label><div class="row"><input id="inpStress" type="number" step="1"/><span id="labStress" class="pill"></span></div><div class="muted">Afwijkend ≥4 → flag</div></div>
+      <div><label>Herstelmogelijkheden</label><div class="row"><input id="inpHerstel" type="number" step="1"/><span id="labHerstel" class="pill"></span></div><div class="muted">Signaal ≥19</div></div>
+    </section>
+    <section class="card grid grid-3">
+      <div><label>Urine – Glucose</label><select id="inpUrinG"><option>negatief</option><option>spoor</option><option>positief</option></select></div>
+      <div><label>Urine – Eiwit</label><select id="inpUrinE"><option>negatief</option><option>spoor</option><option>positief</option></select></div>
+      <div><label>Overige bijzonderheden</label><input id="inpBijz" placeholder="bijv. gehoor/longfunctie…"/></div>
+    </section>
+    <section class="card">
+      <div class="section-title"><div class="title">Case study – determinanten ↔ uitkomstmaten</div><div class="muted">Formuleer hypotheses</div></div>
+      <div class="grid grid-3" style="margin-top:8px">
+        <div>
+          <div class="muted">Determinanten</div>
+          <div class="grid" style="gap:8px">
+            <label class="chip"><input type="checkbox" class="det" value="Hoge werkdruk"> Hoge werkdruk</label>
+            <label class="chip"><input type="checkbox" class="det" value="Weinig herstelmogelijkheden"> Weinig herstelmogelijkheden</label>
+            <label class="chip"><input type="checkbox" class="det" value="Ploegendienst / onregelmatig"> Ploegendienst / onregelmatig</label>
+            <label class="chip"><input type="checkbox" class="det" value="Fysieke belasting (tillen/duwen)"> Fysieke belasting (tillen/duwen)</label>
+            <label class="chip"><input type="checkbox" class="det" value="Beeldschermwerk >6u/dag"> Beeldschermwerk >6u/dag</label>
+            <label class="chip"><input type="checkbox" class="det" value="Chemische blootstelling"> Chemische blootstelling</label>
+            <label class="chip"><input type="checkbox" class="det" value="Lawaai"> Lawaai</label>
+          </div>
+        </div>
+        <div>
+          <div class="muted">Uitkomstmaten</div>
+          <div class="grid" style="gap:8px">
+            <label class="chip"><input type="checkbox" class="outc" value="Hoge bloeddruk"> Hoge bloeddruk</label>
+            <label class="chip"><input type="checkbox" class="outc" value="Overgewicht/BMI"> Overgewicht/BMI</label>
+            <label class="chip"><input type="checkbox" class="outc" value="Verhoogd cholesterol"> Verhoogd cholesterol</label>
+            <label class="chip"><input type="checkbox" class="outc" value="Verhoogde glucose"> Verhoogde glucose</label>
+            <label class="chip"><input type="checkbox" class="outc" value="Rug/nek/schouderklachten"> Rug/nek/schouderklachten</label>
+            <label class="chip"><input type="checkbox" class="outc" value="Stress/mentale klachten"> Stress/mentale klachten</label>
+            <label class="chip"><input type="checkbox" class="outc" value="Slaapproblemen"> Slaapproblemen</label>
+          </div>
+        </div>
+        <div>
+          <label>Hypothese / Notities</label>
+          <textarea id="txtHypo" placeholder="Korte case-beschrijving…"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:10px"><table class="table" id="tblCausal"><thead><tr><th>Determinant</th><th>→</th><th>Uitkomstmaat</th><th>Bron/observatie</th></tr></thead><tbody></tbody></table></div>
+    </section>
+    <section class="card grid grid-2">
+      <div><div class="title">Overige bijzonderheden</div><textarea id="txtBijz"></textarea></div>
+      <div><div class="title">Advies n.a.v. PMO</div><textarea id="txtAdvies"></textarea></div>
+    </section>
+    <section class="card grid grid-3">
+      <div><label>Keuringsarts</label><input id="inpArts"/></div>
+      <div><label>Datum & Handtekening</label><input id="inpSignDate" type="date"/></div>
+      <div class="row" style="align-items:flex-end;justify-content:flex-end"><button class="btn" id="btnSaveAPI">Opslaan (API)</button><button class="btn primary" id="btnFinalize">Definitief & naar DWH</button></div>
+      <div class="savehint" style="grid-column:1/-1">Endpoints zijn placeholders voor jullie backend/DWH (10 jaar bewaarplicht).</div>
+    </section>
+    <section class="row"><button class="btn primary" id="btnPDF">Export PDF</button><button class="btn" id="btnDOCX">Export Word</button></section>
+  </main>
+  <script>
+    const COLORS={brand:'#ec641a',teal:'#79c6c0',sky:'#85cee4',slate:'#686c7c',graphite:'#4c505a'};
+    const DUMMY={persoon:{naam:'J. de Tester',dob:'1988-06-12',bsn:'***',werkgever:'Eigen Haard'},medisch:{datum:new Date().toISOString().slice(0,10),soort:'Basisset PMO',verdiepend:'visus + bloeddruk'},metrics:{bmi:29.1,sys:148,dia:94,chol:6.8,gluc:7.9,roker:true,visusV:0.9,visusD:0.8,urine:{glucose:'negatief',eiwit:'spoor'}},vragenlijsten:{auditC:{geslacht:'man',score:6},stress:{score:5},herstel:{score:21}},bijzonder:'Onder-rugklachten; RSI bij beeldscherm.',advies:'Leefstijlprogramma + werkplekonderzoek + roosteroptimalisatie.'};
+    function $(s){return document.querySelector(s)}; function $all(s){return Array.from(document.querySelectorAll(s))};
+    function pill(el,t,tone){el.textContent=t;el.style.background=tone==='ok'?'#ecfdf5':tone==='warn'?'#fffbeb':tone==='err'?'#fef2f2':'#f3f4f6';el.style.color=tone==='ok'?'#065f46':tone==='warn'?'#92400e':tone==='err'?'#991b1b':'#111827'}
+    function bmiClass(b){if(b==null)return'nvt';if(b<25)return'normaal';if(b<30)return'overgewicht';return'obesitas'}
+    function bdClass(sys,dia){if(sys==null||dia==null)return'nvt';if(dia<=80&&sys<=120)return'optimaal';if(dia>=90||sys>=160)return'hoog';return'grens'}
+    function cholClass(x){if(x==null)return'nvt';if(x<5)return'ideaal';if(x<=6.5)return'verhoogd';return'te hoog'}
+    function glucClass(x){if(x==null)return'nvt';if(x<=7)return'gezond';if(x<=8)return'verhoogd';return'te hoog'}
+    function visusFlag(v){return(v!=null&&v<0.8)} function auditFlag(s,g){return(g==='man'?s>=5:s>=4)} function stressFlag(s){return s>=4} function herstelFlag(s){return s>=19}
+    function loadDummy(){ $('#inpNaam').value=DUMMY.persoon.naam; $('#inpDOB').value=DUMMY.persoon.dob; $('#inpBSN').value=DUMMY.persoon.bsn; $('#inpWerkgever').value=DUMMY.persoon.werkgever; $('#inpDatum').value=DUMMY.medisch.datum; $('#inpMedisch').value=DUMMY.medisch.soort; $('#inpVerdiepend').value=DUMMY.medisch.verdiepend; $('#inpBMI').value=DUMMY.metrics.bmi; $('#inpSYS').value=DUMMY.metrics.sys; $('#inpDIA').value=DUMMY.metrics.dia; $('#inpChol').value=DUMMY.metrics.chol; $('#inpGluc').value=DUMMY.metrics.gluc; $('#inpRoker').value=DUMMY.metrics.roker?'ja':'nee'; $('#inpVisusV').value=DUMMY.metrics.visusV; $('#inpVisusD').value=DUMMY.metrics.visusD; $('#inpUrinG').value=DUMMY.metrics.urine.glucose; $('#inpUrinE').value=DUMMY.metrics.urine.eiwit; $('#inpAudit').value=DUMMY.vragenlijsten.auditC.score; $('#inpGeslacht').value=DUMMY.vragenlijsten.auditC.geslacht; $('#inpStress').value=DUMMY.vragenlijsten.stress.score; $('#inpHerstel').value=DUMMY.vragenlijsten.herstel.score; $('#txtBijz').value=DUMMY.bijzonder; $('#txtAdvies').value=DUMMY.advies; }
+    function computeFlags(){ const f=[]; const bmi=parseFloat($('#inpBMI').value); const sys=parseInt($('#inpSYS').value); const dia=parseInt($('#inpDIA').value); const chol=parseFloat($('#inpChol').value); const gluc=parseFloat($('#inpGluc').value); const roker=$('#inpRoker').value==='ja'; const vV=parseFloat($('#inpVisusV').value); const vD=parseFloat($('#inpVisusD').value); const audit=parseInt($('#inpAudit').value)||0; const g=$('#inpGeslacht').value; const stress=parseInt($('#inpStress').value)||0; const herstel=parseInt($('#inpHerstel').value)||0; pill($('#labBMI'),bmiClass(bmi),(bmi<25?'ok':bmi<30?'warn':'err')); const bdC=bdClass(sys,dia); pill($('#labBD'),bdC,(bdC==='optimaal'?'ok':bdC==='grens'?'warn':'err')); const cholC=cholClass(chol); pill($('#labChol'),cholC,(cholC==='ideaal'?'ok':cholC==='verhoogd'?'warn':'err')); const glucC=glucClass(gluc); pill($('#labGluc'),glucC,(glucC==='gezond'?'ok':glucC==='verhoogd'?'warn':'err')); const vflag=(visusFlag(vV)||visusFlag(vD)); pill($('#labVisus'),vflag?'afwijkend':'ok',vflag?'warn':'ok'); const aP=auditFlag(audit,g); pill($('#labAudit'),aP?'positief':'negatief',aP?'warn':'ok'); const sP=stressFlag(stress); pill($('#labStress'),sP?'afwijkend':'normaal',sP?'warn':'ok'); const hP=herstelFlag(herstel); pill($('#labHerstel'),hP?'signaal':'ok',hP?'warn':'ok'); if(bmi>=30)f.push({type:'err',text:`Obesitas (BMI ${bmi.toFixed(1)})`}); else if(bmi>=25)f.push({type:'warn',text:`Overgewicht (BMI ${bmi.toFixed(1)})`}); if(dia>=90||sys>=160)f.push({type:'err',text:`Verhoogde bloeddruk (${sys}/${dia})`}); else if(!(dia<=80&&sys<=120))f.push({type:'warn',text:`Bloeddruk grensgebied (${sys}/${dia})`}); if(chol>6.5)f.push({type:'warn',text:`Te hoog cholesterol (${chol.toFixed(1)})`}); else if(chol>=5)f.push({type:'warn',text:`Verhoogd cholesterol (${chol.toFixed(1)})`}); if(gluc>8)f.push({type:'err',text:`Te hoge glucose (${gluc.toFixed(1)})`}); else if(gluc>7)f.push({type:'warn',text:`Verhoogde glucose (${gluc.toFixed(1)})`}); if(roker)f.push({type:'warn',text:'Roken: ja'}); if(vflag)f.push({type:'warn',text:'Visus onvoldoende (<0.8)'}); if(aP)f.push({type:'warn',text:`AUDIT-C positief (${audit}, ${g})`}); if(sP)f.push({type:'warn',text:`Stress-screener afwijkend (score ${stress})`}); if(hP)f.push({type:'warn',text:`Weinig herstelmogelijkheden (score ${herstel})`}); const fc=$('#flagContainer'); fc.innerHTML=''; f.forEach(x=>{const el=document.createElement('span'); el.className='flag '+(x.type==='err'?'err':'warn'); el.textContent=x.text; fc.appendChild(el)}); if(f.length===0){const el=document.createElement('span'); el.className='flag ok'; el.textContent='Geen afwijkende signalen'; fc.appendChild(el)}; if($('#role').value==='arts'){ const parts=f.map(x=>x.text); const adv=[]; if(bmi>=25)adv.push('Leefstijlprogramma (voeding/bewegen)'); if(chol>=5||gluc>7||bdC==='hoog')adv.push('Controle & follow-up via huisarts'); if($('#inpRoker').value==='ja')adv.push('Stoppen-met-roken begeleiding'); if(sP||hP)adv.push('Herstel/werk-privé bespreken; interventie'); $('#txtAdvies').value=(adv.length?('Advies: '+adv.join(' • ')+'. '):'')+($('#txtAdvies').value||''); } renderCharts(bmi,sys,dia,chol,gluc,roker,audit,stress,herstel); buildBars(bmi,bdC,cholC,glucC,roker,vflag); }
+    let radarChart,barsChart; function renderCharts(bmi,sys,dia,chol,gluc,roker,audit,stress,herstel){ const ctx=document.getElementById('chartRadar'); if(radarChart)radarChart.destroy(); radarChart=new Chart(ctx,{type:'radar',data:{labels:['BMI','Bloeddruk','Cholesterol','Glucose','Roken','AUDIT-C','Stress','Herstel'],datasets:[{label:'Risicoprofiel',data:[Math.min(100,Math.max(0,(bmi-18)*5)),Math.min(100,((sys-120)+(dia-80))),Math.min(100,(chol-4)*25),Math.min(100,(gluc-4)*20),roker?100:0,audit*15,stress*20,Math.max(0,(herstel-10)*5)],borderColor:COLORS.brand,backgroundColor:'rgba(236,100,26,0.15)'}]},options:{plugins:{legend:{display:false}},scales:{r:{suggestedMin:0,suggestedMax:100}}}) }
+    function buildBars(bmiC,bdC,cholC,glucC,roker,vflag){ const ctx=document.getElementById('chartBars'); const cats=[bmiClass(bmiC),bdC,cholC,glucC,roker?'roker':'niet-roker',vflag?'visus-afw':'visus-ok']; const labels=['BMI','BD','Chol','Gluc','Roken','Visus']; if(barsChart)barsChart.destroy(); barsChart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Classificatie',data:cats.map(c=>['normaal','optimaal','ideaal','gezond','niet-roker','visus-ok'].includes(c)?0:(c==='grens'||c==='verhoogd'?1:2)),backgroundColor:COLORS.brand}]},options:{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>v===0?'ok':(v===1?'let op':'hoog')},beginAtZero:true,max:2}}}) }
+    function refreshCausal(){ const dets=$all('.det:checked').map(x=>x.value); const outs=$all('.outc:checked').map(x=>x.value); const tb=$('#tblCausal tbody'); tb.innerHTML=''; dets.forEach(d=> outs.forEach(o=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${d}</td><td>→</td><td>${o}</td><td contenteditable="true" class="muted">observatie/bron…</td>`; tb.appendChild(tr)})) }
+    $all('.det').forEach(cb=>cb.addEventListener('change',refreshCausal)); $all('.outc').forEach(cb=>cb.addEventListener('change',refreshCausal));
+    function collectState(){ return {role:$('#role').value,naam:$('#inpNaam').value,dob:$('#inpDOB').value,bsn:$('#inpBSN').value,wg:$('#inpWerkgever').value,datum:$('#inpDatum').value,soort:$('#inpMedisch').value,verd:$('#inpVerdiepend').value,bmi:$('#inpBMI').value,sys:$('#inpSYS').value,dia:$('#inpDIA').value,chol:$('#inpChol').value,gluc:$('#inpGluc').value,roker:$('#inpRoker').value,visusV:$('#inpVisusV').value,visusD:$('#inpVisusD').value,urinG:$('#inpUrinG').value,urinE:$('#inpUrinE').value,audit:$('#inpAudit').value,geslacht:$('#inpGeslacht').value,stress:$('#inpStress').value,herstel:$('#inpHerstel').value,bijz:$('#txtBijz').value,advies:$('#txtAdvies').value,hypo:$('#txtHypo').value,causal:Array.from($('#tblCausal tbody').children).map(tr=>Array.from(tr.children).map(td=>td.textContent))} }
+    function saveLocal(){ localStorage.setItem('pmoIndividueelDraft', JSON.stringify(collectState())); alert('Concept lokaal opgeslagen.') }
+    function loadLocal(){ const s=localStorage.getItem('pmoIndividueelDraft'); if(!s)return; try{applyState(JSON.parse(s))}catch(e){} }
+    async function saveAPI(finalize=false){ const body=collectState(); body.status=finalize?'definitief':'concept'; try{ await fetch(finalize?'/api/individueel-rapport/finalize':'/api/individueel-rapport/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); alert(finalize?'Definitief ingestuurd.':'Concept opgeslagen (server).') }catch(e){ alert('Demo: endpoint nog niet ingesteld.')} }
+    async function exportPDF(){ const {jsPDF}=window.jspdf; const node=document.querySelector('main'); const a4={w:210,h:297}; const canvas=await html2canvas(node,{scale:2,useCORS:true,background:'#fff'}); const pdf=new jsPDF('p','mm','a4'); const ratio=(a4.w-20)/canvas.width; const pageH=(a4.h-20)/ratio; const pageCanvas=document.createElement('canvas'); const ctx=pageCanvas.getContext('2d'); const hdr=()=>{pdf.setFontSize(12); pdf.text('Individueel PMO-rapport (concept)',10,8); pdf.setDrawColor(230); pdf.line(10,9,200,9)}; hdr(); for(let y=0;y<canvas.height;y+=pageH){ const sliceH=Math.min(pageH,canvas.height-y); pageCanvas.width=canvas.width; pageCanvas.height=sliceH; ctx.drawImage(canvas,0,y,canvas.width,sliceH,0,0,canvas.width,sliceH); const img=pageCanvas.toDataURL('image/png'); pdf.addImage(img,'PNG',10,10,a4.w-20,sliceH*ratio); if(y+pageH<canvas.height){ pdf.addPage(); hdr(); } } pdf.save('PMO-individueel-concept.pdf'); }
+    async function exportDOCX(){ const docx=window.docx; const s=collectState(); const P=(t,opts={})=>new docx.Paragraph({text:t||'',...opts}); const H=(t)=>new docx.Paragraph({text:t,heading:docx.HeadingLevel.HEADING_2}); const doc=new docx.Document({sections:[{children:[new docx.Paragraph({text:'Individueel PMO-rapport (concept)',heading:docx.HeadingLevel.TITLE}),P(`Werknemer: ${s.naam}  |  Geboortedatum: ${s.dob}`),P(`Werkgever: ${s.wg}  |  Keuringsdatum: ${s.datum}`),P(`Soort test: ${s.soort}  |  Verdiepend: ${s.verd}`),H('Uitslagen'),P(`BMI: ${s.bmi} | BD: ${s.sys}/${s.dia} | Chol: ${s.chol} mmol/L | Gluc: ${s.gluc} mmol/L | Roken: ${s.roker}`),P(`Visus: ${s.visusV} / ${s.visusD}`),H('Vragenlijsten'),P(`AUDIT-C: ${s.audit} (${s.geslacht}) | Stress: ${s.stress} | Herstel: ${s.herstel}`),H('Bijzonderheden'),P(s.bijz||''),H('Advies'),P(s.advies||''),H('Case study'),...(s.causal||[]).map(r=>P(`${r[0]} → ${r[2]} (${r[3]||'observatie'})`))]}]}); const blob=await docx.Packer.toBlob(doc); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='PMO-individueel-concept.docx'; a.click(); URL.revokeObjectURL(url); }
+    function applyState(s){ $('#role').value=s.role||'arts'; $('#inpNaam').value=s.naam||''; $('#inpDOB').value=s.dob||''; $('#inpBSN').value=s.bsn||''; $('#inpWerkgever').value=s.wg||''; $('#inpDatum').value=s.datum||''; $('#inpMedisch').value=s.soort||'Basisset PMO'; $('#inpVerdiepend').value=s.verd||''; $('#inpBMI').value=s.bmi||''; $('#inpSYS').value=s.sys||''; $('#inpDIA').value=s.dia||''; $('#inpChol').value=s.chol||''; $('#inpGluc').value=s.gluc||''; $('#inpRoker').value=s.roker||'nee'; $('#inpVisusV').value=s.visusV||''; $('#inpVisusD').value=s.visusD||''; $('#inpUrinG').value=s.urinG||'negatief'; $('#inpUrinE').value=s.urinE||'negatief'; $('#inpAudit').value=s.audit||''; $('#inpGeslacht').value=s.geslacht||'man'; $('#inpStress').value=s.stress||''; $('#inpHerstel').value=s.herstel||''; $('#txtBijz').value=s.bijz||''; $('#txtAdvies').value=s.advies||''; $('#txtHypo').value=s.hypo||''; const tb=$('#tblCausal tbody'); tb.innerHTML=''; (s.causal||[]).forEach(r=>{const tr=document.createElement('tr'); tr.innerHTML=`<td>${r[0]||''}</td><td>→</td><td>${r[2]||''}</td><td contenteditable="true" class="muted">${r[3]||''}</td>`; tb.appendChild(tr)}); computeFlags(); }
+    function updateEvents(){ ['inpBMI','inpSYS','inpDIA','inpChol','inpGluc','inpRoker','inpVisusV','inpVisusD','inpAudit','inpGeslacht','inpStress','inpHerstel'].forEach(id=>{document.getElementById(id).addEventListener('input',computeFlags)}); document.getElementById('role').addEventListener('change',computeFlags); document.getElementById('btnSaveLocal').addEventListener('click',saveLocal); document.getElementById('btnSaveAPI').addEventListener('click',()=>saveAPI(false)); document.getElementById('btnFinalize').addEventListener('click',()=>saveAPI(true)); document.getElementById('btnPDF').addEventListener('click',exportPDF); document.getElementById('btnDOCX').addEventListener('click',exportDOCX); }
+    function boot(){ loadDummy(); loadLocal(); updateEvents(); computeFlags(); refreshCausal(); }
+    window.addEventListener('DOMContentLoaded', boot);
+  </script>
+</body>
+</html>

@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AC‑Dossier • Scherm 4 – Eerste financieel voorstel</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --primary:#ec641a; /* kleur1 */
+      --teal:#79c6c0;    /* kleur2 */
+      --accent:#85cee4;  /* kleur3 */
+      --slate:#686c7c;   /* kleur4 */
+      --ink:#4c505a;     /* kleur5 */
+      --steel:#69a1b1;   /* kleur6 */
+      --surface:#f7f7f7; /* kleur8 */
+      --ring:1px solid #e5e7eb;
+      --radius:16px;
+      --shadow:0 12px 34px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--surface);color:#1f2937;font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
+    a{color:var(--steel)}
+    header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid #e5e7eb}
+    .topbar{display:flex;align-items:center;gap:16px;padding:12px 18px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .brand-dot{width:28px;height:28px;border-radius:7px;background:var(--primary)}
+    .top-actions{margin-left:auto;display:flex;gap:8px}
+    .container{max-width:1100px;margin:22px auto;padding:0 16px}
+    .card{background:#fff;border-radius:16px;box-shadow:var(--shadow);border:var(--ring);padding:16px}
+    .surface{background:var(--surface)}
+    h1,h2,h3{color:var(--ink);margin:.2rem 0 .6rem}
+    .muted{color:#6b7280}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:12px;border:1px solid #e5e7eb;background:#fff;color:#111;cursor:pointer}
+    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+    @media (max-width: 980px){.grid{grid-template-columns:1fr}}
+    table{width:100%;border-collapse:separate;border-spacing:0}
+    th,td{padding:10px 12px;border-bottom:1px solid #eef2f7;text-align:left}
+    thead th{position:sticky;top:0;background:#fff;color:#374151;border-bottom:2px solid #e5e7eb}
+    tbody tr:hover{background:#fffaf7}
+    .num{text-align:right;white-space:nowrap}
+    .pill{display:inline-block;padding:.1rem .5rem;border-radius:999px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:.78rem}
+    .pill.primary{background:#fff1e9;border-color:#ffc7a3;color:#b45309}
+    .help{display:grid;gap:10px}
+    .note{padding:10px 12px;border-radius:12px;border:1px solid #eef2f7;background:#fff;display:flex;gap:8px;align-items:start}
+    .note .dot{width:10px;height:10px;border-radius:50%;margin-top:6px;background:var(--primary)}
+    .footerbar{position:sticky;bottom:0;z-index:10;margin-top:16px}
+    .footerbar .inner{display:flex;gap:10px;justify-content:space-between;align-items:center;background:#fff;border:var(--ring);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow)}
+    .input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d1d5db;background:#fff}
+    .switch{display:inline-flex;gap:8px;align-items:center}
+  
+/* Harmonize Uitleg/Toelichting textarea with rest of UI */
+#uitleg.input{
+  font: inherit;
+  color: inherit;
+  background:#fff;
+  border: var(--ring);
+  border-radius: var(--radius);
+  padding:10px 12px;
+  box-shadow:none;
+}
+#uitleg::placeholder{ color:#9aa1ad; }
+
+/* extras for inhoud keuring + badges + modal */
+.btn.btn-sm{padding:6px 10px; font-size:12px; border-radius:8px}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600}
+.badge.ok{background:#d1f7d6;color:#055e12;border:1px solid #8bd49a}
+.badge.no{background:#ffe3e3;color:#7a0612;border:1px solid #ffb3b3}
+.badge.muted{background:#f1f1f1;color:#666;border:1px solid #ddd}
+.dim{opacity:.55; filter:grayscale(.1)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9999}
+.modal.active{display:flex}
+.modal .panel{background:#fff;max-width:820px;width:94%;border-radius:12px;border:1px solid #ddd;box-shadow:0 10px 30px rgba(0,0,0,.25);overflow:hidden}
+.modal header{padding:12px 16px;border-bottom:1px solid #eee;font-weight:700;background:#fafafa}
+.modal .content{padding:12px 16px;max-height:70vh;overflow:auto}
+.modal footer{padding:12px 16px;border-top:1px solid #eee;display:flex;gap:8px;justify-content:flex-end}
+.modal .chip{display:inline-block;background:#f3f3f3;border:1px solid #e3e3e3;border-radius:8px;padding:2px 6px;margin:2px 4px;font-size:12px}
+</style>
+<div class="modal" id="modal">
+  <div class="panel">
+    <header id="modalTitle">Inhoud keuring</header>
+    <div class="content" id="modalBody">Bezig met laden…</div>
+    <footer>
+      <button class="btn" id="modalClose" type="button">Sluiten</button>
+    </footer>
+  </div>
+</div>
+
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <span class="brand"><span class="brand-dot"></span><span>AC‑Dossier <small style="color:var(--slate)">werkgever</small></span></span>
+    <div class="top-actions">
+      <button class="btn" onclick="goHome()">Home</button>
+      <button class="btn primary" onclick="goNext()">Volgende</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="card surface" style="margin-bottom:14px">
+    <h2 style="margin:0 0 4px">Scherm 4 – Eerste financieel voorstel</h2>
+    <div class="muted">Voorlopig prijsvoorstel op basis van keuringsonderdelen per functiegroep. Aantallen deelnemers volgen later; dit scherm toont alleen prijs <em>per deelnemer</em> en eventuele vaste projectkosten.</div>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px">
+        <h3 style="margin:0">Functiegroepen & keuringsprijs (p.p.)</h3>
+        <div class="row-actions" style="display:none">
+          <button class="btn" onclick="addRow()">+ Functiegroep</button>
+          <button class="btn" onclick="resetAll()">Wissen</button>
+        </div>
+      </div>
+      <div class="muted" style="margin-bottom:8px">Selecteer per functiegroep de relevante modules. De prijs wordt automatisch berekend o.b.v. de actuele tarieven (excl. BTW).</div>
+      
+  <div class="card" style="margin-bottom:14px">
+    <h3 style="margin:0 0 6px">Tarieven (niet wijzigbaar)</h3>
+    <div class="muted">Onderstaande tarieven zijn onderdeel van het offertevoorstel en kunnen door de werkgever niet worden aangepast.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <span class="pill primary">PMO Basis: <span id="tariefPMO">€ 90,00</span></span>
+      <span class="pill primary">Werkdruk: <span id="tariefWD">€ 26,95</span></span>
+      <span class="pill primary">Beeldscherm: <span id="tariefBS">€ 47,95</span></span>
+      <span class="pill">Alle prijzen excl. BTW</span>
+    </div>
+  </div>
+
+
+      <div style="overflow:auto;max-height:520px;border:var(--ring);border-radius:12px">
+        <table aria-label="Prijs per functiegroep">
+          <tbody id="rows">
+            <tr data-fg-naam="Kantoor (beeldscherm)">
+              <td><input class="input fg-name" value="Kantoor (beeldscherm)" disabled/></td>
+              <td class="num fg-price">€ 137,95
+                <div style="margin-top:6px">
+                  <button class="btn btn-sm inhoud-btn" type="button">Inhoud keuring</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-fg-naam="Backoffice (werkdruk)">
+              <td><input class="input fg-name" value="Backoffice (werkdruk)" disabled/></td>
+              <td class="num fg-price">€ 116,95
+                <div style="margin-top:6px">
+                  <button class="btn btn-sm inhoud-btn" type="button">Inhoud keuring</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-fg-naam="Magazijn (werkdruk)">
+              <td><input class="input fg-name" value="Magazijn (werkdruk)" disabled/></td>
+              <td class="num fg-price">€ 116,95
+                <div style="margin-top:6px">
+                  <button class="btn btn-sm inhoud-btn" type="button">Inhoud keuring</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-fg-naam="Productie (werkdruk)">
+              <td><input class="input fg-name" value="Productie (werkdruk)" disabled/></td>
+              <td class="num fg-price">€ 116,95
+                <div style="margin-top:6px">
+                  <button class="btn btn-sm inhoud-btn" type="button">Inhoud keuring</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-fg-naam="ICT (beeldscherm)">
+              <td><input class="input fg-name" value="ICT (beeldscherm)" disabled/></td>
+              <td class="num fg-price">€ 137,95
+                <div style="margin-top:6px">
+                  <button class="btn btn-sm inhoud-btn" type="button">Inhoud keuring</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card surface" style="margin-top:12px">
+        <label for="uitleg" style="font-weight:700;display:block;margin-bottom:6px">Uitleg / toelichting</label>
+        <textarea id="uitleg" class="input" rows="4" placeholder="Voorbeeld: Dit is een eerste indicatie o.b.v. PMO Basis voor alle kantoorfuncties; voor beeldschermwerkers is het oogonderzoek toegevoegd."></textarea>
+      </div>
+    </section>
+
+    
+    <aside class="card">
+      <h3 style="margin:0 0 8px">Vaste projectkosten (indicatief)</h3>
+      <div class="help">
+        <div class="note"><span class="dot"></span><div>
+          <div><strong>Opstart / projectkosten per locatie</strong></div>
+          <div class="muted">Eenmalig per groep/locatie (niet wijzigbaar op dit scherm)</div>
+          <div style="margin-top:6px"><strong id="opstartPrijs">€ 399,00</strong> <span class="muted">(excl. BTW)</span></div>
+        </div></div>
+        <div class="note"><span class="dot"></span><div>
+          <div><strong>Reiskosten (stelpost)</strong></div>
+          <div class="muted">€ 0,39 per km per medisch specialist (retour), per dag</div>
+          <div style="margin-top:6px">Indicatie op dit voorstel: <strong id="reiskostenIndicatie">€ 0,00</strong> <span class="muted">(excl. BTW)</span></div>
+        </div></div>
+        <div class="note"><span class="dot"></span><div>
+          <div><strong>Overige eenmalige opties</strong></div>
+          <ul style="margin:.4rem 0 .2rem 1rem; padding:0">
+            <li id="grpItem">Groepsrapportage: <strong id="groepsrapportPrijs">€ 1.250,00</strong> <span id="grpBadge" class="badge muted">Beschikbaarheid onbekend</span> <span class="muted">(alleen bij meer dan 20 deelnemers beschikbaar)</span></li>
+          </ul>
+        </div></div>
+        <div class="card surface">
+          <div class="muted">Indicatie vaste kosten (eenmalig)</div>
+          <div style="font-weight:800;font-size:1.25rem"><span id="indicatieVasteKosten">€ 1.649,00</span> <span class="muted" style="font-size:.9rem">(excl. BTW)</span></div>
+        </div>
+        <div class="note"><span class="dot"></span><div>
+          <strong>Kleine lettertjes (samenvatting)</strong>
+          <ul style="margin:.4rem 0 .2rem 1rem; padding:0">
+            <li>Tarieven zijn exclusief BTW.</li>
+            <li>Geldigheid van dit voorstel: 3 maanden na dagtekening.</li>
+            <li>Tarief Werkdruk &amp; Beeldscherm alleen in combinatie met PMO.</li>
+          </ul>
+        </div></div>
+      </div>
+    </aside>
+
+  </div>
+
+  
+  <div class="footerbar">
+    <div class="inner">
+      <div class="muted">Offertevoorstel – tarieven en vaste kosten zijn niet aanpasbaar op dit scherm.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn primary" onclick="goInformeren()">Informeren medewerkers PAGO in portaal</button>
+        <button class="btn" onclick="goHome()">HOME</button>
+        <button class="btn" onclick="goKlantreis()">Klantreis overzicht</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+  const T = { PMO_BASIS: 90.00, WERKDRUK: 26.95, BEELDSCHERM: 47.95 };
+  const KEY = 'ac_finvoorstel_v1';
+  const rowsEl = document.getElementById('rows');
+  const btwToggle = document.getElementById('inclBTW');
+
+  function euro(n){ return n.toLocaleString('nl-NL',{style:'currency',currency:'EUR'}); }
+
+  window.addRow = function(initial){
+    const id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Math.random()).slice(2);
+    const tr = document.createElement('tr');
+    tr.dataset.id = id;
+    tr.innerHTML = '\
+      <td><input class="input fg-name" placeholder="Bijv. Kantoor (beeldscherm)"/></td>\
+      <td><input type="checkbox" class="fg-pmo" checked aria-label="PMO Basis"/></td>\
+      <td><input type="checkbox" class="fg-wd" aria-label="Werkdruk"/></td>\
+      <td><input type="checkbox" class="fg-bs" aria-label="Beeldscherm"/></td>\
+      <td><input type="number" min="0" step="0.01" value="0" class="input fg-admin" aria-label="Administratiekosten per persoon"/></td>\
+      <td class="num fg-price">€ 0,00</td>\
+      <td class="num">\
+        <button class="btn" title="Kopiëren" onclick="copyRow(this)">Kopieer</button>\
+        <button class="btn" title="Verwijderen" onclick="removeRow(this)">Verwijder</button>\
+      </td>';
+    rowsEl.appendChild(tr);
+    if(initial){
+      tr.querySelector('.fg-name').value = initial.name||'';
+      tr.querySelector('.fg-pmo').checked = !!initial.pmo;
+      tr.querySelector('.fg-wd').checked = !!initial.wd;
+      tr.querySelector('.fg-bs').checked = !!initial.bs;
+      tr.querySelector('.fg-admin').value = (initial.admin||0).toFixed(2);
+    }
+    tr.addEventListener('input', render, {passive:true});
+    render();
+    return tr;
+  }
+
+  function readRows(){
+    return Array.from(rowsEl.querySelectorAll('tr')).map(tr=>({
+      name: tr.querySelector('.fg-name').value.trim(),
+      pmo: tr.querySelector('.fg-pmo').checked,
+      wd: tr.querySelector('.fg-wd').checked,
+      bs: tr.querySelector('.fg-bs').checked,
+      admin: parseFloat(tr.querySelector('.fg-admin').value||'0')
+    }));
+  }
+
+  function rowPrice(r){
+    let sum = 0;
+    if(r.pmo) sum += T.PMO_BASIS;
+    if(r.wd)  sum += T.WERKDRUK;
+    if(r.bs)  sum += T.BEELDSCHERM;
+    sum += (r.admin||0);
+    if(btwToggle.checked) sum *= 1.21;
+    return sum;
+  }
+
+  window.render = function(){
+    const list = readRows();
+    Array.from(rowsEl.querySelectorAll('tr')).forEach((tr, idx)=>{
+      const p = rowPrice(list[idx]);
+      tr.querySelector('.fg-price').textContent = euro(p);
+    });
+    recalcFixed();
+  }
+
+  window.recalcFixed = function(){
+    const km = parseFloat(document.getElementById('km').value||'0');
+    const days = parseInt(document.getElementById('days').value||'0',10);
+    const specs = parseInt(document.getElementById('specs').value||'0',10);
+    const rate = parseFloat(document.getElementById('kmrate').value||'0');
+    const opstart = parseFloat(document.getElementById('opstart').value||'0');
+    const grp = parseFloat(document.getElementById('grp').value||'0');
+    const promo = parseFloat(document.getElementById('promo').value||'0');
+    const travel = (km*2) * rate * (specs>0?specs:1) * (days>0?days:1);
+    document.getElementById('travelOut').textContent = euro(travel);
+    const fixed = opstart + grp + promo + travel;
+    document.getElementById('fixedTotal').textContent = euro(fixed);
+  }
+
+  window.copyRow = function(btn){
+    const tr = btn.closest('tr');
+    const data = {
+      name: tr.querySelector('.fg-name').value,
+      pmo: tr.querySelector('.fg-pmo').checked,
+      wd: tr.querySelector('.fg-wd').checked,
+      bs: tr.querySelector('.fg-bs').checked,
+      admin: parseFloat(tr.querySelector('.fg-admin').value||'0')
+    };
+    addRow(data);
+  }
+  window.removeRow = function(btn){
+    const tr = btn.closest('tr');
+    tr.parentElement.removeChild(tr);
+    render();
+  }
+
+  window.exportJSON = function(){
+    const out = {
+      rows: readRows(),
+      inclBTW: document.getElementById('inclBTW').checked,
+      uitleg: document.getElementById('uitleg').value,
+      travel: {
+        km: document.getElementById('km').value,
+        days: document.getElementById('days').value,
+        specs: document.getElementById('specs').value,
+        kmrate: document.getElementById('kmrate').value
+      },
+      fixed: {
+        opstart: document.getElementById('opstart').value,
+        grp: document.getElementById('grp').value,
+        promo: document.getElementById('promo').value
+      }
+    };
+    const blob = new Blob([JSON.stringify(out,null,2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'scherm4_voorstel.json';
+    a.click();
+  };
+
+  window.saveState = function(){
+    const state = {
+      rows: readRows(),
+      inclBTW: document.getElementById('inclBTW').checked,
+      uitleg: document.getElementById('uitleg').value,
+      km: document.getElementById('km').value,
+      days: document.getElementById('days').value,
+      specs: document.getElementById('specs').value,
+      kmrate: document.getElementById('kmrate').value,
+      opstart: document.getElementById('opstart').value,
+      grp: document.getElementById('grp').value,
+      promo: document.getElementById('promo').value
+    };
+    localStorage.setItem('ac_finvoorstel_v1', JSON.stringify(state));
+    alert('Opgeslagen in deze browser.');
+  }
+  window.loadState = function(notify){
+    try{
+      const raw = localStorage.getItem('ac_finvoorstel_v1');
+      if(!raw) return;
+      const st = JSON.parse(raw);
+      document.getElementById('rows').innerHTML='';
+      (st.rows||[]).forEach(r=>addRow(r));
+      document.getElementById('inclBTW').checked = !!st.inclBTW;
+      document.getElementById('uitleg').value = st.uitleg||'';
+      ['km','days','specs','kmrate','opstart','grp','promo'].forEach(id=>{
+        if(st[id]!==undefined) document.getElementById(id).value = st[id];
+      });
+      render();
+      if(notify) alert('Voorstel geladen.');
+    }catch(e){ console.warn(e); }
+  }
+
+  window.resetAll = function(){
+    if(!confirm('Alle rijen wissen?')) return;
+    document.getElementById('rows').innerHTML='';
+    render();
+  }
+
+  window.goHome = ()=>{ location.href = 'AC-dossier-werkgever-landingsscherm-carousel-3d-hover-nofade.html'; };
+  window.goNext = ()=>{ alert('Volgende stap wordt later gekoppeld.'); };
+
+  // Voorbeeld-rijen + init
+  addRow({name:'Kantoor (beeldscherm)', pmo:true, wd:false, bs:true, admin:0});
+  addRow({name:'Backoffice (werkdruk)', pmo:true, wd:true, bs:false, admin:0});
+  ['km','days','specs','kmrate','opstart','grp','promo'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', recalcFixed, {passive:true});
+  });
+  loadState(false);
+  render();
+})();
+
+/* === AC-Dossier rekentool integratie (scaffolding) ========================== */
+async function fetchVoorstelFromAcDossier(ctx={}){
+  const url = `/api/ac-dossier/rekentool/voorstel?klantId=${encodeURIComponent(ctx.klantId||'demo')}`;
+  try{
+    const res = await fetch(url, { headers:{'Accept':'application/json'} });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return await res.json();
+  }catch(err){ console.warn('AC-Dossier API niet bereikbaar, fallback gebruikt:', err); return null; }
+}
+function euroFmt(n){ try{ return n.toLocaleString('nl-NL', {style:'currency', currency:'EUR'});}catch(e){ const s=(Math.round(n*100)/100).toFixed(2).replace('.',','); return '€ '+s; } }
+const modal = document.getElementById('modal'); const modalBody = document.getElementById('modalBody'); const modalTitle = document.getElementById('modalTitle');
+document.getElementById('modalClose')?.addEventListener('click', ()=> modal.classList.remove('active'));
+modal?.addEventListener('click', (e)=>{ if(e.target===modal) modal.classList.remove('active'); });
+function openModal(title, html){ if(modalTitle) modalTitle.textContent=title||'Inhoud keuring'; if(modalBody) modalBody.innerHTML=html||''; modal?.classList.add('active'); }
+// Matrix fallback placeholder (real JSON injected later)
+if(!window._MATRIX){ window._MATRIX = {}; }
+async function fetchKeuringInhoud_FromMatrix(fgNaam){
+  const list = window._MATRIX && window._MATRIX[fgNaam];
+  if(!list || !Array.isArray(list) || !list.length) return null;
+  const items = list.map(item=>{
+    const tag = item.type ? `<span class="chip">${item.type}</span>` : '';
+    const freq = item.frequentie ? ` <span class="muted">(${item.frequentie})</span>` : '';
+    return `<li>${tag} ${item.naam||''}${freq}</li>`;
+  }).join('');
+  return `<ul style="margin:0 0 0 1.1rem">${items}</ul>`;
+}
+async function fetchKeuringInhoud(fgNaam){
+  try{
+    const res = await fetch(`/api/ac-dossier/keuring/inhoud?functie=${encodeURIComponent(fgNaam)}`);
+    if(res.ok){
+      const data = await res.json();
+      if(Array.isArray(data?.inhoud) && data.inhoud.length){
+        const list = data.inhoud.map(item => {
+          const tag = item.type ? `<span class="chip">${item.type}</span>` : '';
+          const freq = item.frequentie ? ` <span class="muted">(${item.frequentie})</span>` : '';
+          return `<li>${tag} ${item.naam || ''}${freq}</li>`;
+        }).join('');
+        return `<ul style="margin:0 0 0 1.1rem">${list}</ul>`;
+      }
+    }
+  }catch(e){ /* backend niet beschikbaar */ }
+  const fromMatrix = await fetchKeuringInhoud_FromMatrix(fgNaam);
+  if(fromMatrix) return fromMatrix;
+  return `<div class="muted">Geen inhoud beschikbaar (koppeling AC‑Dossier nog te activeren).</div>`;
+}
+document.addEventListener('click', async (e)=>{
+  const btn = e.target.closest('.inhoud-btn'); if(!btn) return;
+  const tr = btn.closest('tr');
+  const fgNaam = tr?.dataset?.fgNaam || tr?.getAttribute('data-fg-naam') || tr?.querySelector('.fg-name')?.value || 'Functie';
+  openModal('Inhoud keuring – ' + fgNaam, '<div class="muted">Laden…</div>');
+  const html = await fetchKeuringInhoud(fgNaam);
+  openModal('Inhoud keuring – ' + fgNaam, html);
+});
+function updateGroepsrapportBadge(opts){
+  const item = document.getElementById('grpItem'); const badge = document.getElementById('grpBadge');
+  if(!item || !badge) return;
+  const beschikbaar = !!opts?.beschikbaar; const min = typeof opts?.min === 'number' ? opts.min : 20; const deelnemers = typeof opts?.deelnemers === 'number' ? opts.deelnemers : 0;
+  const ok = beschikbaar && deelnemers >= min;
+  item.classList.toggle('dim', !ok); badge.classList.remove('ok','no','muted'); badge.classList.add(ok ? 'ok' : 'no');
+  badge.textContent = ok ? 'Beschikbaar' : `Niet beschikbaar (< ${min})`;
+}
+function parseEuroText(txt){ if(!txt) return 0; const n=parseFloat(String(txt).replace(/[€\s\.]/g,'').replace(',','.')); return isNaN(n)?0:n; }
+function recomputeFixedCosts(opts){
+  const opstartEl=document.getElementById('opstartPrijs'); const reisEl=document.getElementById('reiskostenIndicatie'); const grpEl=document.getElementById('groepsrapportPrijs'); const totalEl=document.getElementById('indicatieVasteKosten');
+  if(!totalEl) return;
+  let opstart=parseEuroText(opstartEl?.textContent); let reis=parseEuroText(reisEl?.textContent); let grp=parseEuroText(grpEl?.textContent);
+  const beschikbaar = (opts && typeof opts.grpBeschikbaar === 'boolean') ? opts.grpBeschikbaar : true;
+  const total=(opstart||0)+(reis||0)+((beschikbaar?grp:0)||0);
+  totalEl.textContent = euroFmt(total);
+}
+(function(){ const targets=['opstartPrijs','reiskostenIndicatie','groepsrapportPrijs']; const mo=new MutationObserver(()=>recomputeFixedCosts()); targets.forEach(id=>{ const el=document.getElementById(id); if(el) mo.observe(el,{characterData:true,subtree:true,childList:true}); }); recomputeFixedCosts(); })();
+function renderFromBackend(data){
+  if(data?.tarieven){
+    const {pmo_basis, werkdruk, beeldscherm}=data.tarieven; const elPMO=document.getElementById('tariefPMO'); const elWD=document.getElementById('tariefWD'); const elBS=document.getElementById('tariefBS');
+    if(elPMO) elPMO.textContent=euroFmt(+pmo_basis||0); if(elWD) elWD.textContent=euroFmt(+werkdruk||0); if(elBS) elBS.textContent=euroFmt(+beeldscherm||0);
+  }
+  const tbody=document.getElementById('rows');
+  if(tbody && Array.isArray(data?.functiegroepen)){
+    tbody.innerHTML='';
+    data.functiegroepen.forEach(fg=>{
+      const tr=document.createElement('tr'); tr.dataset.fgNaam=fg.naam||'';
+      tr.innerHTML = `
+        <td><input class="input fg-name" value="${fg.naam||''}" disabled/></td>
+        <td class="num fg-price">
+          ${euroFmt(+fg.prijs_pp || 0)}
+          <div style="margin-top:6px"><button class="btn btn-sm inhoud-btn" type="button">Inhoud keuring</button></div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+  const opstartVal = data?.vaste_kosten?.opstart_per_locatie; if(typeof opstartVal === 'number'){ const el=document.getElementById('opstartPrijs'); if(el) el.textContent=euroFmt(opstartVal); }
+  const grpInfo=data?.vaste_kosten?.groepsrapportage; if(grpInfo){ const grel=document.getElementById('groepsrapportPrijs'); if(grel && typeof grpInfo.prijs==='number'){ grel.textContent=euroFmt(grpInfo.prijs); } }
+  const rk=data?.vaste_kosten?.reiskosten_indicatie; const rkEl=document.getElementById('reiskostenIndicatie'); if(rkEl && typeof rk==='number'){ rkEl.textContent=euroFmt(rk); }
+  recomputeFixedCosts({ grpBeschikbaar: grpInfo ? !!grpInfo.beschikbaar : true });
+  updateGroepsrapportBadge({ beschikbaar: grpInfo ? !!grpInfo.beschikbaar : false, min: (grpInfo && typeof grpInfo.min_deelnemers==='number') ? grpInfo.min_deelnemers : 20, deelnemers: (typeof data?.deelnemers_totaal==='number') ? data.deelnemers_totaal : 0 });
+}
+document.addEventListener('DOMContentLoaded', async ()=>{ try{ const data = await fetchVoorstelFromAcDossier({ klantId: window.KLANT_ID || 'demo' }); if(data) renderFromBackend(data); }catch(e){} });
+
+</script>
+
+<script id="matrixData" type="application/json">{"Kantoor (beeldscherm)": [{"type": "meting", "naam": "Visus", "frequentie": "2-jaarlijks"}, {"type": "meting", "naam": "Biometrie", "frequentie": "jaarlijks"}, {"type": "vragenlijst", "naam": "Beeldschermwerk vragenlijst", "frequentie": "jaarlijks"}, {"type": "vragenlijst", "naam": "ALG vragenlijst (algemeen)", "frequentie": "jaarlijks"}], "Backoffice (werkdruk)": [{"type": "vragenlijst", "naam": "Werkdruk vragenlijst", "frequentie": "jaarlijks"}, {"type": "meting", "naam": "Biometrie", "frequentie": "jaarlijks"}, {"type": "vragenlijst", "naam": "PSA-screening", "frequentie": "jaarlijks"}], "Magazijn (werkdruk)": [{"type": "vragenlijst", "naam": "Werkdruk vragenlijst", "frequentie": "jaarlijks"}, {"type": "meting", "naam": "Fysieke belasting check", "frequentie": "jaarlijks"}, {"type": "meting", "naam": "Biometrie", "frequentie": "jaarlijks"}], "Productie (werkdruk)": [{"type": "vragenlijst", "naam": "Werkdruk vragenlijst", "frequentie": "jaarlijks"}, {"type": "meting", "naam": "Fysieke belasting check", "frequentie": "jaarlijks"}, {"type": "meting", "naam": "Biometrie", "frequentie": "jaarlijks"}], "ICT (beeldscherm)": [{"type": "meting", "naam": "Visus", "frequentie": "2-jaarlijks"}, {"type": "vragenlijst", "naam": "Beeldschermwerk vragenlijst", "frequentie": "jaarlijks"}, {"type": "meting", "naam": "Biometrie", "frequentie": "jaarlijks"}]}</script>
+</body>
+</html>

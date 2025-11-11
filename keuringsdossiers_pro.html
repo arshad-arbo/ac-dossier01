@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Keuringsdossiers – start professional (home + prev/next + datum)</title>
+  <style>
+    :root{
+      --primary:#ec641a;
+      --accent:#85cee4;
+      --ok:#79c6c0;
+      --ink:#4c505a;
+      --muted:#6b7280;
+      --ring:#e5e7eb;
+      --bg:#f7f7f7;
+      --radius:14px;
+      --shadow:0 6px 24px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:#1f2937;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+    header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--ring)}
+    .topbar{display:flex;align-items:center;gap:12px;padding:10px 16px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .brand small{font-weight:600;color:#64748b}
+    main{max-width:1200px;margin:18px auto;padding:0 16px 60px}
+
+    .card{background:#fff;border:1px solid var(--ring);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px}
+    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem .9rem;border-radius:12px;border:1px solid var(--ring);background:#fff;cursor:pointer}
+    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .btn.small{padding:.35rem .6rem;border-radius:10px;font-size:.92rem}
+    .btn.icon{width:36px;height:36px;justify-content:center}
+    .tag{display:inline-block;padding:.18rem .5rem;border-radius:10px;font-size:.8rem}
+    .tag.ok{background:var(--ok);color:#063a35}
+    .tag.warn{background:var(--primary);color:#fff}
+    .muted{color:var(--muted)}
+    input,select,textarea{width:100%;padding:.6rem .7rem;border-radius:12px;border:1px solid #d1d5db;background:#fff}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #eef2f7;text-align:left;white-space:nowrap}
+    th.sort{cursor:pointer;user-select:none}
+    th.sort.asc::after{content:" ▲";font-size:.8em}
+    th.sort.desc::after{content:" ▼";font-size:.8em}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-5{grid-column:span 5}.col-6{grid-column:span 6}.col-7{grid-column:span 7}.col-12{grid-column:span 12}
+    .tabs{display:flex;gap:8px;align-items:center}
+    .tabs .btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+    .rowlink{cursor:pointer}
+    .rowlink:hover{background:#fff7ed}
+    .pill{display:inline-flex;gap:6px;align-items:center;padding:.25rem .6rem;border:1px solid var(--ring);border-radius:999px;background:#fff}
+    dialog{border:none;border-radius:16px;box-shadow:var(--shadow);max-width:640px;width:100%;padding:0}
+    dialog form{padding:12px}
+    .right{margin-left:auto}
+
+    /* Tegelscherm (HOME) */
+    .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .tile{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:18px;border:1px solid var(--ring);border-radius:18px;background:#fff;box-shadow:var(--shadow)}
+    .tile h4{margin:0}
+    .tile p{margin:0;color:#475569}
+    @media(max-width:980px){.col-6,.col-7,.col-5,.col-4,.col-3{grid-column:span 12}.tiles{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <button class="btn" id="btnHome">HOME</button>
+      <div class="brand">Keuringsapp <small>prototype</small></div>
+      <div class="pill">Module: Keuringsdossiers</div>
+      <span class="right muted">Demo – gegevens fictief</span>
+      <div class="toolbar right" id="globalPrevNext">
+        <button class="btn icon" id="btnPrev" title="Vorige dag" aria-label="Vorige dag">◀</button>
+        <button class="btn icon" id="btnNext" title="Volgende dag" aria-label="Volgende dag">▶</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HOME / tegelscherm -->
+    <section id="panel-home" class="card" role="tabpanel" aria-label="Home tegelscherm">
+      <div class="toolbar" style="justify-content:space-between;align-items:center">
+        <h3 style="margin:0">Home</h3>
+        <div class="toolbar">
+          <button class="btn small" data-go="agenda">► Ga naar Agenda</button>
+          <button class="btn small" data-go="zoek">🔎 Ga naar Zoeken</button>
+          <button class="btn small" id="goNewFromHome">＋ Nieuw dossier</button>
+          <span class="muted" id="homeDateNote"></span>
+          <button class="btn small" id="homePrev">◀ Vorige</button>
+          <button class="btn small" id="homeNext">Volgende ▶</button>
+        </div>
+      </div>
+      <div class="tiles" style="margin-top:10px">
+        <div class="tile">
+          <h4>Agenda</h4>
+          <p>Bekijk afspraken per vestiging voor de gekozen datum.</p>
+          <button class="btn primary" data-go="agenda">Open agenda</button>
+        </div>
+        <div class="tile">
+          <h4>Zoeken</h4>
+          <p>Filter en sorteer alle keuringsdossiers.</p>
+          <button class="btn primary" data-go="zoek">Open zoeken</button>
+        </div>
+        <div class="tile">
+          <h4>Nieuw dossier</h4>
+          <p>Maak een nieuwe afspraak/dossier aan.</p>
+          <button class="btn primary" id="tileNew">Nieuw dossier</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="card">
+      <div class="tabs" role="tablist" aria-label="Keuringsdossiers tabs">
+        <button class="btn small active" data-tab="agenda" role="tab" aria-selected="true" aria-controls="panel-agenda" id="tab-agenda">Agenda</button>
+        <button class="btn small" data-tab="zoek" role="tab" aria-selected="false" aria-controls="panel-zoek" id="tab-zoek">Zoek</button>
+        <button class="btn small" data-tab="dossier" role="tab" aria-selected="false" aria-controls="panel-dossier" id="tab-dossier">Dossier</button>
+      </div>
+      <div class="grid" style="margin-top:10px">
+        <div class="col-3">
+          <label>Datum</label>
+          <input id="fltDate" type="date" />
+        </div>
+        <div class="col-3">
+          <label>Vestiging</label>
+          <select id="fltVestiging">
+            <option value="">Alle</option>
+            <option>Noordwijk</option>
+            <option>Amsterdam</option>
+            <option>Rotterdam</option>
+          </select>
+        </div>
+        <div class="col-3">
+          <label>Cliënt</label>
+          <input id="fltClient" placeholder="Zoek op naam" />
+        </div>
+        <div class="col-3">
+          <label style="display:block">&nbsp;</label>
+          <div class="toolbar">
+            <label class="muted"><input id="fltOpen" type="checkbox" checked> Alleen open dossiers</label>
+            <button class="btn" id="btnRefresh">Verversen</button>
+            <button class="btn" id="btnReset">Herstel demo-data</button>
+            <button class="btn primary" id="btnNew">Nieuw keuringsdossier\1
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panels -->
+    <section id="panel-agenda" class="card" role="tabpanel" aria-labelledby="tab-agenda" style="margin-top:16px">
+      <div class="toolbar" style="justify-content:space-between">
+        <h3 style="margin:0">Agenda</h3>
+        <div class="toolbar">
+          <button class="btn small" id="agPrev">◀ Vorige</button>
+          <button class="btn small" id="agNext">Volgende ▶</button>
+        </div>
+      </div>
+      <div id="agendaList" class="grid" style="margin-top:10px"></div>
+    </section>
+
+    <section id="panel-zoek" class="card" role="tabpanel" aria-labelledby="tab-zoek" hidden style="margin-top:16px">
+      <div class="toolbar" style="justify-content:space-between">
+        <h3 style="margin:0">Zoekresultaten</h3>
+        <div class="toolbar">
+          <button class="btn small" id="zkPrev">◀ Vorige</button>
+          <button class="btn small" id="zkNext">Volgende ▶</button>
+        </div>
+      </div>
+      <div style="overflow:auto;margin-top:8px">
+        <table id="tblDossiers" aria-live="polite">
+          <thead>
+            <tr>
+              <th class="sort" data-k="id">Dossiernr</th>
+              <th class="sort" data-k="datum">Geplande datum</th>
+              <th class="sort" data-k="start">Start</th>
+              <th class="sort" data-k="duurMin">Duur</th>
+              <th class="sort" data-k="naam">Naam</th>
+              <th class="sort" data-k="type">Type</th>
+              <th class="sort" data-k="debiteur">Debiteur</th>
+              <th class="sort" data-k="locatie">Locatie</th>
+              <th>Uitvoerder(s)</th>
+              <th class="sort" data-k="openOnderdelen">Open onderdelen</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="muted" id="rowCount"></div>
+      <div id="suiteHost" style="margin-top:12px"></div>
+    </section>
+
+    <section id="panel-dossier" class="card" role="tabpanel" aria-labelledby="tab-dossier" hidden style="margin-top:16px">
+      <div class="toolbar" style="justify-content:space-between">
+        <div class="toolbar" style="flex-wrap:wrap">
+          <h3 id="dosTitle" style="margin:0">Geen dossier geselecteerd</h3>
+          <span id="dosMeta" class="muted"></span>
+        </div>
+        <div class="toolbar">
+          <button class="btn small" id="dsPrev">◀ Vorige</button>
+          <button class="btn small" id="dsNext">Volgende ▶</button>
+          <button class="btn" id="btnClose">Sluit dossier</button>
+          <button class="btn" id="btnReopen">Heropen dossier</button>
+        </div>
+      </div>
+      <div id="dosBody" class="grid" style="margin-top:10px">
+        <div class="col-6">
+          <div class="card">
+            <h4 style="margin-top:0">Algemene gegevens</h4>
+            <div id="dosGeneral"></div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="card">
+            <h4 style="margin-top:0">Historie</h4>
+            <ul id="dosHistory"></ul>
+            <label>Notitie toevoegen</label>
+            <textarea id="dosNote" rows="3" placeholder="Korte notitie…"></textarea>
+            <div class="toolbar" style="justify-content:flex-end;margin-top:6px">
+              <button class="btn primary" id="btnAddNote">Opslaan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="newModal">
+    <form method="dialog" id="newForm" class="card">
+      <h3 style="margin:0 0 8px 0">Nieuw keuringsdossier</h3>
+      <div class="grid">
+        <div class="col-6">
+          <label>Datum</label>
+          <input name="datum" type="date" required>
+        </div>
+        <div class="col-6">
+          <label>Starttijd</label>
+          <input name="start" type="time" value="09:00" required>
+        </div>
+        <div class="col-6">
+          <label>Duur (min)</label>
+          <input name="duurMin" type="number" value="30" min="5" step="5" required>
+        </div>
+        <div class="col-6">
+          <label>Locatie</label>
+          <select name="locatie"><option>Noordwijk</option><option>Amsterdam</option><option>Rotterdam</option></select>
+        </div>
+        <div class="col-6">
+          <label>Naam</label>
+          <input name="naam" required>
+        </div>
+        <div class="col-6">
+          <label>Type</label>
+          <input name="type" list="typen" value="PAGO - ">
+          <datalist id="typen">
+            <option value="PAGO - Bodemsanering">
+            <option value="PAGO - Asbest">
+            <option value="PAGO - Machinist">
+            <option value="PAGO - Offshore">
+            <option value="PAGO - Laswerk">
+          </datalist>
+        </div>
+        <div class="col-6">
+          <label>Debiteur</label>
+          <input name="debiteur" value="Richting BV">
+        </div>
+        <div class="col-6">
+          <label>Uitvoerder(s)</label>
+          <input name="uitvoerders" value="Dr. de Vries">
+        </div>
+      </div>
+      <div class="toolbar" style="justify-content:flex-end;margin-top:10px">
+        <button class="btn" value="cancel">Annuleren</button>
+        <button class="btn primary" id="createBtn" value="ok">Aanmaken</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    /* ========== Demo data & storage ========== */
+    const LS_KEY = "kd_demo_data_v2";
+    function seed() {
+      const rand = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+      const pick = (arr)=>arr[rand(0,arr.length-1)];
+      const pad = (n)=>String(n).padStart(2,"0");
+
+      const names = ["Jan Jansen","Piet Pieters","Sara van Dijk","Lotte Visser","Daan de Jong","Noa Bakker","Sem Bos","Mila de Boer","Bram Smits","Tess Vermeulen","Finn Mulder","Liv de Graaf","Olivier Dekker","Nora Willems","Mats Kuipers","Fleur van Leeuwen","Tygo de Ruiter","Lara van den Berg","Jules de Bruin","Evi Koster"];
+      const types = ["PAGO - Bodemsanering","PAGO - Asbest","PAGO - Machinist","PAGO - Offshore","PAGO - Laswerk"];
+      const debtors = ["Richting BV","Delta Bouw","NoordZee Infra","Stad & Co"];
+      const locaties = ["Noordwijk","Amsterdam","Rotterdam"];
+      const uitvoerders = [["Dr. de Vries"],["Dr. Bakker"],["Dr. Meijer"],["Dr. de Vries","Dr. Meijer"]];
+
+      const startDates = ["2025-09-08","2025-09-09","2025-09-10","2025-09-11","2025-09-12"];
+      const slots = ["08:30","09:00","09:30","10:00","10:30","11:00","13:00","13:30","14:00","14:30","15:00"];
+
+      const dossiers = [];
+      let num = 3000;
+
+      for (const d of startDates){
+        for (const loc of locaties){
+          for (let i=0;i<4;i++){
+            const naam = pick(names);
+            const start = pick(slots);
+            const duur = [25,30,30,35,40,45,60][rand(0,6)];
+            const type = pick(types);
+            const deb = pick(debtors);
+            const u = pick(uitvoerders);
+            const openOnd = rand(0,9);
+            const open = openOnd > 0 ? true : !!rand(0,1);
+
+            const id = `KD-2025-${pad(num)}`;
+            num++;
+
+            const hist = [{at:`${d} ${start}`, what:"Aangemaakt"}];
+            if(!open){ hist.push({at:`${d} ${String((parseInt(start.split(':')[0])+1)).padStart(2,'0')}:${start.split(':')[1]}`, what:"Gesloten"}); }
+
+            dossiers.push({
+              id, datum:d, start, duurMin:duur, naam, type,
+              debiteur:deb, locatie:loc, uitvoerders:u,
+              openOnderdelen:openOnd, open, history:hist
+            });
+          }
+        }
+      }
+
+      const data = { dossiers, lastNum: num };
+      localStorage.setItem(LS_KEY, JSON.stringify(data));
+      return data;
+    }
+    function load(){ try { return JSON.parse(localStorage.getItem(LS_KEY)) || seed(); } catch(e){ return seed(); } }
+    function save(data){ localStorage.setItem(LS_KEY, JSON.stringify(data)); }
+
+    let db = load();
+    let selected = null;
+    let sortKey = "id";
+    let sortDir = 1;
+
+    /* ========== Helpers ========== */
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+    function fmtDur(min){ return (min|0) + " min"; }
+    function fmtDate(d){ try{ return new Date(d).toLocaleDateString("nl-NL"); }catch(_){ return d; } }
+    function nextId(){ db.lastNum += 1; return "KD-2025-" + String(db.lastNum).padStart(4,"0"); }
+    function addDays(dateStr, delta){
+      const d = new Date(dateStr); d.setDate(d.getDate()+delta);
+      return d.toISOString().slice(0,10);
+    }
+    function nvl(v, def){ return (v==null||v==="")?def:v; }
+
+    /* ========== Filters ========== */
+    function getFilters(){
+      return {
+        date: $("#fltDate").value,
+        vestiging: $("#fltVestiging").value,
+        client: ($("#fltClient").value || "").toLowerCase(),
+        onlyOpen: $("#fltOpen").checked
+      };
+    }
+
+    function applyFilters(rows){
+      const f = getFilters();
+      return rows.filter(r =>
+        (!f.date || r.datum === f.date) &&
+        (!f.vestiging || r.locatie === f.vestiging) &&
+        (!f.client || (r.naam || "").toLowerCase().includes(f.client)) &&
+        (!f.onlyOpen || r.open)
+      );
+    }
+
+    function sortRows(rows){
+      return rows.slice().sort((a,b)=>{
+        const k = sortKey;
+        let va = a[k], vb = b[k];
+        if (k === "duurMin" || k === "openOnderdelen") { va = +va; vb = +vb; }
+        if (va < vb) return -1*sortDir;
+        if (va > vb) return  1*sortDir;
+        return 0;
+      });
+    }
+
+    /* ========== Rendering ========== */
+    function renderAgenda(){
+      const wrap = $("#agendaList");
+      wrap.innerHTML = "";
+      const rows = sortRows(applyFilters(db.dossiers));
+      if(!rows.length){ wrap.innerHTML = '<div class="muted">Geen resultaten voor de gekozen filters.</div>'; return; }
+      const byLoc = {};
+      rows.forEach(r => {
+        try{ ensureSuiteForDossier(r.id, r.naam); }catch(e){} (byLoc[r.locatie] ||= []).push(r); });
+      const cols = Object.keys(byLoc);
+      wrap.style.gridTemplateColumns = `repeat(${cols.length}, 1fr)`;
+      cols.forEach(loc => {
+        const box = document.createElement("div");
+        box.className = "card";
+        box.innerHTML = `<h4 style="margin:0 0 8px 0">${loc}</h4>`
+          + byLoc[loc].map(r =>
+              `<div class="card" style="margin:6px 0">
+                 <strong>${r.start}</strong> • ${r.naam} <span class="muted">(${r.type})</span><br>
+                 <span class="muted">${r.id} • ${fmtDate(r.datum)} • ${fmtDur(r.duurMin)} • ${r.uitvoerders.join(", ")}</span>
+               </div>`
+            ).join("");
+        wrap.appendChild(box);
+      });
+
+      // Home date note mirrors current date
+      $("#homeDateNote").textContent = "Datum: " + fmtDate($("#fltDate").value);
+    }
+
+    function renderTable(){
+      const tb = $("#tblDossiers tbody");
+      tb.innerHTML = "";
+      const rows = sortRows(applyFilters(db.dossiers));
+      rows.forEach(r => {
+        try{ ensureSuiteForDossier(r.id, r.naam); }catch(e){}
+        const tr = document.createElement("tr");
+        tr.className = "rowlink";
+        tr.innerHTML = `
+          <td><a href="#" onclick="ensureSuiteForDossier('${r.id}','${r.naam}');openSuiteForDossier('${r.id}');event.stopPropagation();return false">${r.id}</a></td>
+          <td>${fmtDate(r.datum)}</td>
+          <td>${r.start}</td>
+          <td>${fmtDur(r.duurMin)}</td>
+          <td>${r.naam}</td>
+          <td>${r.type}</td>
+          <td>${r.debiteur}</td>
+          <td>${r.locatie}</td>
+          <td>${r.uitvoerders.join(", ")}</td>
+          <td>${r.openOnderdelen}</td>`;
+        tr.addEventListener("click", ()=>{ selected = r.id; openTab("dossier"); renderDossier(); });
+        tb.appendChild(tr);
+      });
+      $("#rowCount").textContent = rows.length ? `${rows.length} resultaten` : "Geen resultaten";
+      renderAgenda();
+    }
+
+    function renderDossier(){
+      const r = db.dossiers.find(x => x.id === selected);
+      const title = r ? `${r.id} — ${r.naam}` : "Geen dossier geselecteerd";
+      $("#dosTitle").textContent = title;
+      $("#btnClose").disabled = !r || !r.open;
+      $("#btnReopen").disabled = !r || r.open;
+      if (!r) { $("#dosGeneral").innerHTML = ""; $("#dosHistory").innerHTML=""; return; }
+
+      $("#dosMeta").textContent = `• ${r.type} • ${r.locatie} • ${fmtDate(r.datum)} ${r.start} • ${r.uitvoerders.join(", ")} • ${r.open ? "open" : "gesloten"}`;
+
+      const gen = `
+        <div class="grid">
+          <div class="col-6"><strong>Cliënt</strong><br>${r.naam}</div>
+          <div class="col-6"><strong>Debiteur</strong><br>${r.debiteur}</div>
+          <div class="col-6"><strong>Type</strong><br>${r.type}</div>
+          <div class="col-6"><strong>Locatie</strong><br>${r.locatie}</div>
+          <div class="col-6"><strong>Datum</strong><br>${fmtDate(r.datum)} ${r.start} (${fmtDur(r.duurMin)})</div>
+          <div class="col-6"><strong>Uitvoerder(s)</strong><br>${r.uitvoerders.join(", ")}</div>
+          <div class="col-6"><strong>Status</strong><br>${r.open ? '<span class="tag ok">open</span>' : '<span class="tag warn">gesloten</span>'}</div>
+          <div class="col-6"><strong>Open onderdelen</strong><br>${r.openOnderdelen}</div>
+        </div>`;
+      $("#dosGeneral").innerHTML = gen;
+
+      $("#dosHistory").innerHTML = (r.history||[]).slice().reverse().map(h => `<li>${h.at} — ${h.what}</li>`).join("") || "<li class='muted'>Leeg</li>";
+    }
+
+    /* ========== Actions ========== */
+    function openTab(name){
+      $$(".tabs .btn").forEach(b => { b.classList.toggle("active", b.dataset.tab===name); b.setAttribute("aria-selected", b.dataset.tab===name ? "true" : "false"); });
+      $("#panel-home").hidden     = name !== "home";
+      $("#panel-agenda").hidden   = name !== "agenda";
+      $("#panel-zoek").hidden     = name !== "zoek";
+      $("#panel-dossier").hidden  = name !== "dossier";
+    }
+
+    function adjustDate(delta){
+      const d = $("#fltDate").value || (db.dossiers[0] && db.dossiers[0].datum) || new Date().toISOString().slice(0,10);
+      $("#fltDate").value = addDays(d, delta);
+      renderTable();
+    }
+
+    function bindUI(){
+      // Default filter datum = eerste datum uit dataset
+      const firstDate = (db.dossiers[0] || {}).datum || new Date().toISOString().slice(0,10);
+      $("#fltDate").value = firstDate;
+
+      // Global Home
+      $("#btnHome").addEventListener("click", ()=> openTab("home"));
+      document.querySelectorAll('[data-go]').forEach(b=> b.addEventListener("click", ()=> openTab(b.getAttribute('data-go')) ));
+      $("#tileNew").addEventListener("click", ()=> $("#newModal").showModal());
+      $("#goNewFromHome").addEventListener("click", ()=> $("#newModal").showModal());
+
+      // Prev/Next everywhere
+      ["btnPrev","homePrev","agPrev","zkPrev","dsPrev"].forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener("click", ()=>adjustDate(-1)); });
+      ["btnNext","homeNext","agNext","zkNext","dsNext"].forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener("click", ()=>adjustDate(1)); });
+
+      $("#btnRefresh").addEventListener("click", renderTable);
+      $("#btnReset").addEventListener("click", ()=>{ db = seed(); renderTable(); });
+      $("#fltDate").addEventListener("change", renderTable);
+      $("#fltVestiging").addEventListener("input", renderTable);
+      $("#fltClient").addEventListener("input", renderTable);
+      $("#fltOpen").addEventListener("change", renderTable);
+
+      // Sorting
+      $$("#tblDossiers th.sort").forEach(th => {
+        th.addEventListener("click", () => {
+          const k = th.dataset.k;
+          if (sortKey === k) { sortDir *= -1; } else { sortKey = k; sortDir = 1; }
+          $$("#tblDossiers th.sort").forEach(x => x.classList.remove("asc","desc"));
+          th.classList.add(sortDir>0 ? "asc" : "desc");
+          renderTable();
+        });
+      });
+
+      // Tabs
+      $$(".tabs .btn").forEach(btn => btn.addEventListener("click", ()=> openTab(btn.dataset.tab)));
+
+      // New dossier
+      $("#btnNew").addEventListener("click", ()=> $("#newModal").showModal());
+      $("#newForm").addEventListener("close", ()=> $("#newModal").close());
+      $("#createBtn").addEventListener("click", (e)=>{
+        e.preventDefault();
+        const f = $("#newForm");
+        const data = Object.fromEntries(new FormData(f).entries());
+        const id = nextId();
+        const row = {
+          id,
+          datum: data.datum,
+          start: data.start,
+          duurMin: parseInt(data.duurMin,10),
+          naam: data.naam,
+          type: data.type,
+          debiteur: data.debiteur,
+          locatie: data.locatie,
+          uitvoerders: String(data.uitvoerders||"").split(",").map(s=>s.trim()).filter(Boolean),
+          openOnderdelen: 9,
+          open: true,
+          history: [{at: new Date().toISOString().replace("T"," ").slice(0,16), what:"Aangemaakt"}]
+        };
+        db.dossiers.push(row);
+        try{ ensureSuiteForDossier(row.id, row.naam); }catch(e){}
+        save(db);
+        $("#newModal").close();
+        selected = row.id;
+        openTab("dossier");
+        renderTable();
+        renderDossier();
+      });
+
+      // Close / reopen
+      $("#btnClose").addEventListener("click", ()=>{
+        const r = db.dossiers.find(x => x.id === selected); if (!r) return;
+        r.open = false;
+        r.history.push({at: new Date().toISOString().replace("T"," ").slice(0,16), what:"Gesloten"});
+        save(db); renderTable(); renderDossier();
+      });
+      $("#btnReopen").addEventListener("click", ()=>{
+        const r = db.dossiers.find(x => x.id === selected); if (!r) return;
+        r.open = true;
+        r.history.push({at: new Date().toISOString().replace("T"," ").slice(0,16), what:"Heropend"});
+        save(db); renderTable(); renderDossier();
+      });
+
+      // Notes
+      $("#btnAddNote").addEventListener("click", ()=>{
+        const r = db.dossiers.find(x => x.id === selected); if (!r) return;
+        const t = ($("#dosNote").value || "").trim(); if (!t) return;
+        r.history.push({at: new Date().toISOString().replace("T"," ").slice(0,16), what:"Notitie: " + t});
+        $("#dosNote").value = "";
+        save(db); renderDossier();
+      });
+
+      // Start on HOME tegelscherm
+      openTab("home");
+    }
+
+    // Init
+    bindUI();
+    renderTable();
+  </script>
+
+<script>
+// === Suite integratie (per dossier) ===
+function suiteStorageKey(id){ return 'keuringen-suite:'+id; }
+
+function ensureSuiteForDossier(id, naam){
+  var key = suiteStorageKey(id);
+  if(!localStorage.getItem(key)){
+    // Minimal basisstructuur; Keuringen Suite vult de rest aan bij openen.
+    var stub = {
+      client:{ clientId:id, naam: naam||'', modus:'Keuring' },
+      keuringen:{ werken_op_hoogte:false, ademlucht:false, asbest:false, bodemsanering:false, offshore:false, chauffeurs:false, cbr:false, volandis_pago:false },
+      vragenlijsten:{ items:[] },
+      flags:[],
+      notities:[]
+    };
+    localStorage.setItem(key, JSON.stringify(stub));
+  }
+}
+
+function openSuiteForDossier(id){
+  // zorg dat de lokale storage stub er is (suite leest deze in)
+  try { ensureSuiteForDossier(id); } catch(e){}
+
+  // bouw een absolute URL naast dit bestand (werkt ook vanuit iframe)
+  var base = (location.href || '').split('#')[0];
+  var u = new URL('keuringen-suite-v2.html', base);
+  u.searchParams.set('clientId', id);
+
+  // open in nieuw tabblad, zonder 'opener' (veiliger)
+  window.open(u.toString(), '_blank', 'noopener');
+}
+
+
+// Observe clicks op "Nieuw keuringsdossier" om suite direct te koppelen
+document.addEventListener('click', function(e){
+  var t = e.target.closest('button, a');
+  if(!t) return;
+  if(/Nieuw keuringsdossier/i.test(t.textContent||'')){
+    // kleine delay tot nummer is vastgesteld
+    setTimeout(function(){
+      var rows = document.querySelectorAll('#zoekResultaten tbody tr');
+      if(rows.length){
+        var last = rows[rows.length-1];
+        var id = (last.querySelector('[data-field="dossiernr"]')?.textContent || last.cells[0]?.textContent || '').trim();
+        if(id){ ensureSuiteForDossier(id); openSuiteForDossier(id); }
+      }
+    }, 150);
+  }
+});
+// Maak bestaande rijen klikbaar en koppel suite records
+window.addEventListener('load', function(){
+  var rows = document.querySelectorAll('#zoekResultaten tbody tr');
+  rows.forEach(function(tr){
+    var idCell = tr.cells[0];
+    if(!idCell) return;
+    var id = (idCell.textContent||'').trim();
+    tr.setAttribute('data-dossier-id', id);
+    idCell.innerHTML ='<a href="keuringen-suite-v2.html?clientId='+encodeURIComponent(id)+'" target="_blank" rel="noopener" onclick="try{ensureSuiteForDossier(\''+id+'\')}catch(e){}">'
+  + id +
+  '</a>';
+  });
+});
+</script>
+
+</body>
+</html>

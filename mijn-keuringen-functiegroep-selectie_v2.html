@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AC‑Dossier • Werknemer | Functiegroep kiezen</title>
+  <style>
+    :root{
+      --primary:#ec641a; --teal:#79c6c0; --accent:#85cee4; --slate:#686c7c; --ink:#4c505a;
+      --surface:#f7f7f7; --ring:1px solid #e5e7eb; --shadow:0 12px 34px rgba(0,0,0,.08);
+      --shadow-lg:0 22px 55px rgba(0,0,0,.16);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--surface);color:#1f2937;font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
+    a{color:#69a1b1;text-decoration:none}
+
+    /* Header same as klantreis */
+    header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid #e5e7eb}
+    .topbar{display:flex;align-items:center;gap:16px;padding:12px 18px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .brand-dot{width:28px;height:28px;border-radius:7px;background:var(--primary)}
+    .muted{color:#6b7280}
+
+    /* Layout & cards */
+    .container{max-width:1100px;margin:22px auto;padding:0 16px}
+    .card{background:#fff;border-radius:16px;box-shadow:var(--shadow);border:var(--ring);padding:16px}
+    h2{margin:.2rem 0 .6rem;color:var(--ink)}
+
+    /* Inputs harmonised */
+    .field{display:grid;gap:8px;margin:10px 0}
+    .label{font-weight:600;color:var(--ink)}
+    select, textarea, input[type="text"]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #d1d5db;background:#fff;font:inherit;color:inherit}
+    textarea{min-height:120px;resize:vertical}
+
+    /* Buttons (same feel as klantreis) */
+    .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:12px;border:1px solid #e5e7eb;background:#fff;cursor:pointer}
+    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .btn[disabled]{opacity:.55;cursor:not-allowed}
+
+    /* Stepper */
+    .stepper{display:grid;grid-template-columns:20px 1fr;gap:10px;align-items:start;margin:8px 0}
+    .stepper .dot{width:20px;height:20px;border-radius:7px;background:#e5e5e5;display:grid;place-items:center;color:#fff;font-weight:700}
+    .stepper .dot.active{background:var(--primary)}
+
+    /* Modal */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:55}
+    .modal.active{display:flex}
+    .modal .panel{background:#fff;max-width:720px;width:92%;border-radius:14px;border:var(--ring);box-shadow:var(--shadow-lg)}
+    .modal header{padding:12px 16px;border-bottom:1px solid #eef2f7}
+    .modal .content{padding:14px 16px}
+    .modal footer{padding:12px 16px;border-top:1px solid #eef2f7;display:flex;gap:8px;justify-content:flex-end}
+
+    .ok{color:#065f46;font-weight:600}
+  </style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <span class="brand" aria-label="AC‑Dossier"><span class="brand-dot"></span><span>AC‑Dossier <small style="color:#686c7c">werknemer</small></span></span>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn" onclick="location.href='AC-dossier-werknemer-landingsscherm-carousel-3d-hover-nofade.html'">Home</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="card">
+    <h2>Kies uw functiegroep</h2>
+
+    <div class="field">
+      <label class="label" for="intro">Tekst</label>
+      <textarea id="intro" readonly>
+Welkom bij uw keuringsomgeving. Uw werkgever biedt u een periodiek Arbeidsgeneeskundig Onderzoek (PAGO) aan. Wij zullen u in dit portaal stapsgewijs door de benodigde stappen begeleiden.
+
+Stap 1: kiest u in onderstaande keuzemenu de functiegroep waar u toe behoort, dan wel de meest gelijkende.
+Stap 2: bevestig uw keuze.
+      </textarea>
+      <small class="muted">Deze tekst is informatief en niet te wijzigen.</small>
+    </div>
+
+    <div class="stepper"><div class="dot active">1</div><div><strong>Maak uw keuze</strong><div class="muted">Selecteer de functiegroep die het beste bij uw werkzaamheden past.</div></div></div>
+    <div class="field">
+      <label class="label" for="groep">Functiegroep</label>
+      <select id="groep" aria-label="Functiegroep keuzemenu">
+        <option value="">— Maak een keuze —</option>
+      </select>
+    </div>
+
+    <div class="stepper"><div class="dot" id="step2dot">2</div><div><strong>Bevestig uw keuze</strong><div class="muted">Na bevestiging wordt de knop <em>Naar mijn keuringen</em> actief.</div></div></div>
+    <div class="actions">
+      <button id="confirm" class="btn" disabled>Bevestig uw keuze</button>
+      <span id="status" class="muted" role="status" aria-live="polite"></span>
+    </div>
+
+    <hr style="border:none;height:1px;background:#eef2f7;margin:16px 0">
+
+    <div class="actions">
+      <button id="cta" class="btn" disabled>Naar mijn keuringen</button>
+      <small class="muted">De knop wordt oranje en klikbaar nadat u uw keuze heeft bevestigd.</small>
+    </div>
+  </div>
+</main>
+
+<div class="modal" id="modal" aria-hidden="true"><div class="panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <header><strong id="modalTitle">Let op</strong></header>
+  <div class="content" id="modalBody"></div>
+  <footer><button class="btn" id="modalClose">Sluiten</button></footer>
+</div></div>
+
+<script>
+  const selectEl = document.getElementById('groep');
+  const confirmBtn = document.getElementById('confirm');
+  const step2dot = document.getElementById('step2dot');
+  const statusEl = document.getElementById('status');
+  const ctaBtn = document.getElementById('cta');
+  const MODAL = document.getElementById('modal');
+  const modalBody = document.getElementById('modalBody');
+  const modalClose = document.getElementById('modalClose');
+  const STORAGE_KEY = 'ac_functiegroep_v1';
+  let remindTimer = null;
+
+  const DUMMY_FUNCTIEGROEPEN = Array.from({length: 16}, (_, i) => 'Functiegroep ' + String(i+1).padStart(2, '0'));
+  function populateSelect(list){
+    selectEl.innerHTML = '<option value="">— Maak een keuze —</option>';
+    list.forEach(label => {
+      const opt = document.createElement('option');
+      opt.value = label;
+      opt.textContent = label;
+      selectEl.appendChild(opt);
+    });
+  }
+  populateSelect(DUMMY_FUNCTIEGROEPEN);
+
+  try{
+    const prev = JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+    if(prev && prev.value){
+      Array.from(selectEl.options).forEach(o=>{ if(o.value===prev.value) o.selected=true; });
+      confirmBtn.disabled = false;
+    }
+  }catch(e){}
+
+  selectEl.addEventListener('change', ()=>{
+    confirmBtn.disabled = !selectEl.value;
+    statusEl.textContent = '';
+    step2dot.classList.toggle('active', !!selectEl.value);
+  });
+
+  confirmBtn.addEventListener('click', ()=>{
+    if(!selectEl.value) return;
+    const payload = { value: selectEl.value, ts: Date.now() };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    statusEl.innerHTML = 'Keuze geregistreerd: <span class="ok">' + escapeHtml(selectEl.value) + '</span>.';
+    ctaBtn.disabled = false;
+    ctaBtn.classList.add('primary');
+    clearTimeout(remindTimer);
+    remindTimer = setTimeout(()=>{
+      if(!document.hidden){
+        openModal('Dank voor uw opgaaf',
+          'Dank voor uw opgaaf, klikt u op de knop <b>mijn keuringen</b>, om de inhoud van uw keuring te zien.');
+      }
+    }, 5000);
+  });
+
+  ctaBtn.addEventListener('click', ()=>{
+    if(ctaBtn.disabled) return;
+    const grp = encodeURIComponent(selectEl.value || '');
+    location.href = 'mijn_keuringen_portaal_v2.html?functie=' + grp;
+  });
+
+  function openModal(title, html){
+    document.getElementById('modalTitle').textContent = title;
+    modalBody.innerHTML = html;
+    MODAL.classList.add('active');
+    MODAL.setAttribute('aria-hidden','false');
+  }
+  modalClose.addEventListener('click', closeModal);
+  MODAL.addEventListener('click', (e)=>{ if(e.target===MODAL) closeModal(); });
+  function closeModal(){ MODAL.classList.remove('active'); MODAL.setAttribute('aria-hidden','true'); }
+
+  function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m])); }
+</script>
+</body>
+</html>
