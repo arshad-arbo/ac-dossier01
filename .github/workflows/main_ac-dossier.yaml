@@ -1,9 +1,9 @@
-name: Deploy AC-Dossier
+name: Deploy ac-dossier01
 
 'on':
   push:
     branches:
-      - main_azure
+      - main
   workflow_dispatch:
 
 jobs:
